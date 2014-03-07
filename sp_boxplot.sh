@@ -142,7 +142,7 @@ ${txtbld}OPTIONS${txtrst}:
 	-w	The width of output picture.[${txtred}Default 20${txtrst}]
 	-u	The height of output picture.[${txtred}Default 12${txtrst}] 
 	-r	The resolution of output picture.[${txtred}Default 300 ppi${txtrst}]
-	-E	The type of output figures.[${txtred}Default png, accept
+	-E	The type of output figures.[${txtred}Default pdf, accept
 		eps/ps, tex (pictex), pdf, jpeg, tiff, bmp, svg and wmf)${txtrst}]
 	-z	Is there a header[${bldred}Default TRUE${txtrst}]
 	-e	Execute or not[${bldred}Default TRUE${txtrst}]
@@ -178,7 +178,7 @@ outlier='FALSE'
 out_scale=1.05
 legend_pos='right'
 color='FALSE'
-ext='png'
+ext='pdf'
 violin='FALSE'
 violin_nb='FALSE'
 scale_violin='area'
@@ -349,7 +349,7 @@ if test "${violin_nb}" == "TRUE"; then
 	midname=${midname}'.violin_nb'
 fi
 
-. `dirname $0`/configure.sh
+. `dirname $0`/sp_configure.sh
 
 cat <<END >${file}${midname}.r
 
