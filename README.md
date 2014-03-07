@@ -1,1 +1,4 @@
-A simplr plot library
+- s-plot
+
+=====
+A simple plot library
