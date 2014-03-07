@@ -2,13 +2,15 @@
 
 #set -x
 
+filename=`basename $0`
+
 usage()
 {
 cat <<EOF
 ${txtcyn}
 Usage:
 
-$0 options${txtrst}
+${filename} options${txtrst}
 
 ${bldblu}Function${txtrst}:
 
@@ -18,42 +20,42 @@ researchers focus more on data rather than technology.
 Currently, the following types of plot are supported.
 
 #### Bars
-$0 barPlot
-$0 horizontalBar
-$0 multiBarNew
+${filename} barPlot
+${filename} horizontalBar
+${filename} multiBarNew
 
 #### Lines
-$0 lines
-$0 lines.2
+${filename} lines
+${filename} lines.2
 
 #### Dots
-$0 scatterplot
-$0 scatterplotColor
-$0 scatterplotContour
-$0 scatterplotLotsData
-$0 scatterplotMatrix
-$0 contourPlot (unfinished)
+${filename} scatterplot
+${filename} scatterplotColor
+${filename} scatterplotContour
+${filename} scatterplotLotsData
+${filename} scatterplotMatrix
+${filename} contourPlot (unfinished)
 
 #### Distribution
-$0 areaplot
-$0 boxplot
-$0 densityPlot
-$0 densityHistPlot
-$0 histogram
-$0 histogram.2
+${filename} areaplot
+${filename} boxplot
+${filename} densityPlot
+${filename} densityHistPlot
+${filename} histogram
+${filename} histogram.2
 
 #### Cluster
-$0 hcluster
-$0 hclust
+${filename} hcluster
+${filename} hclust
 
 #### Heatmap
-$0 heatmapS
-$0 heatmapM
-$0 heatmap.2
+${filename} heatmapS
+${filename} heatmapM
+${filename} heatmap.2
 
 #### Others
-$0 volcano
-$0 vennDiagram
+${filename} volcano
+${filename} vennDiagram
 
 EOF
 }
@@ -63,6 +65,6 @@ if test $# -lt 1; then
 	exit 1
 fi
 
-`dirname $0`/$1.sh
+sp_$1.sh
 
 
