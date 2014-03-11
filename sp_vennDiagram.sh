@@ -70,10 +70,10 @@ ${txtbld}OPTIONS${txtrst}:
 		"rgb(255/255,0/255,0/255),rgb(255/255,0/255,255/255),rgb(0/255,0/255,255/255),
 		rgb(0/255,255/255,255/255),rgb(0/255,255/255,0/255),rgb(255/255,255/255,0/255)"
 		${txtrst}]
-	-w	The width of output picture.[${txtred}Default 20${txtrst}]
-	-u	The height of output picture.[${txtred}Default 20${txtrst}] 
-	-E	The type of output figures.[${txtred}Default png, accept
-		eps/ps, tex (pictex), pdf, jpeg, tiff, bmp, svg and
+	-w	The width of output picture.[${txtred}Default 10${txtrst}]
+	-u	The height of output picture.[${txtred}Default 10${txtrst}] 
+	-E	The type of output figures.[${txtred}Default pdf, accept
+		eps/ps, tex (pictex), png, jpeg, tiff, bmp, svg and
 		wmf [Only png, eps, png(recommend if you want eps) is available, others are unuseable]${txtrst}]
 	-r	The resolution of output picture.[${txtred}Default 300 ppi${txtrst}]
 	-e	Execute or not[${bldred}Default TRUE${txtrst}]
@@ -91,7 +91,7 @@ ist='FALSE'
 uwid=20
 vhig=20
 res=300
-ext='png'
+ext='pdf'
 line_size=1
 color_v='"cornflowerblue", "green", "yellow", "darkorchid1"'
 
@@ -166,22 +166,22 @@ data <- read.table(file="$file", sep="\t")
 num <- 0
 
 if("${label1}" != "CHENTONG"){
-	$label1 <- data[grepl("${label1}",data[,2]),1]
+	$label1 <- data[grepl("\\\\<${label1}\\\\>",data[,2]),1]
 	num <- num + 1
 }
 
 if("${label2}" != "CHENTONG"){
-	$label2 <- data[grepl("${label2}",data[,2]),1]
+	$label2 <- data[grepl("\\\\<${label2}\\\\>",data[,2]),1]
 	num <- num + 1
 }
 
 if("${label3}" != "CHENTONG"){
-	$label3 <- data[grepl("${label3}",data[,2]),1]
+	$label3 <- data[grepl("\\\\<${label3}\\\\>",data[,2]),1]
 	num <- num + 1
 }
 
 if("${label4}" != "CHENTONG"){
-	$label4 <- data[grepl("${label4}",data[,2]),1]
+	$label4 <- data[grepl("\\\\<${label4}\\\\>",data[,2]),1]
 	num <- num + 1
 }
 
