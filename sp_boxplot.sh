@@ -101,6 +101,8 @@ ${txtbld}OPTIONS${txtrst}:
 	-n	Using notch or not.${txtred}[Default TRUE]${txtrst}
 	-V	Do violin plot instead of boxplot.${txtred}[Default FALSE]${txtrst}
 	-W	Do violin plot without inner boxplot.${txtred}[Default FALSE]${txtrst}
+	-j	Do jitter plot instead of boxplot.${txtred}[Default FALSE]${txtrst}
+	-J	Do jitter plot overlay with boxplot.${txtred}[Default FALSE]${txtrst}
 	-A	The value given to scale for violin plot.
 		if "area" (default), all violins have the same area (before
 		trimming the tails). If "count", areas are scaled
@@ -183,9 +185,10 @@ violin='FALSE'
 violin_nb='FALSE'
 scale_violin='area'
 ID_var=""
+jitter='FALSE'
+jitter_bp='FALSE'
 
-
-while getopts "ha:A:b:B:c:C:d:D:e:E:f:F:i:I:l:L:m:n:o:O:p:P:r:s:S:t:u:v:V:w:W:x:y:z:" OPTION
+while getopts "ha:A:b:B:c:C:d:D:e:E:f:F:i:I:j:J:l:L:m:n:o:O:p:P:r:s:S:t:u:v:V:w:W:x:y:z:" OPTION
 do
 	case $OPTION in
 		h)
@@ -209,6 +212,12 @@ do
 			;;
 		I)
 			ID_var=$OPTARG
+			;;
+		j)
+			jitter=$OPTARG
+			;;
+		J)
+			jitter_bp=$OPTARG
 			;;
 		b)
 			xtics_angle=$OPTARG
@@ -349,6 +358,14 @@ if test "${violin_nb}" == "TRUE"; then
 	midname=${midname}'.violin_nb'
 fi
 
+if test "${jitter}" == "TRUE"; then
+	midname=${midname}'.jitter'
+fi
+
+if test "${jitter_bp}" == "TRUE"; then
+	midname=${midname}'.jitter_bp'
+fi
+
 . `dirname $0`/sp_configure.sh
 
 cat <<END >${file}${midname}.r
@@ -423,6 +440,8 @@ if (${violin}){
 	p <- p + geom_violin(aes(fill=factor(${variable})), 
 	stat = "ydensity", position = "dodge", trim = TRUE,  
 	scale = "${scale_violin}") 
+} else if (${jitter}){
+	p <- p + geom_jitter(aes(colour=factor(${variable})))
 } else {
 	if (${notch}){
 		if (${outlier}){
@@ -442,6 +461,9 @@ if (${violin}){
 	}
 }
 
+if (${jitter_bp}){
+	p <- p + geom_jitter(aes(colour=factor(${variable})))
+}
 
 if($scaleY){
 	p <- p + $scaleY_x
