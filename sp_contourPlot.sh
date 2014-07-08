@@ -80,6 +80,7 @@ xlab=''
 ylab=''
 xval=''
 yval=''
+zval=''
 execute='TRUE'
 ist='FALSE'
 log='scale_y_log10()'
@@ -87,6 +88,7 @@ fill_contour="..density.."
 scale='FALSE'
 x_add=0
 y_add=0
+z_add=0
 uwid=18
 vhig=15
 res=300
@@ -97,7 +99,7 @@ user_mid=""
 points="TRUE"
 point_color="red"
 
-while getopts "ha:A:e:E:f:H:i:l:L:m:o:p:P:r:s:S:t:u:v:w:x:y:" OPTION
+while getopts "ha:A:c:e:E:f:H:i:l:L:m:o:p:P:r:s:S:t:u:v:w:x:y:" OPTION
 do
 	case $OPTION in
 		h)
@@ -136,6 +138,9 @@ do
 			;;
 		v)
 			yval=$OPTARG
+			;;
+		c)
+			zval=$OPTARG
 			;;
 		s)
 			fill_contour=$OPTARG
@@ -203,19 +208,19 @@ if ($ist){
 
 library(ggplot2)
 
-data <- read.table(file="$file", sep="\t", header=T, row.names=1)
+data <- read.table(file="$file", sep="\t", header=T)
 
 data\$${xval} <- data\$${xval} + ${x_add}
 data\$${yval} <- data\$${yval} + ${y_add}
+data\$${zval} <- data\$${zval} + ${z_add}
 
-p <- ggplot(data,aes(x=${xval},y=${yval}))+
+p <- ggplot(data,aes(${xval},${yval}, z=${zval}))+
 labs(x="$xlab", y="$ylab") + ggtitle("$title")
 
 if ("${fill_contour}" == "..density..") {
-	p <- p + stat_density2d(aes(fill = ${fill_contour}), geom="tile",
-	contour=FALSE) 
+	p <- p + stat_contour(aes(fill = ${fill_contour}), geom="tile") 
 } else if ("${fill_contour}" == "..level.."){
-	p <- p + stat_density2d(aes(fill = ${fill_contour}),
+	p <- p + stat_contour(aes(fill = ${fill_contour}),
 	geom="polygon") 
 }
 
