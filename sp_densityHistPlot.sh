@@ -24,27 +24,27 @@ fileformat for -f,  when -m is true. [Currently -m is always TRUE]
 #of this two columns is unlimited. Other columns will be ignored.
 #Actually this format is the melted result of last format.
 --------------------------------------------------------------
-variable    value
-h3k27ac	8.71298
-h3k27ac	8.43246
-h3k27ac	8.25497
-h3k27ac	7.16265
-h3k27ac	3.55341
-h3k27ac	3.55030
-h3k27ac	7.07502
-h3k27ac	8.24328
-h3k27ac	8.43869
-h3k27ac	8.48877
-ctcf	10.69130
-ctcf	10.76680
-ctcf	10.54410
-ctcf	10.86350
-ctcf	8.45751
-ctcf	8.50316
-ctcf	10.91430
-ctcf	10.70220
-ctcf	10.41010
-ctcf	10.57570
+variable    value	set(optional)	
+h3k27ac	8.71298	1
+h3k27ac	8.43246	1
+h3k27ac	8.25497	1
+h3k27ac	7.16265	1
+h3k27ac	3.55341	1
+h3k27ac	3.55030	2
+h3k27ac	7.07502	2
+h3k27ac	8.24328	2
+h3k27ac	8.43869	2
+h3k27ac	8.48877	2
+ctcf	10.69130	1
+ctcf	10.76680	1
+ctcf	10.54410	1
+ctcf	10.86350	1
+ctcf	8.45751	1
+ctcf	8.50316	2
+ctcf	10.91430	2
+ctcf	10.70220	2
+ctcf	10.41010	2
+ctcf	10.57570	2
 -------------------------------------------------------------
 
 ${txtbld}OPTIONS${txtrst}:
@@ -60,6 +60,28 @@ ${txtbld}OPTIONS${txtrst}:
 		y-axis.[${txtred}Default <frequency>,
 		accept <..density..>, <..count..>. 
 		When -d is <both>,  <frequency> will be given here.${txtrst}]
+	-s	Variable name for facet.[${txtred}Optional, the name of one
+		column representing a group should be given if group
+		information is needed. Here 'set' can be given if you want to
+		plot set-1 and set-2 separatelt ${txtrst}]
+	-J	Another variable for facet.[${txtred}Optional, same meaning as
+		-s but different columns, like 'variable'. When this is given,
+		facet_grid would be used in format like facet_grid(s_facet ~
+		j_facet) pay attention to the order.]
+	-H	Order of J_facet (facet variable given to -J).
+		[${txtred}Optional even -s is given. Only specified if the
+		facet order is what you want. Input format likes
+		"'facet1','facet2',"facet10""${txtrst}]
+	-S	Number of columns in one row when do faceting.
+		${txtred}Necessary if only -s is given${txtrst}
+	-D	Parameter for scales for facet.
+		[${txtred}Necessary if only -s is given. Default each inner
+		graph use same scale [x, y range]. "free", 'free_x', 'free_y'
+		is accepted.${txtrst}]
+	-G	Order of s_facet (facet_variable given to -s).
+		[${txtred}Optional even -s is given. Only specified if the
+		facet order is what you want. Input format likes
+		"'facet1','facet2',"facet10""${txtrst}]
 	-j	Position paramter for hist bars.[${txtred}Default identity,
 		accept <dodge>. ${txtrst}]
 	-k	Alpha value for transparent.[${txtred}Default 0.4,
@@ -155,8 +177,14 @@ pos="identity"
 xtics_input=0
 custom_vline=0
 custom_vanno=0
+facet='haha'
+facet_ncol=1
+facet_order=''
+facet_scale='fixed'
+j_facet='haha'
+j_facet_order=''
 
-while getopts "hf:m:t:a:x:b:l:d:V:A:g:j:I:k:P:y:c:C:B:X:Y:R:w:u:r:E:p:z:v:e:i:" OPTION
+while getopts "hf:m:t:a:x:b:l:D:d:V:A:g:G:j:J:H:I:k:P:y:c:C:B:X:Y:R:s:S:w:u:r:E:p:z:v:e:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -177,6 +205,24 @@ do
 			;;
 		t)
 			title=$OPTARG
+			;;
+		G)
+			facet_order=$OPTARG
+			;;
+		D)
+			facet_scale=$OPTARG
+			;;
+		S)
+			facet_ncol=$OPTARG
+			;;
+		s)
+			facet=$OPTARG
+			;;
+		J)
+			j_facet=$OPTARG
+			;;
+		H)
+			j_facet_order=$OPTARG
 			;;
 		a)
 			adjust=$OPTARG
@@ -286,6 +332,8 @@ if (${vline}){
 	library(plyr)
 }
 if(! $melted){
+	cat("Currently nor supported for unmelted files")
+	quit()
 	#currently this part is unused
 #	data <- read.table(file="${file}", sep="\t", header=$header,
 #	row.names=1)
@@ -306,6 +354,18 @@ if ("${level}" != ""){
 	data_m\$variable <- factor(data_m\$variable, levels=data_colnames,
 	ordered=T)
 }
+
+if ("${facet_order}" != ""){
+	data_m\$${facet} <- factor(data_m\$${facet},
+	levels=c(${facet_order}))
+}
+
+
+if ("${j_facet_order}" != ""){
+	data_m\$${j_facet} <- factor(data_m\$${j_facet},
+	levels=c(${j_facet_order}))
+}
+
 
 p <- ggplot(data_m, aes(x=value))
 
@@ -399,6 +459,15 @@ if(${color}){
 		p <- p + scale_fill_manual(values=c(${color_v}))
 	} else {
 		p <- p + scale_color_manual(values=c(${color_v}))
+	}
+}
+
+if ("${j_facet}" != "haha") {
+	p <- p + facet_grid(${facet} ~ ${j_facet}, scales="${facet_scale}")
+}else {
+	if ("${facet}" != "haha") {
+		p <- p + facet_wrap(~${facet}, ncol=${facet_ncol},
+		scales="${facet_scale}")
 	}
 }
 
