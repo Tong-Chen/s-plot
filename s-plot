@@ -26,7 +26,6 @@ ${filename} multiBarNew
 
 #### Lines
 ${filename} lines
-${filename} lines.2
 
 #### Dots
 ${filename} scatterplot
@@ -42,7 +41,6 @@ ${filename} boxplot
 ${filename} densityPlot
 ${filename} densityHistPlot
 ${filename} histogram
-${filename} histogram.2
 
 #### Cluster
 ${filename} hcluster
