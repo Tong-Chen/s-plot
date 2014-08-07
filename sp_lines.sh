@@ -67,23 +67,27 @@ ${txtbld}OPTIONS${txtrst}:
 		the same as listed before.
 		${bldred}[Default FALSE, accept TRUE]${txtrst}
 	-a	Name for x-axis variable
-		[${txtred}Necessary, no default value.  
-		For the listed two examples, 'Pos' should be given here. 
+		[${txtred}Necessary, no default value when -m is used.  
+		For the second examples, 'Pos' should be given here. 
+		For the first example,  default the first column will be used,
+		program will assign an value 'xvariable' to represent it.
 	   	]${txtrst}]
 	-A	The attribute of x-axis variable.
 		[${txtred}Default TRUE, means X-axis label is text.
 		FALSE means X-axis label is number.${txtrst}]
 	-l	Levels for legend variable
-		[${txtred}Default dictionary order,accept a string like
+		[${txtred}Default column order, accept a string like
 		"'ctcf','h3k27ac','enhancer'"  
+		***When -m is used, this default will be ignored too.********* 
 	   	${txtrst}]
 	-P	Legend position[${txtred}Default right. Accept
 		top,bottom,left,none, or c(0.08,0.8).${txtrst}]
 	-L	Levels for x-axis variable, suitable when x-axis is not used
 		as a number. 
-		[${txtred}Default the dictionary order, accept a string like
+		[${txtred}Default the order of first column, accept a string like
 		"'g','a','j','x','s','c','o','u'"  
 	   	This will only be considered when -A is TRUE.
+		***When -m is used, this default will be ignored too.********* 
 		${txtrst}]
 	-o	Smooth your data or not.
 		[${txtred}Default FALSE means no smooth. Accept TRUE to smooth
@@ -94,10 +98,26 @@ ${txtbld}OPTIONS${txtrst}:
 		For datasets with n < 1000 default is 'loess'. 
 		For datasets with 1000 or more observations defaults to 'gam'.
 		${txtrst}]
-	-B	line size.[${txtred}Accept a number.${txtrst}]
+	-V	Add vertical lines.${bldred}[Default FALSE, accept a series of
+		numbers in following format "c(1,2,3,4,5)" or other
+		R code that can generate a vector]${txtrst}
+	-X	Display xtics. ${bldred}[Default TRUE]${txtrst}
+	-Y	Display ytics. ${bldred}[Default TRUE]${txtrst}
+	-R	Rotation angle for x-axis value(anti clockwise)
+		${bldred}[Default 0]${txtrst}
+	-B	line size.[${txtred}Default 1. Accept a number.${txtrst}]
 	-t	Title of picture[${txtred}Default empty title${txtrst}]
 	-x	xlab of picture[${txtred}Default empty xlab${txtrst}]
 	-y	ylab of picture[${txtred}Default empty ylab${txtrst}]
+	-c	Manually set colors for each line.[${txtred}Default FALSE,
+		meaning using ggplot2 default.${txtrst}]
+	-C	Color for each line.[${txtred}When -c is TRUE, str in given
+		format must be supplied, ususlly the number of colors should
+		be equal to the number of lines.
+		"'red','pink','blue','cyan','green','yellow'" or
+		"rgb(255/255,0/255,0/255),rgb(255/255,0/255,255/255),rgb(0/255,0/255,255/255),
+		rgb(0/255,255/255,255/255),rgb(0/255,255/255,0/255),rgb(255/255,255/255,0/255)"
+		${txtrst}]
 	-s	Scale y axis
 		[${txtred}Default null. Accept TRUE. This function is
 		depleted. If the supplied number after -S is not 0, this
@@ -110,15 +130,14 @@ ${txtbld}OPTIONS${txtrst}:
 		TRUE.${txtrst}]	
 	-p	Other legal R codes for gggplot2 will be given here.
 		[${txtres}Begin with '+' ${txtrst}]
-	-w	The width of output picture.[${txtred}Default 800${txtrst}]
-	-u	The height of output picture.[${txtred}Default 800${txtrst}] 
-	-r	The resolution of output picture.[${txtred}Default NA${txtrst}]
-	-z	Is there a header[${txtred}Default TRUE${txtrst}]
-	-e	Execute or not[${txtred}Default TRUE${txtrst}]
-	-i	Install depended packages[${txtred}Default FALSE${txtrst}]
-
-****** This script is depleted, please use ${bldred}lines.2.sh${txtrst} instead. ***********
-
+	-w	The width of output picture.[${txtred}Default 20${txtrst}]
+	-u	The height of output picture.[${txtred}Default 12${txtrst}] 
+	-E	The type of output figures.[${txtred}Default png, accept
+		eps/ps, tex (pictex), pdf, jpeg, tiff, bmp, svg and wmf)${txtrst}]
+	-r	The resolution of output picture.[${txtred}Default 300 ppi${txtrst}]
+	-z	Is there a header[${bldred}Default TRUE${txtrst}]
+	-e	Execute or not[${bldred}Default TRUE${txtrst}]
+	-i	Install depended packages[${bldred}Default FALSE${txtrst}]
 EOF
 }
 
@@ -127,7 +146,7 @@ title=''
 melted='FALSE'
 xlab='NULL'
 ylab='NULL'
-xvariable=''
+xvariable='xvariable'
 level=""
 x_level=""
 x_type='TRUE'
@@ -137,16 +156,23 @@ scaleY_x='scale_y_log10()'
 header='TRUE'
 execute='TRUE'
 ist='FALSE'
-uwid=800
-vhig=800
-res='NA'
+uwid=20
+vhig=12
+res=300
+ext='png'
 par=''
 legend_pos='right'
 smooth='FALSE'
 smooth_method='auto'
-line_size=''
+line_size=1
+xtics='TRUE'
+xtics_angle=0
+ytics='TRUE'
+color='FALSE'
+color_v=''
+vline=0
 
-while getopts "hf:m:a:A:t:x:l:P:L:y:B:w:u:r:o:O:s:S:p:z:v:e:i:" OPTION
+while getopts "hf:m:a:A:t:x:l:P:L:y:V:c:C:B:X:Y:R:w:u:r:o:O:s:S:p:z:v:e:E:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -165,6 +191,9 @@ do
 		A)
 			x_type=$OPTARG
 			;;
+		V)
+			vline=$OPTARG
+			;;
 		t)
 			title=$OPTARG
 			;;
@@ -179,6 +208,21 @@ do
 			;;
 		B)
 			line_size=$OPTARG
+			;;
+		c)
+			color=$OPTARG
+			;;
+		C)
+			color_v=$OPTARG
+			;;
+		X)
+			xtics=$OPTARG
+			;;
+		R)
+			xtics_angle=$OPTARG
+			;;
+		Y)
+			ytics=$OPTARG
 			;;
 		L)
 			x_level=$OPTARG
@@ -197,6 +241,9 @@ do
 			;;
 		r)
 			res=$OPTARG
+			;;
+		E)
+			ext=$OPTARG
 			;;
 		o)
 			smooth=$OPTARG
@@ -240,6 +287,10 @@ fi
 
 mid='.lines'
 
+if test "${smooth}" == 'TRUE'; then
+	mid=${mid}'.smooth'
+fi
+
 cat <<END >${file}${mid}.r
 
 if ($ist){
@@ -253,7 +304,11 @@ library(grid)
 
 if(! $melted){
 
-	data <- read.table(file="${file}", sep="\t", header=$header)
+	data <- read.table(file="${file}", sep="\t", header=$header,
+	row.names=1)
+	data_rownames <- rownames(data)
+	data_colnames <- colnames(data)
+	data\$${xvariable} <- data_rownames
 	data_m <- melt(data, id.vars=c("${xvariable}"))
 } else {
 	data_m <- read.table(file="$file", sep="\t",
@@ -267,6 +322,9 @@ if (${y_add} != 0){
 if ("${level}" != ""){
 	level_i <- c(${level})
 	data_m\$variable <- factor(data_m\$variable, levels=level_i)
+} else {
+	data_m\$variable <- factor(data_m\$variable, levels=data_colnames,
+	ordered=T)
 }
 
 if (${x_type}){
@@ -274,7 +332,7 @@ if (${x_type}){
 		x_level <- c(${x_level})
 		data_m\$${xvariable} <- factor(data_m\$${xvariable},levels=x_level)
 	}else{
-		data_m\$${xvariable} <- factor(data_m\$${xvariable})
+		data_m\$${xvariable} <- factor(data_m\$${xvariable},levels=data_rownames,ordered=TRUE)
 	}
 }
 
@@ -291,11 +349,11 @@ p <- p + theme(axis.ticks.x = element_blank(), legend.key=element_blank())
 
 if (${smooth}){
 	if ("${line_size}" != ""){
-		p <- p + stat_smooth(method=${smooth_method}, se=FALSE,
+		p <- p + stat_smooth(method="${smooth_method}", se=FALSE,
 		size=${line_size})
 	}else{
-		p <- p + stat_smooth(method=${smooth_method}, se=FALSE,
-		size=1)
+		p <- p + stat_smooth(method="${smooth_method}", se=FALSE,
+		size=${line_size})
 	}	
 }else{
 	if ("${line_size}" != ""){
@@ -309,6 +367,20 @@ if("$scaleY"){
 	p <- p + $scaleY_x
 }
 
+if(${color}){
+	p <- p + scale_color_manual(values=c(${color_v}))
+}
+
+if ("$xtics" == "FALSE"){
+	p <- p + theme(axis.text.x=element_blank())
+}else{
+	if (${xtics_angle} != 0){
+	p <- p + theme(axis.text.x=element_text(angle=${xtics_angle},hjust=1))
+	}
+}
+if ("$ytics" == "FALSE"){
+	p <- p + theme(axis.text.y=element_blank())
+}
 
 
 top='top'
@@ -320,12 +392,22 @@ legend_pos_par <- ${legend_pos}
 
 p <- p + theme(legend.position=legend_pos_par)
 
+custom_vline_coord <- ${vline}
+if(length(custom_vline_coord) > 1){
+	p <- p + geom_vline(xintercept=custom_vline_coord, 
+	linetype="dotted" )
+}
+
 p <- p${par}
 
-png(filename="${file}${mid}.png", width=$uwid, height=$vhig,
-res=$res)
-p
-dev.off()
+#png(filename="${file}${mid}.png", width=$uwid, height=$vhig,
+#res=$res)
+
+ggsave(p, filename="${file}${mid}.${ext}", dpi=$res, width=$uwid,
+height=$vhig, units=c("cm"))
+#postscript(file="${file}${midname}.eps", onefile=FALSE, horizontal=FALSE, 
+#paper="special", width=10, height = 12, pointsize=10)
+#dev.off()
 END
 
 if [ "$execute" == "TRUE" ]; then
