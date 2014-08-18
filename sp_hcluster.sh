@@ -13,8 +13,7 @@ $0 options${txtrst}
 
 ${bldblu}Function${txtrst}:
 
-This script is used to do clustring using hcluster(in package amap), which is clustered
-by row. So transpose your data when necessary.
+This script is used to do column clustring using hcluster(in package amap).
 
 ${txtbld}OPTIONS${txtrst}:
 	-f	Data file (with header line, the first column is the
@@ -29,6 +28,9 @@ ${txtbld}OPTIONS${txtrst}:
 	-b	Transpose data. [${bldred}Default TRUE${txtrst}]
 		Default cluster by columns. If you want, cluster by rows, 
 		FALSE should be given.
+	-a	Number of final clusters[${txtred}Default 1${txtrst}, 
+		choice an integer(>=2). Red lines will be displayed to label
+		each cluster.]
 	-t	Title of picture[${txtred}Default empty title${txtrst}]
 	-x	xlab of picture[${txtred}Default empty xlab${txtrst}. 
 		If setted, using the words which represents the 
@@ -47,8 +49,6 @@ ${txtbld}OPTIONS${txtrst}:
 		Accept FALSE.
 	-e	Execute or not[${bldred}Default TRUE${txtrst}]
 		Accept FALSE.
-	-a	Number of final clusters[${txtred}Default 1${txtrst}, 
-		choice an integer(>=2)]
 EOF
 }
 
