@@ -26,8 +26,10 @@ ${txtbld}OPTIONS${txtrst}:
 		real value for legend, but roughly a length estimation for
 		legend.
 		${bldred}[NECESSARY]${txtrst}
-	-l	Length for each interval like '20,100' or
-		'100'. This may have no use. ${blrred}[NECESSARY]${txtrst}
+	-l	Length for each interval like '20,100' if there are three
+		points given to -f or '100' if there are two points given to -f. 
+		Any number is approaite and may not affect output. 
+		${blrred}[Default '20,20', optional]${txtrst}
 	-P	Legend position[${txtred}Default right. Accept
 		top,bottom,left,none, or c(0.08,0.8).${txtrst}]
 		command for ggplot2)${txtrst}]
@@ -39,32 +41,33 @@ ${txtbld}OPTIONS${txtrst}:
 		red${txtrst}]
 	-m	The color for representing mid-value.[${txtred}Default
 		yellow${txtrst}]
-	-w	The width of output picture.[${txtred}Default 20${txtrst}]
-	-u	The height of output picture.[${txtred}Default 12${txtrst}] 
-	-E	The type of output figures.[${txtred}Default png, accept
-		eps/ps, tex (pictex), pdf, jpeg, tiff, bmp, svg and wmf)${txtrst}]
-	-r	The resolution of output picture.[${txtred}Default 300 ppi${txtrst}]
+	-w	The width of output picture.[${txtred}Default 5${txtrst}]
+	-u	The height of output picture.[${txtred}Default 5${txtrst}] 
+	-E	The type of output figures.[
+		${txtred}Default eps (since it has the best effect), accept
+		eps/ps, pdf, tex (pictex), png, jpeg, tiff, bmp, svg and wmf)${txtrst}]
+	-r	The resolution of output picture.[${txtred}Default 100 ppi${txtrst}]
 	-e	Execute or not[${bldred}Default TRUE${txtrst}]
 	-i	Install depended packages[${bldred}Default FALSE${txtrst}]
 EOF
 }
 
 points=
-len_bins=
+len_bins='20,20'
 execute='TRUE'
 ist='FALSE'
-uwid=20
-vhig=10
+uwid=5
+vhig=5
 legend_width=0
 legend_height=0
-res=300
-legend_pos='right'
+res=100
+legend_pos='top'
 xcol='green'
 mcol='yellow'
 ycol='red'
 xlab='NULL'
 ylab='NULL'
-ext='png'
+ext='eps'
 
 while getopts "hf:l:P:x:m:E:y:H:W:w:u:r:e:i:" OPTION
 do
@@ -153,16 +156,22 @@ if (len_points == len_binSize+1){
 		tmp <- c(seq(points[i], points[i+1], length=binSize[i]))
 		data <- c(data, tmp)
 	}
-	data <- matrix(data, ncol=1)
-	colnames(data) <- 'value'
-	data <- as.data.frame(data)
-	data\$id <- rownames(data)
-	data.m <- melt(data, c('id'))
 } else {
-	print("Unconsistent points and len_bins")
-	quit()
+	for(i in 2:len_points-1){
+		tmp <- c(seq(points[i], points[i+1], length=binSize[1]))
+		data <- c(data, tmp)
+	}
+	print("Unconsistent points and len_bins, using the the first
+	element in bins as interval.")
+	#quit()
 }
 
+data <- matrix(data, ncol=1)
+colnames(data) <- 'value'
+data <- as.data.frame(data)
+data\$id <- rownames(data)
+data.m <- melt(data, c('id'))
+data.m\$id <- factor(data.m\$id, levels=data\$id, ordered=T) 
 #print(data.m)
 
 p <- ggplot(data.m, aes(x=variable, y=id)) + 
@@ -170,7 +179,8 @@ p <- ggplot(data.m, aes(x=variable, y=id)) +
 	theme(legend.title=element_blank(),
    	panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
-p <- p + theme(axis.ticks.x = element_blank(), legend.key=element_blank()) 
+p <- p + theme(axis.ticks.x = element_blank(),
+legend.key=element_blank(), axis.text.y=element_blank()) 
 
 if (len_points >2){
 	p <- p+scale_fill_gradient2(low="$xcol", mid="$mcol",
