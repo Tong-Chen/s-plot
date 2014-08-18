@@ -23,6 +23,7 @@ Currently, the following types of plot are supported.
 ${filename} barPlot
 ${filename} horizontalBar
 ${filename} multiBarNew
+${filename} colorBar
 
 #### Lines
 ${filename} lines
@@ -44,7 +45,7 @@ ${filename} histogram
 
 #### Cluster
 ${filename} hcluster
-${filename} hclust
+${filename} hclust (depleted)
 
 #### Heatmap
 ${filename} heatmapS
