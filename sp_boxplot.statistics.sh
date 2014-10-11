@@ -18,7 +18,9 @@ $0 options${txtrst}
 ${bldblu}Function${txtrst}:
 
 This program is designed to test if two boxes have statistically
-significant differences 
+significant differences.
+
+Currently multiple groups among one set are supported.
 
 fileformat for -f (suitable for data extracted from one sample, the
 number of columns is unlimited. Column 'Set' is not necessary unless
@@ -74,7 +76,7 @@ ${txtbld}OPTIONS${txtrst}:
 	-B	Self-define intervals for x-axis variable. Accept either a
 		numeric vector of two or more cut points or a single number
 		(greater than or equal to 2) giving the number of intervals
-		into what 'x' is to be cut. This has higher priority than -L.
+		into what 'x' is to be cut. 
 		[10 will generate 10 intervals or 
 		"c(-1, 0, 1, 2, 5, 10)" will generate (-1,0],(0,1]...(5,10]]	
 	-e	Execute or not[${bldred}Default TRUE${txtrst}]
@@ -139,10 +141,10 @@ if [ -z $file ]; then
 	exit 1
 fi
 
-midname=".boxplot.${method}"
+mid=".boxplot.${method}"
 
 
-cat <<END >${file}${midname}.r
+cat <<END >${file}${mid}.r
 
 if ($ist){
 	#install.packages("ggplot2", repo="http://cran.us.r-project.org")
@@ -171,20 +173,53 @@ if ("${x_cut}" != ""){
 
 if ("$xvariable" == "variable"){
 	#No Group information
-	print(${method}(value~variable, data=data_m))
+	variableL <- unique(data_m\$variable)
+	len_var <- length(variableL)
+	if (len_var < 3){
+		print(${method}(value~variable, data=data_m))
+	} else {
+		for(i in 1:(len_var-1)){
+			var1 <- variableL[i]
+			for(j in (i+1):len_var){
+				var2 <- variableL[j]
+				new_data <- data_m[data_m\$variable == var1 |
+				data_m\$variable == var2, ]
+				print(paste("### Compare for", var1, "and", var2, "###"))
+				print(${method}(value~variable, data=new_data))
+			}
+		}
+	}
 } else {
 	#Compute several groups
 	group <- names(summary(data_m\$${xvariable}))
 	for (i in group){
 		tmp <- data_m[data_m\$${xvariable}==i,]
 		print(paste("*** Compute for Group ", i, " ***"))
-		print(${method}(value~variable, data=tmp))
+		#print(${method}(value~variable, data=tmp))
+
+		variableL <- unique(tmp\$variable)
+		len_var <- length(variableL)
+		if (len_var < 3){
+			print(${method}(value~variable, data=tmp))
+		} else {
+			for(i in 1:(len_var-1)){
+				var1 <- variableL[i]
+				for(j in (i+1):len_var){
+					var2 <- variableL[j]
+					new_data <- tmp[tmp\$variable == var1 |
+					tmp\$variable == var2, ]
+					print(paste("### Compare for", var1, "and", var2, "###"))
+					print(${method}(value~variable, data=new_data))
+				}
+			}
+		}
 	}
 }
 
 END
 
 if [ "$execute" == "TRUE" ]; then
-	Rscript ${file}${midname}.r
+	Rscript ${file}${mid}.r
+	if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
 fi
 
