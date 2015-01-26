@@ -2,9 +2,6 @@
 
 #set -x
 
-
-
-
 usage()
 {
 cat <<EOF
@@ -26,7 +23,7 @@ GO terms and -pvalues, # of genes.
 
 The parameters for logical variable are either TRUE or FALSE.
 
-Input file:
+Input file (terms only exist in one or a few samples are suitable):
 
 Term	Sample	count	p_value
 hsa04740:Olfactory transduction	b	379	6.48E-13
@@ -219,14 +216,16 @@ $facet_o
 p <- ggplot(data, aes(x=${xval},y=${yval})) \
 + labs(x="$xlab", y="$ylab") + labs(title="$title")
 
-if ("${color}" != "") {
+if (("${size}" != "") && ("${color}" != "")) {
+	p <- p + geom_point(aes(size=${size}, color=${color})) + \
+	scale_colour_gradient(low="green", high="red", name="${color}")
+} else if ("${size}" != "") {
+	p <- p + geom_point(aes(size=${size}))
+} else if ("${color}" != "") {
 	p <- p + geom_point(aes(color=${color})) + \
 	scale_colour_gradient(low="green", high="red", name="${color}")
 }
 
-if ("${size}" != "") {
-	p <- p + geom_point(aes(size=${size}))
-}
 
 p <- p ${facet}
 
