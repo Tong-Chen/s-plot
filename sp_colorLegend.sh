@@ -220,5 +220,6 @@ END
 
 if [ "$execute" == "TRUE" ]; then
 	Rscript ${file}.r
+if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
 fi
 

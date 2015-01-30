@@ -150,20 +150,20 @@ if [ -z $file ]; then
 	exit 1
 fi
 
-#midname='.Heatmap'
-midname=''
+#mid='.Heatmap'
+mid=''
 scale=
 
 if [ "$rows" = 'TRUE' ]; then
-	midname='.RowScale'
+	mid='.RowScale'
 	scale='row'
 fi
 
 if [ "$cols" = 'TRUE' ]; then
-	if [ -z ${midname} ]; then
-		midname=${midname}'.ColScale'
+	if [ -z ${mid} ]; then
+		mid=${mid}'.ColScale'
 	else
-		midname=${midname}'.BothScale'
+		mid=${mid}'.BothScale'
 	fi
 
 	if [ -z $scale ]; then
@@ -186,9 +186,9 @@ elif [ "$col_C" = 'TRUE' ]; then
 	dendrogram='col'
 fi	
 
-midname=${midname}'.Heatmap'
+mid=${mid}'.Heatmap'
 
-cat <<EOF >$file${midname}.r
+cat <<EOF >$file${mid}.r
 library(graphics)
 data1 = read.table("$file", header=$header,
 sep="\t",row.names=1, comment.char="", check.names=${checkNames})
@@ -196,10 +196,10 @@ x <- as.matrix(data1)
 #rc <- rainbow(nrow(x), start=0, end=.3)
 #cc <- rainbow(ncol(x), start=0, end=.3)
 library(gplots)
-pdf(file="${file}${midname}.pdf", onefile=FALSE,  
+pdf(file="${file}${mid}.pdf", onefile=FALSE,  
 	paper="special", width=${width}, height = ${height},
 	pointsize=${res})
-#png(filename="${file}${midname}.png", width=${width}, height=${height},
+#png(filename="${file}${mid}.png", width=${width}, height=${height},
 #res=${res}, )
 break_v <- c($break_v)
 if (length(break_v) > 1) {
@@ -220,45 +220,45 @@ EOF
 
 if [ "${den}" = 'TRUE' ]; then
 	if [ "$row_C" = 'TRUE' ] && [ $col_C = 'TRUE' ]; then
-		cat <<EOF >>$file${midname}.r
-	#postscript(file="${file}${midname}.rowden.eps", onefile=FALSE, horizontal=FALSE, 
+		cat <<EOF >>$file${mid}.r
+	#postscript(file="${file}${mid}.rowden.eps", onefile=FALSE, horizontal=FALSE, 
 	#	paper="special", width=10, height = 12, pointsize=10)
-	pdf(file="${file}${midname}.pdf", onefile=FALSE,  
+	pdf(file="${file}${mid}.pdf", onefile=FALSE,  
 		paper="special", width=${width}, height = ${height},
 		pointsize=${res})
-	#png(filename="${file}${midname}.rowden.png", width=${width},
+	#png(filename="${file}${mid}.rowden.png", width=${width},
 	#height=${height}, res=${res} )
 	plot(hv\$rowDendrogram)
 	dev.off()
-	#postscript(file="${file}${midname}.colden.eps", onefile=FALSE, horizontal=FALSE, 
+	#postscript(file="${file}${mid}.colden.eps", onefile=FALSE, horizontal=FALSE, 
 	#	paper="special", width=10, height = 12, pointsize=10)
-	#png(filename="${file}${midname}.colden.png", width=${width},
+	#png(filename="${file}${mid}.colden.png", width=${width},
 	#height=${height}, res=${res})
-	pdf(file="${file}${midname}.pdf", onefile=FALSE,  
+	pdf(file="${file}${mid}.pdf", onefile=FALSE,  
 		paper="special", width=${width}, height = ${height},
 		pointsize=${res})
 	plot(hv\$colDendrogram)
 	dev.off()
 EOF
 	elif [ "$row_C" = 'TRUE' ]; then
-		cat <<EOF >>$file${midname}.r
-	#postscript(file="${file}${midname}.rowden.eps", onefile=FALSE, horizontal=FALSE, 
+		cat <<EOF >>$file${mid}.r
+	#postscript(file="${file}${mid}.rowden.eps", onefile=FALSE, horizontal=FALSE, 
 	#	paper="special", width=10, height = 12, pointsize=10)
-	#png(filename="${file}${midname}.rowden.png", width=${width},
+	#png(filename="${file}${mid}.rowden.png", width=${width},
 	#height=${height}, res=${res})
-	pdf(file="${file}${midname}.pdf", onefile=FALSE,  
+	pdf(file="${file}${mid}.pdf", onefile=FALSE,  
 		paper="special", width=${width}, height = ${height},
 		pointsize=${res})
 	plot(hv\$rowDendrogram)
 	dev.off()
 EOF
 	elif [ "$col_C" = 'TRUE' ]; then
-		cat <<EOF >>$file${midname}.r
-	#postscript(file="${file}${midname}.colden.eps", onefile=FALSE, horizontal=FALSE, 
+		cat <<EOF >>$file${mid}.r
+	#postscript(file="${file}${mid}.colden.eps", onefile=FALSE, horizontal=FALSE, 
 	#	paper="special", width=10, height = 12, pointsize=10)
-	#png(filename="${file}${midname}.colden.png", width=${width},
+	#png(filename="${file}${mid}.colden.png", width=${width},
 	#height=${height}, res=${res})
-	pdf(file="${file}${midname}.pdf", onefile=FALSE,  
+	pdf(file="${file}${mid}.pdf", onefile=FALSE,  
 		paper="special", width=${width}, height = ${height},
 		pointsize=${res})
 	plot(hv\$colDendrogram)
@@ -269,18 +269,19 @@ fi
 
 
 if [ "${execute}" = 'TRUE' ]; then
-	Rscript $file${midname}.r
-	#epstopdf ${file}${midname}.eps
-	#convert -density 200 -flatten ${file}${midname}.eps ${file}${midname}.png
+	Rscript $file${mid}.r
+if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
+	#epstopdf ${file}${mid}.eps
+	#convert -density 200 -flatten ${file}${mid}.eps ${file}${mid}.png
 #-------------208-218---------
 #if [ "${den}" = 'TRUE' ]; then
 #	if [ "$row_C" = 'TRUE' ] && [ $col_C = 'TRUE' ]; then
-#		convert -density 200 -flatten ${file}${midname}.rowden.eps ${file}${midname}.rowden.png
-#		convert -density 200 -flatten ${file}${midname}.colden.eps ${file}${midname}.colden.png
+#		convert -density 200 -flatten ${file}${mid}.rowden.eps ${file}${mid}.rowden.png
+#		convert -density 200 -flatten ${file}${mid}.colden.eps ${file}${mid}.colden.png
 #	elif [ "$row_C" = 'TRUE' ]; then
-#		convert -density 200 -flatten ${file}${midname}.rowden.eps ${file}${midname}.rowden.png
+#		convert -density 200 -flatten ${file}${mid}.rowden.eps ${file}${mid}.rowden.png
 #	elif [ "$col_C" = 'TRUE' ]; then
-#		convert -density 200 -flatten ${file}${midname}.colden.eps ${file}${midname}.colden.png
+#		convert -density 200 -flatten ${file}${mid}.colden.eps ${file}${mid}.colden.png
 #	fi	
 #fi
 #-------------208-219---------

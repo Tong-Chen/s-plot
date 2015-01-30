@@ -1,0 +1,18 @@
+Term	Pop_Hits	Bonferroni	Sample
+hsa04080:Neuroactive ligand-receptor interaction	256	5.21E-06	b
+hsa04060:Cytokine-cytokine receptor interaction	262	8.62E-04	b
+hsa00830:Retinol metabolism	54	0.124538325	b
+hsa04062:Chemokine signaling pathway	187	0.913682422	b
+hsa00120:Primary bile acid biosynthesis	16	0.995946178	b
+hsa04614:Renin-angiotensin system	17	0.998465518	b
+hsa04640:Hematopoietic cell lineage	86	0.99955116	b
+hsa04650:Natural killer cell mediated cytotoxicity	133	0.999599558	b
+hsa04740:Olfactory transduction	379	6.48E-13	a
+hsa04080:Neuroactive ligand-receptor interaction	256	5.21E-06	a
+hsa04060:Cytokine-cytokine receptor interaction	262	8.62E-04	a
+hsa00830:Retinol metabolism	54	0.124538325	a
+hsa04062:Chemokine signaling pathway	187	0.913682422	a
+hsa00120:Primary bile acid biosynthesis	16	0.995946178	a
+hsa04614:Renin-angiotensin system	17	0.998465518	a
+hsa04640:Hematopoietic cell lineage	86	0.99955116	a
+hsa04650:Natural killer cell mediated cytotoxicity	133	0.999599558	a

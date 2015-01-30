@@ -94,7 +94,7 @@ do
 	esac
 done
 
-midname=".horizontalBar"
+mid=".horizontalBar"
 if [ -z $file ] || [ -z $count ] ; then
 	echo 1>&2 "Please give filename and count."
 	usage
@@ -102,14 +102,14 @@ if [ -z $file ] || [ -z $count ] ; then
 fi
 
 
-cat <<END >${file}${midname}.r
+cat <<END >${file}${mid}.r
 
 if ($ist){
 	install.packages("ggplot2", repo="http://cran.us.r-project.org")
 }
 library(ggplot2)
 data <- read.table(file="$file", sep="\t", header=T, row.names=1)
-png(filename="${file}${midname}.png", width=1000, height=1000, res=${dpi})
+png(filename="${file}${mid}.png", width=1000, height=1000, res=${dpi})
 
 p <- ggplot(data, aes(row.names(data),${count}))
 p <- p + geom_bar(stat="identity", fill="deepskyblue") + labs(x="${xlab}", y="${ylab}") + opts(title="${title}") 
@@ -129,7 +129,8 @@ dev.off()
 END
 
 if [ "$execute" == "TRUE" ]; then
-	Rscript ${file}${midname}.r
+	Rscript ${file}${mid}.r
+if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
 fi
 
-#convert -density 200 -flatten ${file}${midname}.eps ${first}${midname}.png
+#convert -density 200 -flatten ${file}${mid}.eps ${first}${mid}.png

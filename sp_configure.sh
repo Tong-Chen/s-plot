@@ -2,7 +2,7 @@
 
 function ggplot2_configure {
 
-cat <<END >>${file}${midname}.r
+cat <<END >>${file}${mid}.r
 
 #Configure the canvas
 p <- p + theme_bw() + theme(legend.title=element_blank(),
@@ -27,10 +27,10 @@ p <- p${par}
 
 # output pictures
 
-ggsave(p, filename="${file}${midname}.${ext}", dpi=$res, width=$uwid,
-height=$vhig, units=c("cm"))
+ggsave(p, filename="${file}${mid}.${ext}", dpi=$res, width=$uwid,
+height=$vhig, units=c("cm"),colormodel="${colormodel}")
 
-#png(filename="${file}${midname}.png", width=$uwid, height=$vhig,
+#png(filename="${file}${mid}.png", width=$uwid, height=$vhig,
 #res=$res)
 #p
 #dev.off()

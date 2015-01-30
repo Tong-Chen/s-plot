@@ -122,6 +122,21 @@ ${txtbld}OPTIONS${txtrst}:
 		[${txtred}Default null. Accept TRUE. This function is
 		depleted. If the supplied number after -S is not 0, this
 		parameter is TRUE${txtrst}]
+	-F	The formula for facets.[${bldred}Default no facets, 
+		+facet_grid(level ~ .) means divide by levels of 'level' vertcally.
+		+facet_grid(. ~ level) means divide by levels of 'level' horizontally.
+		+facet_grid(lev1 ~ lev2) means divide by lev1 vertically and lev2
+		horizontally.
+		+facet_wrap(~level, ncol=2) means wrap horizontally with 2
+		columns.
+		Example: +facet_wrap(~Size,ncol=6,scale='free')
+		${txtrst}]
+	-G	If facet is given, you may want to specifize the order of
+		variable in your facet, default alphabetically.
+		[${txtred}Accept sth like 
+		(one level one sentence, separate by';') 
+		data\$size <- factor(data\$size, levels=c("l1",
+		"l2",...,"l10"), ordered=T) ${txtrst}]
 	-v	If scale is TRUE, give the following
 		scale_y_log10()[default], coord_trans(y="log10"), or other legal
 		command for ggplot2)${txtrst}]
@@ -132,8 +147,8 @@ ${txtbld}OPTIONS${txtrst}:
 		[${txtres}Begin with '+' ${txtrst}]
 	-w	The width of output picture.[${txtred}Default 20${txtrst}]
 	-u	The height of output picture.[${txtred}Default 12${txtrst}] 
-	-E	The type of output figures.[${txtred}Default png, accept
-		eps/ps, tex (pictex), pdf, jpeg, tiff, bmp, svg and wmf)${txtrst}]
+	-E	The type of output figures.[${txtred}Default pdf, accept
+		eps/ps, tex (pictex), png, jpeg, tiff, bmp, svg and wmf)${txtrst}]
 	-r	The resolution of output picture.[${txtred}Default 300 ppi${txtrst}]
 	-z	Is there a header[${bldred}Default TRUE${txtrst}]
 	-e	Execute or not[${bldred}Default TRUE${txtrst}]
@@ -159,7 +174,7 @@ ist='FALSE'
 uwid=20
 vhig=12
 res=300
-ext='png'
+ext='pdf'
 par=''
 legend_pos='right'
 smooth='FALSE'
@@ -171,8 +186,10 @@ ytics='TRUE'
 color='FALSE'
 color_v=''
 vline=0
+facet=''
+facet_o=''
 
-while getopts "hf:m:a:A:t:x:l:P:L:y:V:c:C:B:X:Y:R:w:u:r:o:O:s:S:p:z:v:e:E:i:" OPTION
+while getopts "hf:m:a:A:t:x:l:F:G:P:L:y:V:c:C:B:X:Y:R:w:u:r:o:O:s:S:p:z:v:e:E:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -202,6 +219,12 @@ do
 			;;
 		l)
 			level=$OPTARG
+			;;
+		F)
+			facet=$OPTARG
+			;;
+		G)
+			facet_o=$OPTARG
 			;;
 		P)
 			legend_pos=$OPTARG
@@ -322,7 +345,7 @@ if (${y_add} != 0){
 if ("${level}" != ""){
 	level_i <- c(${level})
 	data_m\$variable <- factor(data_m\$variable, levels=level_i)
-} else {
+} else if(! $melted){
 	data_m\$variable <- factor(data_m\$variable, levels=data_colnames,
 	ordered=T)
 }
@@ -331,15 +354,20 @@ if (${x_type}){
 	if ("${x_level}" != ""){
 		x_level <- c(${x_level})
 		data_m\$${xvariable} <- factor(data_m\$${xvariable},levels=x_level)
-	}else{
+	} else if(! $melted){
 		data_m\$${xvariable} <- factor(data_m\$${xvariable},levels=data_rownames,ordered=TRUE)
 	}
 }
+
+${facet_o}
 
 p <- ggplot(data_m, aes(x=$xvariable, y=value, color=variable,
 	group=variable)) + xlab($xlab) + ylab($ylab) + theme_bw() +
 	theme(legend.title=element_blank(),
    	panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
+p <- p ${facet}
+
 
 p <- p + theme(axis.ticks.x = element_blank(), legend.key=element_blank()) 
 #legend.background = element_rect(colour='white'))
@@ -405,12 +433,13 @@ p <- p${par}
 
 ggsave(p, filename="${file}${mid}.${ext}", dpi=$res, width=$uwid,
 height=$vhig, units=c("cm"))
-#postscript(file="${file}${midname}.eps", onefile=FALSE, horizontal=FALSE, 
+#postscript(file="${file}${mid}.eps", onefile=FALSE, horizontal=FALSE, 
 #paper="special", width=10, height = 12, pointsize=10)
 #dev.off()
 END
 
 if [ "$execute" == "TRUE" ]; then
 	Rscript ${file}${mid}.r
+if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
 fi
 

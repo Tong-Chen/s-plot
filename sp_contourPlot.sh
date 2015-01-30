@@ -194,13 +194,13 @@ fi
 #	log=", trans=\"log\""
 #fi
 
-midname=".scatterContour"
+mid=".scatterContour"
 
 if test "${user_mid}" != ""; then
-	midname=${midname}".${user_mid}"
+	mid=${mid}".${user_mid}"
 fi
 
-cat <<END >${file}${midname}.r
+cat <<END >${file}${mid}.r
 
 if ($ist){
 	install.packages("ggplot2", repo="http://cran.us.r-project.org")
@@ -237,12 +237,13 @@ if (${scale} || ${x_add} != 0 || ${y_add} != 0) {
 p <- p + theme_bw() + theme(legend.title=element_blank(),
 	panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
-ggsave(p, filename="${file}${midname}.${ext}", dpi=$res, width=$uwid,
+ggsave(p, filename="${file}${mid}.${ext}", dpi=$res, width=$uwid,
 height=$vhig, units=c("cm"))
 END
 
 if [ "$execute" == "TRUE" ]; then
-	Rscript ${file}${midname}.r
+	Rscript ${file}${mid}.r
+if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
 fi
 
-#convert -density 200 -flatten ${file}${midname}.eps ${first}${midname}.png
+#convert -density 200 -flatten ${file}${mid}.eps ${first}${mid}.png

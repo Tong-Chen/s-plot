@@ -1,0 +1,12 @@
+144c144
+< midname=".boxplot.${method}"
+---
+> mid=".boxplot.${method}"
+147c147
+< cat <<END >${file}${midname}.r
+---
+> cat <<END >${file}${mid}.r
+222c222
+< 	Rscript ${file}${midname}.r
+---
+> 	Rscript ${file}${mid}.r

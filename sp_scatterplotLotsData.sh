@@ -97,7 +97,7 @@ do
 	esac
 done
 
-midname=".scatterplot.density"
+mid=".scatterplot.density"
 if [ -z $file ] || [ -z $xval ] || [ -z $yval ]; then
 	echo 1>&2 "Please give filename, xval and yval."
 	usage
@@ -109,7 +109,7 @@ fi
 #	log=", trans=\"log\""
 #fi
 
-cat <<END >${file}${midname}.r
+cat <<END >${file}${mid}.r
 
 if ($ist){
 	install.packages("ggplot2", repo="http://cran.us.r-project.org")
@@ -117,7 +117,7 @@ if ($ist){
 }
 library(ggplot2)
 data <- read.table(file="$file", sep="\t", header=T, row.names=1)
-#postscript(file="${file}${midname}.eps", onefile=FALSE,
+#postscript(file="${file}${mid}.eps", onefile=FALSE,
 #horizontal=FALSE,paper="special" , width=10, height = 12,pointsize=10)
 p <- ggplot(data,aes(x=${xval},y=${yval}))+stat_binhex(bins=${group})+ labs(x="$xlab",
 y="$ylab") + ggtitle("$title")
@@ -139,13 +139,14 @@ if ("$smooth" == 'lm'){
 p <- p + theme_bw() + theme(legend.title=element_blank(),
 	panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
-png(filename="${file}${midname}.png", width=1000, height=1000)
+png(filename="${file}${mid}.png", width=1000, height=1000)
 p
 dev.off()
 END
 
 if [ "$execute" == "TRUE" ]; then
-	Rscript ${file}${midname}.r
+	Rscript ${file}${mid}.r
+if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
 fi
 
-#convert -density 200 -flatten ${file}${midname}.eps ${first}${midname}.png
+#convert -density 200 -flatten ${file}${mid}.eps ${first}${mid}.png

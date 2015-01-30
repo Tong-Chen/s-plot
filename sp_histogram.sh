@@ -119,5 +119,6 @@ dev.off()
 END
 
 Rscript ${file}.hist.r
+if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
 
 

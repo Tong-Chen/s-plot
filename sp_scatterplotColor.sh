@@ -183,7 +183,7 @@ do
 	esac
 done
 
-midname=".scatterplot.color"
+mid=".scatterplot.color"
 if [ -z $file ] || [ -z $xval ] || [ -z $yval ] || [ -z $color ]; then
 	echo 1>&2 "Please give filename, xval and yval."
 	usage
@@ -199,7 +199,7 @@ if [ ! -z $log ]; then
 	log=", trans=\"${log}\""
 fi
 
-cat <<END >${file}${midname}.r
+cat <<END >${file}${mid}.r
 
 if ($ist){
 	install.packages("ggplot2", repo="http://cran.us.r-project.org")
@@ -210,10 +210,10 @@ library(grid)
 data <- read.table(file="$file", sep="\t", header=T, row.names=1)
 
 #if ("$width" != "" && "$height" != ""  && "$res" != ""){
-#	png(filename="${file}${midname}.png", width=$width, height=$height,
+#	png(filename="${file}${mid}.png", width=$width, height=$height,
 #	res=$res)
 #}else{
-#	png(filename="${file}${midname}.png")
+#	png(filename="${file}${mid}.png")
 #}
 
 
@@ -247,7 +247,7 @@ p <- p + theme_bw() + theme(legend.title=element_blank(),
 panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
 top='top'
-botttom='bottom'
+bottom='bottom'
 left='left'
 right='right'
 none='none'
@@ -255,7 +255,7 @@ legend_pos_par <- ${legend_pos}
 
 p <- p + theme(legend.position=legend_pos_par)
 
-ggsave(p, filename="${file}${midname}.${ext}", dpi=$res, width=${width},
+ggsave(p, filename="${file}${mid}.${ext}", dpi=$res, width=${width},
 height=${height}, units=c("cm"))
 
 #p
@@ -264,11 +264,12 @@ height=${height}, units=c("cm"))
 END
 
 if [ "$execute" == "TRUE" ]; then
-	Rscript ${file}${midname}.r
+	Rscript ${file}${mid}.r
+if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
 fi
 
 if [ ! -z "$log" ]; then
 	log=', trans=\"'$log'\"'
 fi
 
-#convert -density 200 -flatten ${file}${midname}.eps ${first}${midname}.png
+#convert -density 200 -flatten ${file}${mid}.eps ${first}${mid}.png

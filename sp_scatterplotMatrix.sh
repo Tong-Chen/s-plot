@@ -76,7 +76,7 @@ do
 	esac
 done
 
-midname=".scatterplotMatrix"
+mid=".scatterplotMatrix"
 if [ -z $file ] || [ -z $comp ] ; then
 	echo 1>&2 "Please give filename, compared columnumn number."
 	usage
@@ -84,7 +84,7 @@ if [ -z $file ] || [ -z $comp ] ; then
 fi
 
 
-cat <<END >${file}${midname}.r
+cat <<END >${file}${mid}.r
 
 if ($ist){
 	install.packages("gclus", repo="http://cran.us.r-project.org")
@@ -100,16 +100,17 @@ data.col <- dmat.color(data.r)
 # are closest to the diagonal
 data.o <- order.single(data.r)
 
-#postscript(file="${file}${midname}.eps", onefile=FALSE, horizontal=FALSE)
-png(filename="${file}${midname}.png", width=1000, height=1000,res=150)
+#postscript(file="${file}${mid}.eps", onefile=FALSE, horizontal=FALSE)
+png(filename="${file}${mid}.png", width=1000, height=1000,res=150)
 cpairs(data, data.o, panel.colors=data.col, gap=.1,
 main="$title")
 dev.off()
 END
 
 if [ "$execute" == "TRUE" ]; then
-	Rscript ${file}${midname}.r
-	#convert -density 200 -flatten ${file}${midname}.eps \
-	#	${file}${midname}.png
+	Rscript ${file}${mid}.r
+if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
+	#convert -density 200 -flatten ${file}${mid}.eps \
+	#	${file}${mid}.png
 fi
 

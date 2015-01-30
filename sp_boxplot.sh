@@ -315,7 +315,7 @@ if [ -z $file ]; then
 	exit 1
 fi
 
-midname='.boxplot'
+mid='.boxplot'
 
 if test "${melted}" == "FALSE"; then
 	if test "${value}" != "value" || test "${variable}" != "variable"; then
@@ -331,7 +331,7 @@ if test "${xvariable}" == ""; then
 fi
 
 if test "${value}" != "value" || test "${variable}" != "variable"; then
-	midname=${midname}'.'${value}_${variable}
+	mid=${mid}'.'${value}_${variable}
 fi
 	
 #if test "${ID_var}" != ""; then
@@ -340,7 +340,7 @@ fi
 
 
 if test "${outlier}" == "TRUE"; then
-	midname=${midname}'.noOutlier'
+	mid=${mid}'.noOutlier'
 fi
 
 if test ${y_add} -ne 0; then
@@ -348,27 +348,27 @@ if test ${y_add} -ne 0; then
 fi
 
 if test "${scaleY}" == "TRUE"; then
-	midname=${midname}'.scaleY'
+	mid=${mid}'.scaleY'
 fi
 
 if test "${violin}" == "TRUE"; then
-	midname=${midname}'.violin'
+	mid=${mid}'.violin'
 fi
 if test "${violin_nb}" == "TRUE"; then
-	midname=${midname}'.violin_nb'
+	mid=${mid}'.violin_nb'
 fi
 
 if test "${jitter}" == "TRUE"; then
-	midname=${midname}'.jitter'
+	mid=${mid}'.jitter'
 fi
 
 if test "${jitter_bp}" == "TRUE"; then
-	midname=${midname}'.jitter_bp'
+	mid=${mid}'.jitter_bp'
 fi
 
 . `dirname $0`/sp_configure.sh
 
-cat <<END >${file}${midname}.r
+cat <<END >${file}${mid}.r
 
 if ($ist){
 	install.packages("ggplot2", repo="http://cran.us.r-project.org")
@@ -483,7 +483,7 @@ END
 
 `ggplot2_configure`
 
-##cat <<END >>${file}${midname}.r
+##cat <<END >>${file}${mid}.r
 ##
 ##p <- p + theme_bw() + theme(legend.title=element_blank(),
 ##	panel.grid.major = element_blank(), 
@@ -506,16 +506,17 @@ END
 ##p <- p${par}
 ##
 ##
-##ggsave(p, filename="${file}${midname}.${ext}", dpi=$res, width=$uwid,
+##ggsave(p, filename="${file}${mid}.${ext}", dpi=$res, width=$uwid,
 ##height=$vhig, units=c("cm"))
 ##
-###png(filename="${file}${midname}.png", width=$uwid, height=$vhig,
+###png(filename="${file}${mid}.png", width=$uwid, height=$vhig,
 ###res=$res)
 ###p
 ###dev.off()
 ##END
 
 if [ "$execute" == "TRUE" ]; then
-	Rscript ${file}${midname}.r
+	Rscript ${file}${mid}.r
+if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
 fi
 

@@ -22,8 +22,8 @@ Currently, the following types of plot are supported.
 #### Bars
 ${filename} barPlot
 ${filename} horizontalBar
-${filename} multiBar
-${filename} colorLegend
+${filename} multiBarNew
+${filename} colorBar
 
 #### Lines
 ${filename} lines
@@ -34,8 +34,8 @@ ${filename} scatterplotColor
 ${filename} scatterplotContour
 ${filename} scatterplotLotsData
 ${filename} scatterplotMatrix
-${filename} scatterplotDoubleVariable
-${filename} contourPlot (unfinished)
+${filename} sp_scatterplotDoubleVariable
+${filename} contourPlot
 
 #### Distribution
 ${filename} areaplot

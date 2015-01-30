@@ -1,0 +1,15 @@
+	-b	The formula for facets.[${bldred}Default no facets, 
+		+facet_grid(level ~ .) means divide by levels of 'level' vertcally.
+		+facet_grid(. ~ level) means divide by levels of 'level' horizontally.
+		+facet_grid(lev1 ~ lev2) means divide by lev1 vertically and lev2
+		horizontally.
+		+facet_wrap(~level, ncol=2) means wrap horizontally with 2
+		columns.
+		Example: +facet_wrap(~Size,ncol=6,scale='free')
+		${txtrst}]
+	-d	If facet is given, you may want to specifize the order of
+		variable in your facet, default alphabetically.
+		[${txtred}Accept sth like 
+		(one level one sentence, separate by';') 
+		data\$size <- factor(data\$size, levels=c("l1",
+		"l2",...,"l10"), ordered=T) ${txtrst}]

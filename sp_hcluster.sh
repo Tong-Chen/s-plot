@@ -119,14 +119,14 @@ if [ -z $file ]; then
 	exit 1
 fi
 
-midname=".hcluster.${dm}.${hm}"
+mid=".hcluster.${dm}.${hm}"
 
 if [ "$scale" = 'TRUE' ]; then
-	midname=${midname}'.scale'
+	mid=${mid}'.scale'
 fi
 
 
-cat <<EOF >$file${midname}.r
+cat <<EOF >$file${mid}.r
 library(graphics)
 library(amap)
 data1 = read.table("$file", header=$header,
@@ -141,9 +141,9 @@ if ($scale){
 #d <- dist(x, method="$dm")
 #fit <- hclust(d, method="$hm")
 fit <- hcluster(x, method="$dm", link="$hm")
-#postscript(file="${file}${midname}.eps", onefile=FALSE, horizontal=FALSE, 
+#postscript(file="${file}${mid}.eps", onefile=FALSE, horizontal=FALSE, 
 #	paper="special", width=10, height = 12, pointsize=10)
-png(file="${file}${midname}.png", width=600, height=900, res=100)
+png(file="${file}${mid}.png", width=600, height=900, res=100)
 plot(fit, hang=-1, main="$title", xlab="$xlab", ylab="$ylab")
 if ($num){
 	rect.hclust(fit, k=$num, border="red")
@@ -152,12 +152,13 @@ dev.off()
 EOF
 
 if [ "${execute}" = 'TRUE' ]; then
-	Rscript $file${midname}.r
-	#epstopdf ${file}${midname}.eps
+	Rscript $file${mid}.r
+if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
+	#epstopdf ${file}${mid}.eps
 	#if [ $? -eq 0 ]; then
-	#	convert -density 200 -flatten ${file}${midname}.eps ${file}${midname}.png
+	#	convert -density 200 -flatten ${file}${mid}.eps ${file}${mid}.png
 		#if [ $num -ne 0 ]; then
-		#	convert -density 200 -flatten ${file}${midname}.${num}.eps ${file}${midname}.${num}.png
+		#	convert -density 200 -flatten ${file}${mid}.${num}.eps ${file}${mid}.${num}.png
 		#fi
 	#fi
 fi

@@ -137,7 +137,7 @@ do
 	esac
 done
 
-midname=".areaplot.new"
+mid=".areaplot.new"
 
 if [ -z $file ] ; then
 	echo 1>&2 "Please give filename."
@@ -146,7 +146,7 @@ if [ -z $file ] ; then
 fi
 
 
-cat <<END >${file}${midname}.r
+cat <<END >${file}${mid}.r
 
 if ($ist){
 	install.packages("ggplot2", repo="http://cran.us.r-project.org")
@@ -200,17 +200,18 @@ if("${grp_var}" != "FALSE"){
 	p <- p + facet_wrap(~${grp_var}, ncol=${ncol}, scale='free')
 }
 
-png(filename="${file}${midname}.png", width=$uwid, height=$vhig,
+png(filename="${file}${mid}.png", width=$uwid, height=$vhig,
 res=$res)
 p
 dev.off()
 END
 
 if [ "$execute" == "TRUE" ]; then
-	Rscript ${file}${midname}.r
+	Rscript ${file}${mid}.r
+if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
 fi
 
 #if [ "$quiet" == "TRUE" ]; then
-#	/bin/rm -f ${file}${midname}.r
+#	/bin/rm -f ${file}${mid}.r
 #fi
-#convert -density 200 -flatten ${file}${midname}.eps ${first}${midname}.png
+#convert -density 200 -flatten ${file}${mid}.eps ${first}${mid}.png

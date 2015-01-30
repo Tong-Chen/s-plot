@@ -130,13 +130,12 @@ data <- read.table(file="$file", sep="\t", header=T, row.names=1)
 #postscript(file="${file}${mid}.eps", onefile=FALSE,
 #horizontal=FALSE,paper="special" , width=10, height = 12,pointsize=10)
 
-if ("$width" != "" && "$height" != ""  && "$res" != ""){
-	png(filename="${file}${mid}.png", width=$width, height=$height,
-	res=$res)
-}else{
+#if ($width!="" && $width >0 && $height > 0 && $res > 0){
+#	png(filename="${file}${mid}.png", width=$width, height=$height,
+#	res=$res)
+#}else{
 	png(filename="${file}${mid}.png")
-}
-
+#}
 
 scatterplot($yval~${xval}${group}, data=data, xlab="$xlab", ylab="$ylab",
 main="$title", label=row.names(data), id.method="identify",

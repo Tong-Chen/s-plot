@@ -243,12 +243,13 @@ dev.off()
 #ggsave(p, filename="${file}${mid}.${ext}", dpi=$res, width=$uwid,
 #height=$vhig, units=c("cm"))
 
-#postscript(file="${file}${midname}.eps", onefile=FALSE, horizontal=FALSE, 
+#postscript(file="${file}${mid}.eps", onefile=FALSE, horizontal=FALSE, 
 #paper="special", width=10, height = 12, pointsize=10)
 #dev.off()
 END
 
 if [ "$execute" == "TRUE" ]; then
 	Rscript ${file}${mid}.r
+if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
 fi
 

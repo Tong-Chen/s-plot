@@ -168,9 +168,9 @@ if [ -z $file ] ; then
 	exit 1
 fi
 
-midname='.volcano'
+mid='.volcano'
 
-cat <<END >${file}${midname}.r
+cat <<END >${file}${mid}.r
 
 if ($ist){
 	install.packages("ggplot2", repo="http://cran.us.r-project.org")
@@ -213,17 +213,18 @@ legend_pos_par <- ${legend_pos}
 p <- p + theme(legend.position=legend_pos_par)
 #}
 
-png(filename="${file}${midname}.png", width=$uwid, height=$vhig,
+png(filename="${file}${mid}.png", width=$uwid, height=$vhig,
 res=$res)
 p
 dev.off()
 END
 
 if [ "$execute" == "TRUE" ]; then
-	Rscript ${file}${midname}.r
+	Rscript ${file}${mid}.r
+if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
 fi
 
 #if [ "$quiet" == "TRUE" ]; then
-#	/bin/rm -f ${file}${midname}.r
+#	/bin/rm -f ${file}${mid}.r
 #fi
-#convert -density 200 -flatten ${file}${midname}.eps ${first}${midname}.png
+#convert -density 200 -flatten ${file}${mid}.eps ${first}${mid}.png

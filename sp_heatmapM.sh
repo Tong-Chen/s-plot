@@ -285,7 +285,7 @@ do
 	esac
 done
 
-midname=".heatmapM"
+mid=".heatmapM"
 
 if [ -z $file ] || [ -z $width ] || [ -z $label ]; then
 	echo 1>&2 "Please give filename, width of each group and label for
@@ -295,14 +295,14 @@ if [ -z $file ] || [ -z $width ] || [ -z $label ]; then
 fi
 
 if test $kclu -gt 1; then
-	midname=${midname}".${clu}.$kclu.$group"
+	mid=${mid}".${clu}.$kclu.$group"
 fi
 
 if test "$log" != ''; then
-	midname=${midname}".$log"
+	mid=${mid}".$log"
 fi
 
-cat <<END >${file}${midname}.r
+cat <<END >${file}${mid}.r
 
 if ($ist){
 	install.packages("ggplot2", repo="http://cran.us.r-project.org")
@@ -396,7 +396,7 @@ if ($kclu>1){
 	}
 	rm(data.m1, data.k, data.clara)
 	print("Output clustered result")
-	output <- paste("${file}${midname}", "final", sep='.')
+	output <- paste("${file}${mid}", "final", sep='.')
 	write.table(data, file=output, sep="\t", quote=F, col.names=F)
 }
 
@@ -518,17 +518,18 @@ p <- p${par}
 
 print("Begin plotting.")
 
-ggsave(p, filename="${file}${midname}.${ext}", dpi=$res, width=$uwid,
+ggsave(p, filename="${file}${mid}.${ext}", dpi=$res, width=$uwid,
 height=$vhig, units=c("cm"))
 
-#png(filename="${file}${midname}.png", width=$uwid, height=$vhig,
+#png(filename="${file}${mid}.png", width=$uwid, height=$vhig,
 #res=$res)
 #p${par}
 #dev.off()
 END
 
 if [ "$execute" == "TRUE" ]; then
-	Rscript ${file}${midname}.r
+	Rscript ${file}${mid}.r
+if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
 fi
 
-#convert -density 200 -flatten ${file}${midname}.eps ${first}${midname}.png
+#convert -density 200 -flatten ${file}${mid}.eps ${first}${mid}.png

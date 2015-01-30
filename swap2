@@ -1,0 +1,11 @@
+$facet_o
+
+p <- ggplot(data, aes(x=${xval},y=${yval})) \
++ geom_point(aes(color=${color})) \
++ scale_colour_gradient(low="green", high="red", 
+name="$col_legend" ${log}) \
++ labs(x="$xlab", y="$ylab") + labs(title="$title")
+
+#if ("$facet" != ""){
+#	facet=$facet
+p <- p ${facet}
