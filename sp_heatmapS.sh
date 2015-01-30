@@ -33,6 +33,10 @@ ${txtbld}OPTIONS${txtrst}:
 	-l	The position of legend. [${bldred}
 		Default right. Accept top,bottom,left,none,c(0.1,0.8).${txtrst}]
 	-b	Display ytics. ${bldred}[Default FALSE]${txtrst}
+	-B	Specifying colormodel.${bldred}[Default srgb, accept cmyk only
+		for pdf, postscript, eps format]${txtrst}
+	-H	Get hieratical cluster for columns first, then do kmeans for rows.
+		${bldred}Default FALSE, accept TRUE ${txtrst}
 	-L	First get log-value, then do other analysis.
 		Accept an R function log2 or log10. You may want to add
 		parameter to -J (scale_add) and -s (small). Every logged value
@@ -44,8 +48,8 @@ ${txtbld}OPTIONS${txtrst}:
 		after]${txtrst}
 	-u	The width of output picture.[${txtred}Default 20${txtrst}]
 	-v	The height of output picture.[${txtred}Default 20${txtrst}] 
-	-E	The type of output figures.[${txtred}Default png, accept
-		eps/ps, tex (pictex), pdf, jpeg, tiff, bmp, svg and wmf)${txtrst}]
+	-E	The type of output figures.[${txtred}Default pdf, accept
+		eps/ps, tex (pictex), png, jpeg, tiff, bmp, svg and wmf)${txtrst}]
 	-r	The resolution of output picture.[${txtred}Default 300 ppi${txtrst}]
 	-F	Font size [${txtred}Default 14${txtrst}]
 	-x	The color for representing low value.[${txtred}Default dark
@@ -81,8 +85,14 @@ ${txtbld}OPTIONS${txtrst}:
 		[${bldred}Default Inf, Optional${txtrst}] 
 	-N	Generate NA value.[${bldred}Assign NA to values in data table equal
 		to given value to get different color representation.${txtrst}]
-	-q	The smallest screen and file output.[Default TRUE] 
-		Accept FALSE, to output each operation and data files.
+	-q	The smallest screen and file output.
+		[Default FALSE, means no log and data output. 
+		In future, we will change to following syntax.
+		Accept:
+	   		0 no log and data output	
+			1 output clustered data
+			2 only output clustered data no plot
+		] 
 	-j	Scale data for picture.[Default FALSE, accept TRUE]
 	-J	When -j is TRUE,  supply a value to add to all values in data
 		to avoid zero. When -L is used, the supplied value will be
@@ -135,7 +145,7 @@ uwid=20
 vhig=20
 res=300
 fontsize=14
-ext='png'
+ext='pdf'
 scale_op='FALSE'
 scale_add=1
 xcol='dark green'
@@ -150,12 +160,14 @@ quiet='TRUE'
 delZero='FALSE'
 cvSort='FALSE'
 gradient='FALSE'
+hcluster='FALSE'
 givenSepartor=''
 gradientC="'green','yellow','red'"
 generateNA='FALSE'
 digits='FALSE'
+colormodel='srgb'
 
-while getopts "hf:t:u:v:x:y:M:L:K:X:r:F:E:w:l:a:A:b:k:c:d:n:g:s:N:j:J:m:o:G:D:C:O:q:e:i:p:Z:z:" OPTION
+while getopts "hf:t:u:v:H:x:y:M:L:K:X:r:F:E:w:l:a:A:b:B:k:c:d:n:g:s:N:j:J:m:o:G:D:C:O:q:e:i:p:Z:z:" OPTION
 do
 	case $OPTION in
 		h)
@@ -174,6 +186,9 @@ do
 			;;
 		v)
 			vhig=$OPTARG
+			;;
+		H)
+			hcluster=$OPTARG
 			;;
 		E)
 			ext=$OPTARG
@@ -219,6 +234,9 @@ do
 			;;
 		b)
 			ytics=$OPTARG
+			;;
+		B)
+			colormodel=$OPTARG
 			;;
 		k)
 			kclu=$OPTARG
@@ -288,7 +306,7 @@ do
 	esac
 done
 
-midname=".heatmapS"
+mid=".heatmapS"
 
 if [ -z $file ] ; then
 	echo 1>&2 "Please give filename."
@@ -297,18 +315,22 @@ if [ -z $file ] ; then
 fi
 
 if test $kclu -gt 1; then
-	midname=${midname}".${clu}.$kclu.$group"
+	mid=${mid}".${clu}.$kclu.$group"
 fi
 
 if test "$log" != ''; then
-	midname=${midname}".$log"
+	mid=${mid}".$log"
 fi
 
 if test "${scale}" == "TRUE"; then
-	midname=${midname}".scale"
+	mid=${mid}".scale"
 fi
 
-cat <<END >${file}${midname}.r
+if test "${colormodel}" == "cmyk"; then
+	mid=${mid}".cmyk"
+fi
+
+cat <<END >${file}${mid}.r
 
 if ($ist){
 	install.packages("ggplot2", repo="http://cran.us.r-project.org")
@@ -317,6 +339,9 @@ if ($ist){
 	#font_import()
 	if ($kclu > 1){
 		install.packages("cluster", repo="http://cran.us.r-project.org")
+	}
+	if ($hcluster){
+		install.packages("amap", repo="http://cran.us.r-project.org")
 	}
 }
 library(ggplot2)
@@ -332,11 +357,26 @@ if($gradient){
 if ($kclu > 1){
 	library(cluster)
 }
+
+if ($hcluster) {
+	library(amap)
+}
+
 if (! $quiet){
 	print("Read in data set.")
 }
 data <- read.table(file="$file", sep="\t", header=T, row.names=1,
 	check.names=F)
+
+if ($hcluster) {
+	if (! $quiet){
+		print("reorder columns using hieratical cluster")
+	}
+	t_data <- t(data)
+	fit <- hcluster(t_data)
+	data <- t(t_data[fit\$order, ])
+	data <- as.data.frame(data)
+}
 
 #print("Read in label.")
 #label is for group level
@@ -424,7 +464,7 @@ if ($kclu>1){
 	data.m1 <- cbind(cluster=cluster_172, rownames(data))[,1]
 	if (! $quiet){
 		print("Output clustered result")
-		output <- paste("${file}${midname}", "cluster", sep='.')
+		output <- paste("${file}${mid}", "cluster", sep='.')
 		#data.m1 <- data.m1[order(cluster_172),]
 		write.table(data.m1, file=output, sep="\t", quote=F, col.names=F)
 		print("Sort data by cluster.")
@@ -460,7 +500,7 @@ if ($kclu>1){
 			data.s <- rbind(data.zero, data.s)
 		}
 		if (! $quiet){
-			output <- paste("${file}${midname}", \
+			output <- paste("${file}${mid}", \
 				"cluster.scaleop.final", sep='.')
 			write.table(data.s, file=output, sep="\t", \
 				quote=F, col.names=T)
@@ -468,7 +508,7 @@ if ($kclu>1){
 	}
 	#--for output original data ---------------------------
 	if ($clusterInclu){
-		data\$cluster <- tmp_cluster_172
+		data\$cluster <- cluster_172
 	}
 	data <- data[order(cluster_172),]
 
@@ -489,7 +529,7 @@ if ($kclu>1){
 
 
 	if (! $quiet){
-		output <- paste("${file}${midname}", "cluster.final", sep='.')
+		output <- paste("${file}${mid}", "cluster.final", sep='.')
 		write.table(data, file=output, sep="\t", quote=F, col.names=T)
 	}
 	#--for output original data ---------------------------
@@ -533,7 +573,7 @@ if (! $quiet){
 #data.m <- melt(data, c("id"), names(data)[1:oriLen])
 data.m <- melt(data, c("id"))
 if (! $quiet){
-	output2 <- paste("${file}${midname}", "cluster.melt", sep='.')
+	output2 <- paste("${file}${mid}", "cluster.melt", sep='.')
 	write.table(data.m, file=output2, sep="\t" , quote=F,
 	col.names=T, row.names=F)
 }
@@ -641,20 +681,21 @@ if (! $quiet){
 #p <- p + theme(text=element_text(family="Arial", size=${fontsize}))
 p <- p + theme(text=element_text(size=${fontsize}))
 
-ggsave(p, filename="${file}${midname}.${ext}", dpi=$res, width=$uwid,
-height=$vhig, units=c("cm"))
+ggsave(p, filename="${file}${mid}.${ext}", dpi=$res, width=$uwid,
+height=$vhig, units=c("cm"), colormodel="${colormodel}")
 
-#png(filename="${file}${midname}.png", width=$uwid, height=$vhig,
+#png(filename="${file}${mid}.png", width=$uwid, height=$vhig,
 #res=$res)
 #p
 #dev.off()
 END
 
 if [ "$execute" == "TRUE" ]; then
-	Rscript ${file}${midname}.r
+	Rscript ${file}${mid}.r
+if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
 fi
 
 #if [ "$quiet" == "TRUE" ]; then
-#	/bin/rm -f ${file}${midname}.r
+#	/bin/rm -f ${file}${mid}.r
 #fi
-#convert -density 200 -flatten ${file}${midname}.eps ${first}${midname}.png
+#convert -density 200 -flatten ${file}${mid}.eps ${first}${mid}.png
