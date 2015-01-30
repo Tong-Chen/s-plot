@@ -74,6 +74,17 @@ ${txtbld}OPTIONS${txtrst}:
 	-A	The attribute of x-axis variable.
 		[${txtred}Default TRUE, means X-axis label is text.
 		FALSE means X-axis label is number.${txtrst}]
+	-d	The ways to place multiple bars for one group if there are. 
+		Multiple bars in same place will be stacked together by
+		default. One can give "dodge" to arrange multiple bars
+		side-to-side. [${txtred}Default stack, accept dodge. ${txtrst}]
+	-D	The ways to show the height of bars.
+		The height of bars represent the numerical values in each group
+		by default. One can also give 'bin' to let
+		the program count the number of items in each group (Normally
+		the 'variable' column after melt).
+		[${txtred}Default identity, accept bin when categorial data
+		are given. ${txtrst}]
 	-l	Levels for legend variable
 		[${txtred}Default column order, accept a string like
 		"'ctcf','h3k27ac','enhancer'"  
@@ -151,8 +162,10 @@ y_add=0
 scaleY_x='scale_y_log10()'
 header='TRUE'
 execute='TRUE'
-facet='NULL'
-facet_level='NULL'
+facet='NoMeAnInGTh_I_n_G_s'
+stat='identity'
+position='stack'
+facet_level='NA'
 nrow='NULL'
 ncol='NULL'
 ist='FALSE'
@@ -169,7 +182,7 @@ color='FALSE'
 color_v=''
 vline=0
 
-while getopts "hf:m:a:A:t:x:l:P:L:y:V:o:O:B:b:c:C:X:Y:R:w:u:r:s:S:p:z:v:e:E:i:" OPTION
+while getopts "hf:m:a:A:t:x:l:d:D:P:L:y:V:o:O:B:b:c:C:X:Y:R:w:u:r:s:S:p:z:v:e:E:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -193,6 +206,12 @@ do
 			;;
 		t)
 			title=$OPTARG
+			;;
+		d)
+			position=$OPTARG
+			;;
+		D)
+			stat=$OPTARG
 			;;
 		x)
 			xlab=$OPTARG
@@ -336,27 +355,33 @@ if (${x_type}){
 	}
 }
 
-if ("${facet_level}" != "NULL") {
+
+if ("${facet_level}" != "NA") {
 	facet_level <- c(${facet_level})
 	data_m\$${facet} <- factor(data_m\$${facet},
 	levels=facet_level, ordered=T)
 }
 
+if ("${stat}" == "bin"){
+	p <- ggplot(data_m, aes($xvariable, fill=factor(variable)))
+} else {
+	p <- ggplot(data_m, aes($xvariable, value, fill=factor(variable)))
+}
 
-p <- ggplot(data_m, aes($xvariable, value, fill=factor(variable))) +
-	xlab($xlab) + ylab($ylab) + theme_bw() +
+p <- p + xlab($xlab) + ylab($ylab) + theme_bw() +
 	theme(legend.title=element_blank(),
    	panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
 p <- p + theme(axis.ticks.x = element_blank(), legend.key=element_blank()) 
+
 #legend.background = element_rect(colour='white'))
 
 #legend.background = element_rect(fill = "white"), legend.box=NULL, 
 #legend.margin=unit(0,"cm"))
 
-p <- p + geom_bar(stat='identity')
+p <- p + geom_bar(stat="${stat}", position="${position}")
 
-if ("${facet}" != "NULL"){
+if ("${facet}" != "NoMeAnInGTh_I_n_G_s"){
 	p <- p + facet_wrap( ~ ${facet}, nrow=${nrow}, ncol=${ncol},
 	scale="free")
 }
@@ -416,12 +441,13 @@ p <- p${par}
 
 ggsave(p, filename="${file}${mid}.${ext}", dpi=$res, width=$uwid,
 height=$vhig, units=c("cm"))
-#postscript(file="${file}${midname}.eps", onefile=FALSE, horizontal=FALSE, 
+#postscript(file="${file}${mid}.eps", onefile=FALSE, horizontal=FALSE, 
 #paper="special", width=10, height = 12, pointsize=10)
 #dev.off()
 END
 
 if [ "$execute" == "TRUE" ]; then
 	Rscript ${file}${mid}.r
+if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
 fi
 
