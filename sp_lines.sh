@@ -368,8 +368,11 @@ p <- ggplot(data_m, aes(x=$xvariable, y=value, color=variable,
 
 p <- p ${facet}
 
+p <- p + expand_limits(y = 0)
+#p <- p + scale_y_continuous(expand=c(0, 0))
 
-p <- p + theme(axis.ticks.x = element_blank(), legend.key=element_blank()) 
+p <- p + theme(legend.key=element_blank()) 
+
 #legend.background = element_rect(colour='white'))
 
 #legend.background = element_rect(fill = "white"), legend.box=NULL, 
@@ -400,7 +403,7 @@ if(${color}){
 }
 
 if ("$xtics" == "FALSE"){
-	p <- p + theme(axis.text.x=element_blank())
+	p <- p + theme(axis.text.x=element_blank(), axis.ticks.x = element_blank())
 }else{
 	if (${xtics_angle} != 0){
 	p <- p + theme(axis.text.x=element_text(angle=${xtics_angle},hjust=1))
