@@ -202,10 +202,40 @@ cat <<END >${file}${mid}.r
 if ($ist){
 	install.packages("ggplot2", repo="http://cran.us.r-project.org")
 }
+library(plyr)
 library(ggplot2)
 library(grid)
 
 data <- read.table(file="$file", sep="\t", header=T)
+
+# First order by Term, then order by Sample
+data <- data[order(data\$${yval}, data\$${xval}), ]
+
+# Get the count of each unique Term
+data_freq <- as.data.frame(table(data\$${yval}))
+
+colnames(data_freq) <- c("${yval}", "ID")
+
+data2 <- merge(data, data_freq, by="${yval}")
+
+# Collapse sample for each Term 
+data_samp <- ddply(data2, "${yval}", summarize,
+	sam_ct_ct_ct=paste(${xval}, collapse="_"))
+
+data2 <- merge(data2, data_samp, by="${yval}")
+
+#print(data2)
+
+data3 <- data2[order(data2\$ID, data2\$sam_ct_ct_ct, data2\$${xval}, data2\$${color}), ]
+
+#print(data3)
+
+term_order <- unique(data3\$${yval})
+
+data\$${yval} <- factor(data\$${yval}, levels=term_order, ordered=T)
+
+#print(data)
+rm(data_freq, data2, data3)
 
 if ("${log}" != "nolog"){
 	data\$${log} <- log10(data\$${log}) * (-1)
