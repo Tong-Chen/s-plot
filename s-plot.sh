@@ -34,7 +34,7 @@ ${filename} scatterplotColor
 ${filename} scatterplotContour
 ${filename} scatterplotLotsData
 ${filename} scatterplotMatrix
-${filename} sp_scatterplotDoubleVariable
+${filename} scatterplotDoubleVariable
 ${filename} contourPlot
 
 #### Distribution
