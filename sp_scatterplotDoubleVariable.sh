@@ -65,17 +65,19 @@ ${txtbld}OPTIONS${txtrst}:
 		${bldred}[NECESSARY, such Sample]${txtrst}
 	-v	The variable for vertical axis.
 		${bldred}[NECESSARY, such as Term]${txtrst}
-	-c	The variable for point value.
+	-c	The variable for point color.
 		${bldred}[NECESSARY, such as p_value]${txtrst}
 	-s	The variable for point size.
 		${bldred}[NECESSARY, such as count]${txtrst}
+	-C	The specified colors.
+		${bldred}[Default '"green", "red"'. ]${txtrst}
 	-l	Get log-transformed data for given variable.
 		[${txtred}Default nolog, means no log10 transform. Accept a variable
 		like p_value to get (-1) * log10(p_value).${txtrst}]	
 	-w	The width of output picture.[${txtred}Default 20${txtrst}]
 	-a	The height of output picture.[${txtred}Default 20${txtrst}] 
-	-E	The type of output figures.[${txtred}Default png, accept
-		eps/ps, tex (pictex), pdf, jpeg, tiff, bmp, svg and wmf)${txtrst}]
+	-E	The type of output figures.[${txtred}Default pdf, accept
+		eps/ps, tex (pictex), png, jpeg, tiff, bmp, svg and wmf)${txtrst}]
 	-r	The resolution of output picture.[${txtred}Default 300 ppi${txtrst}]
 	-b	The formula for facets.[${bldred}Default no facets, 
 		+facet_grid(level ~ .) means divide by levels of 'level' vertcally.
@@ -107,6 +109,7 @@ yval=''
 execute='TRUE'
 ist='FALSE'
 color=''
+color_v='"green", "red"'
 log='nolog'
 width=20
 height=20
@@ -118,7 +121,7 @@ other=''
 facet_o=''
 legend_pos='right'
 
-while getopts "hf:t:x:y:o:P:v:c:l:w:a:r:E:s:b:d:z:e:i:" OPTION
+while getopts "hf:t:x:y:o:P:v:c:C:l:w:a:r:E:s:b:d:z:e:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -148,6 +151,9 @@ do
 			;;
 		c)
 			color=$OPTARG
+			;;
+		C)
+			color_v=$OPTARG
 			;;
 		l)
 			log=$OPTARG
@@ -243,17 +249,19 @@ if ("${log}" != "nolog"){
 
 $facet_o
 
+color_v <- c(${color_v})
+
 p <- ggplot(data, aes(x=${xval},y=${yval})) \
 + labs(x="$xlab", y="$ylab") + labs(title="$title")
 
 if (("${size}" != "") && ("${color}" != "")) {
 	p <- p + geom_point(aes(size=${size}, color=${color})) + \
-	scale_colour_gradient(low="green", high="red", name="${color}")
+	scale_colour_gradient(low=color_v[1], high=color_v[2], name="${color}")
 } else if ("${size}" != "") {
 	p <- p + geom_point(aes(size=${size}))
 } else if ("${color}" != "") {
 	p <- p + geom_point(aes(color=${color})) + \
-	scale_colour_gradient(low="green", high="red", name="${color}")
+	scale_colour_gradient(low="color_v[1]", high=color_v[2], name="${color}")
 }
 
 
