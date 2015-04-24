@@ -34,6 +34,9 @@ ${txtbld}OPTIONS${txtrst}:
 		Accept FALSE.
 	-c	col cluster[${txtred}Default FALSE${txtrst}]
 		Accept TRUE.
+	-S	Symmetrical matrix.
+		[${txtred}Default FALSE. Accept TRUE. When this is TRUE, the
+		rows and columns will have similar order after clustering.${txtrst}]
 	-s	row scale[${txtred}Default FALSE${txtrst}]
 		Accept TRUE.
 	-w	col scale[${txtred}Default FALSE${txtrst}]
@@ -56,6 +59,9 @@ ${txtbld}OPTIONS${txtrst}:
 		none, row, both]
 	-d	Dendrom [${txtred}Default FALSE${txtrst}]
 		Accept TRUE.
+	-i	Install required packages [${txtred}Default FLASE. Only
+		required when you run this script for the first time and 
+		in case you do not have specified packages installed ${txtrst}]
 EOF
 }
 
@@ -74,11 +80,13 @@ execute='TRUE'
 trace='none'
 den='FALSE'
 width=10
-height=12
+height=10
 res=10
 color='greenred'
+symmetric='FALSE'
+ist='FALSE'
 
-while getopts "hf:k:t:x:y:r:c:s:C:w:u:v:R:b:z:e:a:d:" OPTION
+while getopts "hf:k:t:x:y:r:c:s:S:C:i:w:u:v:R:b:z:e:a:d:" OPTION
 do
 	case $OPTION in
 		h)
@@ -112,6 +120,9 @@ do
 		w)
 			cols=$OPTARG
 			;;
+		S)
+			symmetric=$OPTARG
+			;;
 		C)
 			color=$OPTARG
 			;;
@@ -138,6 +149,9 @@ do
 			;;
 		d)
 			den=$OPTARG
+			;;
+		i)
+			ist=$OPTARG
 			;;
 		?)
 			usage
@@ -179,6 +193,10 @@ fi
 
 dendrogram='none'
 if [ "$row_C" = 'TRUE' ] && [ $col_C = 'TRUE' ]; then
+	if [ "${symmetric}" == 'TRUE' ]; then
+		echo "You should only specify row cluster or col cluster when symmetric is TRUE"
+		exit 1
+	fi
 	dendrogram='both'
 elif [ "$row_C" = 'TRUE' ]; then
 	dendrogram='row'
@@ -186,21 +204,46 @@ elif [ "$col_C" = 'TRUE' ]; then
 	dendrogram='col'
 fi	
 
+
+
 mid=${mid}'.Heatmap'
 
 cat <<EOF >$file${mid}.r
+
+if ($ist){
+	install.packages('gplots', repo="http://cran.us.r-project.org")
+}
+
 library(graphics)
+library(gplots)
+
 data1 = read.table("$file", header=$header,
 sep="\t",row.names=1, comment.char="", check.names=${checkNames})
 x <- as.matrix(data1)
-#rc <- rainbow(nrow(x), start=0, end=.3)
-#cc <- rainbow(ncol(x), start=0, end=.3)
-library(gplots)
+
+if (${symmetric}){
+	hv <- heatmap.2(x, Rowv=${row_C}, Colv=${col_C}, 
+		dendrogram=c("${dendrogram}"), scale=c("$scale"))
+	
+	if (${row_C}){
+		fit_row <- hv\$rowInd
+		fit_col <- rev(fit_row)
+	} else if (${col_C}){
+		fit_col <- hv\$colInd
+		fit_row <- rev(fit_col)
+	}
+	x <- x[fit_row, ]
+	t_x <- t(x)
+	x <- t(t_x[fit_col, ])
+	x <- as.matrix(x)
+
+}
+
 pdf(file="${file}${mid}.pdf", onefile=FALSE,  
 	paper="special", width=${width}, height = ${height},
 	pointsize=${res})
-#png(filename="${file}${mid}.png", width=${width}, height=${height},
-#res=${res}, )
+
+
 break_v <- c($break_v)
 if (length(break_v) > 1) {
 
