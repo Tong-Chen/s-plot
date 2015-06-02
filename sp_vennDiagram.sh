@@ -22,23 +22,17 @@ fileformat for -f (suitable for data extracted from one sample, the
 number of columns is unlimited. Column 'Set' is not necessary)
 ------------------------------------------------------------
 Gene Sample
--5000	h3k27ac
--4000	h3k27ac
--3000	h3k27ac
--2000	h3k27ac
--1000	h3k27ac
-0	h3k27ac
-1000	h3k27ac
-2000	h3k27ac
-3000	h3k27ac
-4000	h3k27ac
--5000	ctcf
--4000	ctcf
--3000	ctcf
--2000	ctcf
--1000	ctcf
-0	ctcf
-1000	ctcf
+g1	h3k27ac
+g2	h3k27ac
+a1	h3k27ac
+a3	h3k27ac
+b4	h3k27ac
+g1	ctcf
+h1	ctcf
+a3	ctcf
+b1	ctcf
+b2	ctcf
+g2	ctcf
 -------------------------------------------------------------
 
 ${txtbld}OPTIONS${txtrst}:
@@ -58,9 +52,10 @@ ${txtbld}OPTIONS${txtrst}:
 	-d	The name for label1.
 		${bldred}[Necessary, one string in your second column],
 		ordered. A parameter to -d is enough for 4-way venn.]${txtrst}
-	-C	Color for each area.[${txtred}Ususlly the number of colors should
-		be equal to the number of labels. Default system default (only
-		for 4-way venn diagram). If you manually set colors for 4-way
+	-C	Color for each area.
+		[${txtred}Ususlly the number of colors should
+		be equal to the number of labels. 
+		If you manually set colors for 4-way
 		venn diagram, the first color will be given to the
 		leftmost set, the second will be given to the rightmost
 		set, the third will be given to second leftmost and the forth 
@@ -185,39 +180,41 @@ if("${label4}" != "CHENTONG"){
 	num <- num + 1
 }
 
+color_v <- c(${color_v})[1:num]
+
 if(num == 4){
 	p <- venn.diagram( 
 		x = list($label1=$label1, $label4=$label4, $label2=$label2,
 		$label3=$label3),
 		filename = NULL, col = "black", lwd = 1, 
-		fill = c(${color_v}),
+		fill = color_v,
 		alpha = 0.50,
 		label.col = c("orange", "white", "darkorchid4", "white", "white", "white", "white", "white", "darkblue", "white", "white", "white", "white", "darkgreen", "white"),
 		cex = 2.5, fontfamily = "Helvetica",
-		cat.col = c(${color_v}),cat.cex = 2.5,
+		cat.col = color_v,cat.cex = 2.5,
 		cat.fontfamily = "Helvetica"
 	)
 } else if (num==3) {
 	p <- venn.diagram( 
 		x = list($label1=$label1, $label2=$label2, $label3=$label3),
 		filename = NULL, col = "transparent", 
-		fill = c(${color_v}),
+		fill = color_v,
 		alpha = 0.50,
 		label.col = c("white", "white", "white", "white", "white", "white", "white"),
 		cex = 2.5, fontfamily = "Helvetica", cat.default.pos="text",
 		cat.pos=0,  
-		cat.col = c(${color_v}),cat.cex = 2.5,cat.fontfamily = "Helvetica"
+		cat.col = color_v,cat.cex = 2.5,cat.fontfamily = "Helvetica"
 	)
 } else if (num==2) {
 	p <- venn.diagram( 
 		x = list($label1=$label1, $label2=$label2),
 		filename = NULL, col = "transparent", 
-		fill = c(${color_v}),
+		fill = color_v,
 		alpha = 0.50,
 		label.col = c("white"),
 		cex = 2.5, fontfamily = "Helvetica", cat.default.pos="text",
 		cat.pos=0,  
-		cat.col = c(${color_v}),cat.cex = 2.5,cat.fontfamily = "Helvetica"
+		cat.col = color_v,cat.cex = 2.5,cat.fontfamily = "Helvetica"
 	)
 }
 
