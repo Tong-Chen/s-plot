@@ -434,7 +434,7 @@ if ("${type_p}"=="line" || "${type_p}"=="both"){
 }
 
 if (${vline}){
-	cdf <- ddply(data_m, .(cond), summarise, rating.mean=mean(rating))
+	cdf <- ddply(data_m, .(value), summarise, rating.mean=mean(rating))
 	p <- p + geom_vline(data=cdf, aes(xintercept=rating.mean,
 	colour=variable),linetype="dashed", size=1)
 }
