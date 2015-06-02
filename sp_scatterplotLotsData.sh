@@ -21,8 +21,9 @@ using function ggplot and stat_binhex from package ggplot2 and hexbin.
 The parameters for logical variable are either TRUE or FALSE.
 
 ${txtbld}OPTIONS${txtrst}:
-	-f	Data file (with header line, the first column is the
- 		colname, tab seperated)${bldred}[NECESSARY]${txtrst}
+	-f	Data file (with header line, tab seperated)${bldred}[NECESSARY]${txtrst}
+	-r	Treat the first colname as rownames${bldred}[Default 1, accept
+		NULL treat every column as data colum.]${txtrst}
 	-t	Title of picture[${txtred}Default empty title${txtrst}]
 		[Scatter plot of horizontal and vertical variable]
 	-x	xlab of picture[${txtred}Default empty xlab${txtrst}]
@@ -37,12 +38,18 @@ ${txtbld}OPTIONS${txtrst}:
 		lm menas add linear regression line and 95% confidence region.]${txtrst}
 	-l	Log transference or not,${bldred}[Default FALSE,
 		accept log or log2.]${txtrst}
+	-w	The width of output picture.[${txtred}Default 20${txtrst}]
+	-u	The height of output picture.[${txtred}Default 12${txtrst}] 
+	-E	The type of output figures.[${txtred}Default pdf, accept
+		eps/ps, tex (pictex), png, jpeg, tiff, bmp, svg and wmf)${txtrst}]
+	-r	The resolution of output picture.[${txtred}Default 300 ppi${txtrst}]
 	-e	Execute or not[${bldred}Default TRUE${txtrst}]
 	-i	Install the required packages[${bldred}Default FALSE${txtrst}]
 EOF
 }
 
 file=''
+row_names=1
 title=''
 xlab=''
 ylab=''
@@ -53,7 +60,13 @@ ist='FALSE'
 group=30
 log=''
 smooth='geom_smooth'
-while getopts "hf:t:x:y:o:v:s:e:l:i:" OPTION
+uwid=20
+vhig=12
+ext="pdf"
+res=300
+
+
+while getopts "hf:t:x:y:o:v:s:e:l:i:w:u:E:r:" OPTION
 do
 	case $OPTION in
 		h)
@@ -83,6 +96,18 @@ do
 			;;
 		l)
 			log=$OPTARG
+			;;
+		w)
+			uwid=$OPTARG
+			;;
+		u)
+			vhig=$OPTARG
+			;;
+		r)
+			res=$OPTARG
+			;;
+		E)
+			ext=$OPTARG
 			;;
 		e)
 			execute=$OPTARG
@@ -116,9 +141,8 @@ if ($ist){
 	install.packages("hexbin", repo="http://cran.us.r-project.org")
 }
 library(ggplot2)
-data <- read.table(file="$file", sep="\t", header=T, row.names=1)
-#postscript(file="${file}${mid}.eps", onefile=FALSE,
-#horizontal=FALSE,paper="special" , width=10, height = 12,pointsize=10)
+data <- read.table(file="$file", sep="\t", header=T, row.names=${row_names})
+
 p <- ggplot(data,aes(x=${xval},y=${yval}))+stat_binhex(bins=${group})+ labs(x="$xlab",
 y="$ylab") + ggtitle("$title")
 
@@ -129,7 +153,7 @@ if ("$log" == "log" || "$log" == "log2"){
 }
 
 if ("$smooth" == "geom_smooth"){
-	p <- p + geom_smooth()
+	p <- p + geom_smooth(method=loose)
 } else 
 if ("$smooth" == 'lm'){
 	p <- p + geom_smooth(method=lm)
@@ -139,9 +163,13 @@ if ("$smooth" == 'lm'){
 p <- p + theme_bw() + theme(legend.title=element_blank(),
 	panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
-png(filename="${file}${mid}.png", width=1000, height=1000)
-p
-dev.off()
+
+ggsave(p, filename="${file}${mid}.${ext}", dpi=$res, width=$uwid,
+height=$vhig, units=c("cm"))
+
+#png(filename="${file}${mid}.png", width=1000, height=1000)
+#p
+#dev.off()
 END
 
 if [ "$execute" == "TRUE" ]; then
