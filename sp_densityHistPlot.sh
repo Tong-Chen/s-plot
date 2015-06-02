@@ -132,8 +132,8 @@ ${txtbld}OPTIONS${txtrst}:
 		[${txtres}Begin with '+' ${txtrst}]
 	-w	The width of output picture.[${txtred}Default 20${txtrst}]
 	-u	The height of output picture.[${txtred}Default 12${txtrst}] 
-	-E	The type of output figures.[${txtred}Default png, accept
-		eps/ps, tex (pictex), pdf, jpeg, tiff, bmp, svg and wmf)${txtrst}]
+	-E	The type of output figures.[${txtred}Default pdf, accept
+		eps/ps, tex (pictex), png, jpeg, tiff, bmp, svg and wmf)${txtrst}]
 	-r	The resolution of output picture.[${txtred}Default 300 ppi${txtrst}]
 	-z	Is there a header[${bldred}Default TRUE${txtrst}]
 	-e	Execute or not[${bldred}Default TRUE${txtrst}]
@@ -161,7 +161,7 @@ ist='FALSE'
 uwid=20
 vhig=12
 res=300
-ext='png'
+ext='pdf'
 par=''
 legend_pos='right'
 smooth='FALSE'
@@ -501,10 +501,10 @@ if(length(xtics_v) > 1){
 custom_vline_coord <- ${custom_vline}
 custom_vline_anno <- ${custom_vanno}
 
-if(length(custom_vline_coord) > 1){
+if(is.vector(custom_vline_coord)){
 	p <- p + geom_vline(xintercept=custom_vline_coord,
 	linetype="dotted")
-	if(length(custom_vline_anno) > 1){
+	if(is.vector(custom_vline_anno)){
 		ymax_range <- ggplot_build(p)\$panel\$ranges[[1]]\$y.range
 		ymax_v <- ymax_range[2]
 		p <- p + annotate("text", x=custom_vline_coord, y=ymax_v,
