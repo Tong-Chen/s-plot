@@ -48,11 +48,15 @@ ctcf	10.57570	2
 -------------------------------------------------------------
 
 ${txtbld}OPTIONS${txtrst}:
-	-f	Data file (with header line, the first column is the
+	-f	Data file (with header line, the first column 
  		will not be treated as rownames, tab seperated)${bldred}[NECESSARY]${txtrst}
 	-m	When true, it will skip melt preprocesses. But the format must be
 		the same as listed before.
-		${bldred}[Default TRUE currently]${txtrst}
+		${bldred}[Default TRUE]${txtrst}
+	-M	Lists of variables not want to be melted.
+		${bldred}[Only used when -m is FALSE, accept a string in
+		format like "'Set','Id'" meaning the 'Set' column and 'Id'
+		column will be retained as in original file.]${txtrst}
 	-d	Plot frequency or density or hist or both frequency and
 		histogram[${txtred}Default <line> means frequency
 		accept <density_line>,  <hist> or <both>${txtrst}]
@@ -151,6 +155,7 @@ xlab='NULL'
 ylab='NULL'
 level=""
 x_level=""
+xvariable=
 x_type='TRUE'
 scaleY='FALSE'
 adjust='FALSE'
@@ -184,7 +189,7 @@ facet_scale='fixed'
 j_facet='haha'
 j_facet_order=''
 
-while getopts "hf:m:t:a:x:b:l:D:d:V:A:g:G:j:J:H:I:k:P:y:c:C:B:X:Y:R:s:S:w:u:r:E:p:z:v:e:i:" OPTION
+while getopts "hf:m:M:t:a:x:b:l:D:d:V:A:g:G:j:J:H:I:k:P:y:c:C:B:X:Y:R:s:S:w:u:r:E:p:z:v:e:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -196,6 +201,9 @@ do
 			;;
 		m)
 			melted=$OPTARG
+			;;
+		M)
+			xvariable=$OPTARG
 			;;
 		V)
 			custom_vline=$OPTARG
@@ -332,15 +340,15 @@ if (${vline}){
 	library(plyr)
 }
 if(! $melted){
-	cat("Currently nor supported for unmelted files")
-	quit()
+	#cat("Currently not supported for unmelted files")
+	#quit()
 	#currently this part is unused
-#	data <- read.table(file="${file}", sep="\t", header=$header,
-#	row.names=1)
+	data <- read.table(file="${file}", sep="\t", header=$header)
 #	data_rownames <- rownames(data)
 #	data_colnames <- colnames(data)
 #	data\$${xvariable} <- data_rownames
-#	data_m <- melt(data, id.vars=c("${xvariable}"))
+	data_m <- melt(data, id.vars=c(${xvariable}))
+	#data_m <- melt(data)
 } else {
 	data_m <- read.table(file="$file", sep="\t",
 	header=$header)
