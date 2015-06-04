@@ -208,7 +208,7 @@ if ("${ext}" == "png") {
 	pdf(file="${file}${mid}.pdf", onefile=FALSE, 
 	paper="special")
 } else {
-	print("This format is currently unsupported. Please check the file <Rplots.pdf> in current dirsctory.")
+	print("This format is currently unsupported. Please check the file <Rplots.pdf> in current directory.")
 }
 
 
