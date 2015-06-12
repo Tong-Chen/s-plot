@@ -19,7 +19,18 @@ This script is used to draw histogram and density plot
 for one column or multiple columns using ggplot2.
 
 -------------------------------------------------------------
-fileformat for -f,  when -m is true. [Currently -m is always TRUE]
+fileformat for -f,  when -m is FALSE.
+#Normal matrix with header lines
+ctcf	h3k27ac 
+1	2
+1	3
+4	2
+1	5
+6	7
+0	10
+
+
+fileformat for -f,  when -m is true. 
 #The name "value" and "variable" shoud not be altered, but the order
 #of this two columns is unlimited. Other columns will be ignored.
 #Actually this format is the melted result of last format.
@@ -94,10 +105,7 @@ ${txtbld}OPTIONS${txtrst}:
 	-v	Add mean value as vline.[${txtred}Default FALSE,  accept
 		TRUE${txtrst}]
 	-l	Levels for legend variable
-		[${txtred}Default column order, accept a string like
-		"'ctcf','h3k27ac','enhancer'"  
-		***When -m is used, this default will be ignored.********* 
-	   	${txtrst}]
+		[${txtred}Accept a string like "'ctcf','h3k27ac'".${txtrst}]
 	-P	Legend position[${txtred}Default right. Accept
 		top,bottom,left,none, or c(0.08,0.8).${txtrst}]
 	-a	The value for adjust (like the width of each bin) in geom_density. 
@@ -358,10 +366,11 @@ if(! $melted){
 if ("${level}" != ""){
 	level_i <- c(${level})
 	data_m\$variable <- factor(data_m\$variable, levels=level_i)
-} else if (! ${melted}){
-	data_m\$variable <- factor(data_m\$variable, levels=data_colnames,
-	ordered=T)
-}
+} 
+#else if (! ${melted}){
+#	data_m\$variable <- factor(data_m\$variable, levels=data_colnames,
+#	ordered=T)
+#}
 
 if ("${facet_order}" != ""){
 	data_m\$${facet} <- factor(data_m\$${facet},
