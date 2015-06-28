@@ -60,7 +60,7 @@ ${txtbld}OPTIONS${txtrst}:
 		${bldred}[Necessary when -f is not FALSE, 
 		one string in your second column],
 		ordered. A parameter to -d is enough for 4-way venn.]${txtrst}
-	-n	List of numbers for venn plot.
+	-n	List of numbers for venn plot (used when -F is TRUE).
 
 		For two-set venn, the format is "100, 110, 50" represents (length_a, length_b,
 		a_b_overlap).  
@@ -69,7 +69,7 @@ ${txtbld}OPTIONS${txtrst}:
 		represents (length_a, length_b, length_c, 
 		a_b_overlap,  b_c_overlap, a_c_overlap, a_b_c_overlap).  
 
-	-l	List of labels for venn plot.
+	-l	List of labels for venn plot (used when -F is TRUE).
 
 		Format: "'a', 'b'" for two-set and "'a', 'b', 'c'" for three-set.
 
