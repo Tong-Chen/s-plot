@@ -1,7 +1,6 @@
 #!/bin/bash
 
 #set -x
-set -u
 
 usage()
 {
