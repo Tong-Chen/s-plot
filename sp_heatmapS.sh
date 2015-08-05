@@ -1,6 +1,7 @@
 #!/bin/bash
 
 #set -x
+set -u
 
 usage()
 {
@@ -60,7 +61,7 @@ ${txtbld}OPTIONS${txtrst}:
 		yellow${txtrst}]
 	-Z	Use mid-value or not. [${txtred}Default FALSE, which means
 		do not use mid-value. ${txtrst}]
-	-X	The mid use you want to use.[${txtred}Default median value. A
+	-X	The mid value you want to use.[${txtred}Default median value. A
 		number is ok. When -Z is FALSE and -G is TRUE, this value will be 
 		used as a separator point. The program will separate data into
 		two parts, [minimum, midpoint] and [midpoint, minimum]. Each
@@ -602,12 +603,12 @@ if($gradient){
 	if (length(break_v) < 3){
 		if (${mid_value} == Inf){
 			break_v <- \
-			unique(c(seq(summary_v[1]-0.00000001,summary_v[2],length=6),seq(summary_v[2],summary_v[3],length=6),seq(summary_v[3],summary_v[5],length=5),seq(summary_v[5],summary_v[6]+0.0000001,length=5)))
+			unique(c(seq(summary_v[1]*0.95,summary_v[2],length=6),seq(summary_v[2],summary_v[3],length=6),seq(summary_v[3],summary_v[5],length=5),seq(summary_v[5],summary_v[6]*1.05,length=5)))
 		} else {
 			break_v <- \
-			unique(c(seq(summary_v[1]-0.00000001, ${mid_value},
+			unique(c(seq(summary_v[1]*0.95, ${mid_value},
 			length=10),
-			seq(${mid_value},summary_v[6]+0.0000001,length=10)))
+			seq(${mid_value},summary_v[6]*1.05,length=10)))
 		}
 	}
 	
