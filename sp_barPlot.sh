@@ -368,7 +368,7 @@ if ("${stat}" == "bin"){
 	p <- ggplot(data_m, aes($xvariable, value, fill=factor(variable)))
 }
 
-p <- p + xlab($xlab) + ylab($ylab) + theme_bw() +
+p <- p + xlab("${xlab}") + ylab("${ylab}") + theme_bw() +
 	theme(legend.title=element_blank(),
    	panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
