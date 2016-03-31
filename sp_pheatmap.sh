@@ -15,9 +15,7 @@ $0 options${txtrst}
 
 ${bldblu}Function${txtrst}:
 
-This script is used to do multiple heatmap horizontally for
-comparing among samples using package ggplot2 and reshape2.
-Also it can deal with kmeans cluster before heatmap.
+This script is used to do heatmap using package pheatmap.
 
 The parameters for logical variable are either TRUE or FALSE.
 
@@ -30,16 +28,8 @@ ${txtbld}OPTIONS${txtrst}:
 	-a	Display xtics. ${bldred}[Default TRUE]${txtrst}
 	-A	Rotation angle for x-axis value(anti clockwise)
 		${bldred}[Default 0]${txtrst}
-	-l	The position of legend. [${bldred}
-		Default right. Accept top,bottom,left,none,c(0.1,0.8).${txtrst}]
-	-I	The title of legend [${bldred}Default no title${txtrst}]
 	-b	Display ytics. ${bldred}[Default FALSE]${txtrst}
-	-B	Specifying colormodel.${bldred}[Default srgb, accept cmyk only
-		for pdf, postscript, eps format]${txtrst}
-	-R	Reverse the order of rows. Normally the row order of heatmap
-		is the reverse of the row order in file. Giving a TRUE here to
-		make the row order of heatmap same as input file.
-	-H	Get hieratical cluster for columns first, then do kmeans for rows.
+	-H	Hieratical cluster for columns.
 		${bldred}Default FALSE, accept TRUE ${txtrst}
 	-L	First get log-value, then do other analysis.
 		Accept an R function log2 or log10. You may want to add
@@ -47,9 +37,6 @@ ${txtbld}OPTIONS${txtrst}:
 		less than -s will be assigned by -J.[Default -s is -Inf and -J
 		is 1. Usually -s should be 0 and -J should be -1.] 
 		${bldred}[Default FALSE]${txtrst}
-	-K	Get log value before or after clustering.
-		${bldred}[Default before, means before. Accept after means
-		after]${txtrst}
 	-u	The width of output picture.[${txtred}Default 20${txtrst}]
 	-v	The height of output picture.[${txtred}Default 20${txtrst}] 
 	-E	The type of output figures.[${txtred}Default pdf, accept
@@ -69,19 +56,19 @@ ${txtbld}OPTIONS${txtrst}:
 		used as a separator point. The program will separate data into
 		two parts, [minimum, midpoint] and [midpoint, minimum]. Each
 		of these parts will be binned to same number of regions.]${txtrst}]
-	-k	Would you like cluster.[${txtred}Default 1 which means no
+	-k	Aggregate the rows using kmeans clustering. 
+		This is advisable if number of rows is so big that R cannot 
+		handle their hierarchical clustering anymore, roughly more than 1000.
+		Instead of showing all the rows separately one can cluster the
+		rows in advance and show only the cluster centers. The number
+		of clusters can be tuned here.
+		[${txtred}Default 'NA' which means no
 		cluster, other positive interger is accepted for executing
 		kmeans cluster, also the parameter represents the number of
 		expected clusters.${txtrst}]
-	-c	The cluster methods you want to use.[${bldred}kmeans, for
-		distance cluster,
-		accept clara for trend cluster.${txtrst}]
-	-d	Scale the data or not for clustering.[Default no scale. Accept TRUE, scale by
-		row]
-	-n	Include cluster info.[Default TRUE, accept FALSE]
-	-p	Delete rows all zero.[Default FALSE, accept TRUE]
-	-z	Presort data by covariance coefficient.
-		[Default FALSE, accept TRUE]
+	-d	Scale the data or not for clustering and visualization.
+		[Default 'none' means no scale, accept 'row', 'column' to 
+		scale by row or column.]
 	-s	The smallest value you want to keep, any number smaller will
 		be taken as 0.[${bldred}Default -Inf, Optional${txtrst}]  
 	-m	The maximum value you want to keep, any number larger willl
@@ -91,30 +78,15 @@ ${txtbld}OPTIONS${txtrst}:
 		to given value to get different color representation.${txtrst}]
 	-Y	Color for NA value.
 		[${txtred}Default grey${txtrst}]
-	-q	The smallest screen and file output.
-		[Default FALSE, means no log and data output. 
-		In future, we will change to following syntax.
-		Accept:
-	   		0 no log and data output	
-			1 output clustered data
-			2 only output clustered data no plot
-		] 
-	-j	Scale data for picture.[Default FALSE, accept TRUE]
 	-J	When -j is TRUE,  supply a value to add to all values in data
 		to avoid zero. When -L is used, the supplied value will be
 		used to substitute values less than -s generated log
 		processing. However, this has no effection to final data.
 	   	[${bldred}Default 1${txtrst}]
-	-o	Log transfer ot not.[${bldred}Default no log transfer,
-		accept log or log2 ${txtrst}]
-	-g	Cluster by which group.[${bldred}Default by all group${txtrst}]
 	-G	Use quantile for color distribution. Default 5 color scale
 		for each quantile.[Default FALSE, accept TRUE. Suitable for data range
 		vary large. This has high priviority than -Z. -X can work when
 		-G is TRUE]
-	-D	The number of digits after the decimal point. 
-		[${bldred}Default FALSE. Accept a number. If you data value 
-		is very large,  please this parameter.${txtrst}]
 	-C	Color list for plot when -G is TRUE.
 		[${bldred}Default 'green','yellow','dark red'.
 		Accept a list of colors each wrapped by '' and totally wrapped
@@ -131,13 +103,14 @@ EOF
 
 file=''
 title=''
+cluster_rows='FALSE'
 width=''
 label=''
 logv='FALSE'
 logv_pos='before'
-kclu=1
+kclu='NA'
 clu='kmeans'
-scale='FALSE'
+scale='none'
 clusterInclu='TRUE'
 group=0
 execute='TRUE'
@@ -323,7 +296,7 @@ do
 	esac
 done
 
-mid=".heatmapS"
+mid=".pheatmap"
 
 if [ -z $file ] ; then
 	echo 1>&2 "Please give filename."
@@ -350,41 +323,24 @@ fi
 cat <<END >${file}${mid}.r
 
 if ($ist){
-	install.packages("ggplot2", repo="http://cran.us.r-project.org")
-	install.packages("reshape2", repo="http://cran.us.r-project.org")
-	#install.packages("extrafont", repo="http://cran.us.r-project.org")
-	#font_import()
-	if ($kclu > 1){
-		install.packages("cluster", repo="http://cran.us.r-project.org")
-	}
-	if ($hcluster){
-		install.packages("amap", repo="http://cran.us.r-project.org")
-	}
+	install.packages("pheatmap", repo="http://cran.us.r-project.org")
 }
-library(ggplot2)
-library(reshape2)
-#library(extrafont)
-#loadfonts()
-
-
+library(pheatmap)
 
 if($gradient){
 	library(RColorBrewer)
 }
-if ($kclu > 1){
-	library(cluster)
-}
 
-if ($hcluster) {
-	library(amap)
-}
 
-if (! $quiet){
-	print("Read in data set.")
-}
 data <- read.table(file="$file", sep="\t", header=T, row.names=1,
-	check.names=F, quote="")
+	check.names=F, quote="", comment="")
 
+pheatmap(data, kmean_k=$kclu, scale=${scale}, border_color=NA,
+cluster_rows=${cluster_rows}, cluster_cols=${cluster_cols}, 
+breaks=NA${breaks}, clustering_method=, 
+legend_breaks=, show_rownames=, show_colnames=, main=$title,
+fontsize=, filenames=, width=, height=)
+	
 if ($hcluster) {
 	if (! $quiet){
 		print("reorder columns using hieratical cluster")

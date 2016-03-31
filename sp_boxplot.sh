@@ -155,8 +155,8 @@ EOF
 file=
 title=''
 melted='FALSE'
-xlab='NULL'
-ylab='NULL'
+xlab=' '
+ylab=' '
 xvariable=''
 value='value'
 variable='variable'
@@ -187,6 +187,7 @@ scale_violin='area'
 ID_var=""
 jitter='FALSE'
 jitter_bp='FALSE'
+colormodel='srgb'
 
 while getopts "ha:A:b:B:c:C:d:D:e:E:f:F:i:I:j:J:l:L:m:n:o:O:p:P:r:s:S:t:u:v:V:w:W:x:y:z:" OPTION
 do

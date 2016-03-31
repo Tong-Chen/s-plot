@@ -106,7 +106,7 @@ ${txtbld}OPTIONS${txtrst}:
 	-t	Title of picture[${txtred}Default empty title${txtrst}]
 	-x	xlab of picture[${txtred}Default empty xlab${txtrst}]
 	-y	ylab of picture[${txtred}Default empty ylab${txtrst}]
-	-B	Wrap plots bu given column. This is used to put multiple plot
+	-B	Wrap plots by given column. This is used to put multiple plot
 		in one picture. Used when -m is TRUE, normally a string <set>
 		should be suitable for this parameter.
 	-b	The levels of wrapping to set the order of each group.
@@ -116,14 +116,23 @@ ${txtbld}OPTIONS${txtrst}:
 		${txtred}[one of -o and -O is enough]${txtrst}
 	-O	The number of columns one want when -B is used.Default NULL.
 		${txtred}[one of -o and -O is enough]${txtrst}
-	-c	Manually set colors for each line.[${txtred}Default FALSE,
+	-c	Manually set colors for each bar.[${txtred}Default FALSE,
 		meaning using ggplot2 default.${txtrst}]
-	-C	Color for each line.[${txtred}When -c is TRUE, str in given
-		format must be supplied, ususlly the number of colors should
-		be equal to the number of lines.
-		"'red','pink','blue','cyan','green','yellow'" or
-		"rgb(255/255,0/255,0/255),rgb(255/255,0/255,255/255),rgb(0/255,0/255,255/255),
-		rgb(0/255,255/255,255/255),rgb(0/255,255/255,0/255),rgb(255/255,255/255,0/255)"
+	-C	Color for each bar.[${txtred}
+		When -c is TRUE, one have two options
+		1. Supplying a function to generate colors, 
+		like "rainbow(11)" or "rainbow(11, alpha=0.6)", 
+		    rainbow is an R color palletes, 
+		    11 is the number of colors you want to get, 
+			0.6 is the alpha value.
+		The R palletes include heat.colors, terrain.colors,
+		topo.colors, cm.colors.
+		2. Supplying a list of colors in given format, 
+		ususlly the number of colors should be equal to the number of
+		bars like "'red','pink','blue','cyan','green','yellow'" or
+		"rgb(255/255,0/255,0/255),rgb(255/255,0/255,255/255),
+		 rgb(0/255,0/255,255/255),rgb(0/255,255/255,255/255),
+		 rgb(0/255,255/255,0/255),rgb(255/255,255/255,0/255)"
 		${txtrst}]
 	-s	Scale y axis
 		[${txtred}Default null. Accept TRUE. This function is
@@ -151,8 +160,8 @@ EOF
 file=
 title=''
 melted='FALSE'
-xlab='NULL'
-ylab='NULL'
+xlab=' '
+ylab=' '
 xvariable='xvariable'
 level=""
 x_level=""
@@ -304,7 +313,7 @@ if test ${y_add} -ne 0; then
 	scaleY="TRUE"
 fi
 
-mid='.bars'
+mid='.'${position}'Bars'
 
 cat <<END >${file}${mid}.r
 
@@ -319,14 +328,14 @@ library(grid)
 
 if(! $melted){
 	data <- read.table(file="${file}", sep="\t", header=$header,
-	row.names=1)
+	row.names=1, quote="", check.names=F)
 	data_rownames <- rownames(data)
 	data_colnames <- colnames(data)
 	data\$${xvariable} <- data_rownames
 	data_m <- melt(data, id.vars=c("${xvariable}"))
 } else {
 	data_m <- read.table(file="$file", sep="\t",
-	header=$header)
+	header=$header, quote="")
 }
 
 if (${y_add} != 0){
@@ -407,7 +416,7 @@ if("$scaleY"){
 }
 
 if(${color}){
-	p <- p + scale_color_manual(values=c(${color_v}))
+	p <- p + scale_fill_manual(values=c(${color_v}))
 }
 
 if ("$xtics" == "FALSE"){
@@ -431,11 +440,11 @@ legend_pos_par <- ${legend_pos}
 
 p <- p + theme(legend.position=legend_pos_par)
 
-custom_vline_coord <- ${vline}
-if(length(custom_vline_coord) > 1){
-	p <- p + geom_vline(xintercept=custom_vline_coord, 
-	linetype="dotted" )
-}
+#custom_vline_coord <- ${vline}
+#if(length(custom_vline_coord) > 1){
+#	p <- p + geom_vline(xintercept=custom_vline_coord, 
+#	linetype="dotted" )
+#}
 
 p <- p${par}
 
@@ -448,6 +457,6 @@ END
 
 if [ "$execute" == "TRUE" ]; then
 	Rscript ${file}${mid}.r
-if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
+#if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
 fi
 

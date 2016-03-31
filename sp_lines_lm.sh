@@ -15,54 +15,13 @@ $0 options${txtrst}
 
 ${bldblu}Function${txtrst}:
 
-This script is used to draw a line or multiple lines using ggplot2.
-You can specify whether or not smooth your line or lines.
-
-fileformat for -f (suitable for data extracted from one sample, the
-number of columns is unlimited. Column 'Set' is not necessary)
-------------------------------------------------------------
-Pos	h3k27ac	ctcf	enhancer	h3k4me3	polII
--5000	8.71298	10.69130	11.7359	10.02510	8.26866
--4000	8.43246	10.76680	11.8442	9.76927	7.78358
--3000	8.25497	10.54410	12.2470	9.40346	6.96859
--2000	7.16265	10.86350	12.6889	8.35070	4.84365
--1000	3.55341	8.45751	12.8372	4.84680	1.26110
-0	3.55030	8.50316	13.4152	5.17401	1.50022
-1000	7.07502	10.91430	12.3588	8.13909	4.88096
-2000	8.24328	10.70220	12.3888	9.47255	7.67968
-3000	8.43869	10.41010	11.9760	9.80665	7.94148
-4000	8.48877	10.57570	11.6562	9.71986	8.17849
--------------------------------------------------------------
-fileformat when -m is true
-#The name "value" and "variable" shoud not be altered.
-#Actually this format is the melted result of last format.
---------------------------------------------------------------
-Pos variable    value
--5000	h3k27ac	8.71298
--4000	h3k27ac	8.43246
--3000	h3k27ac	8.25497
--2000	h3k27ac	7.16265
--1000	h3k27ac	3.55341
-0	h3k27ac	3.55030
-1000	h3k27ac	7.07502
-2000	h3k27ac	8.24328
-3000	h3k27ac	8.43869
-4000	h3k27ac	8.48877
--5000	ctcf	10.69130
--4000	ctcf	10.76680
--3000	ctcf	10.54410
--2000	ctcf	10.86350
--1000	ctcf	8.45751
-0	ctcf	8.50316
-1000	ctcf	10.91430
-2000	ctcf	10.70220
-3000	ctcf	10.41010
-4000	ctcf	10.57570
--------------------------------------------------------------
+This script is used to draw a line specifially for output of
+count_features_given_MIN_FPKM_threshold.pl.
 
 ${txtbld}OPTIONS${txtrst}:
 	-f	Data file (with header line, the first column is the
  		will not be treated as rownames, tab seperated)${bldred}[NECESSARY]${txtrst}
+
 	-m	When true, it will skip melt preprocesses. But the format must be
 		the same as listed before.
 		${bldred}[Default FALSE, accept TRUE]${txtrst}
@@ -335,7 +294,7 @@ if test ${y_add} -ne 0; then
 	scaleY="TRUE"
 fi
 
-mid='.lines'
+mid='.lines_lm'
 
 if test "${smooth}" == 'TRUE'; then
 	mid=${mid}'.smooth'
@@ -348,162 +307,176 @@ if ($ist){
 	install.packages("reshape2", repo="http://cran.us.r-project.org")
 	install.packages("grid", repo="http://cran.us.r-project.org")
 }
-library(ggplot2)
-library(reshape2)
-library(grid)
 
-if(! $melted){
+data <- read.table(file="${file}", sep="\t", header=$header,
+ check.names=F, quote="")
 
-	data <- read.table(file="${file}", sep="\t", header=$header,
-	row.names=1, check.names=F)
-	data_rownames <- rownames(data)
-	data_colnames <- colnames(data)
-	data\$${xvariable} <- data_rownames
-	data_m <- melt(data, id.vars=c("${xvariable}"))
-} else {
-	data_m <- read.table(file="$file", sep="\t",
-	header=$header, check.names=F)
-}
+pdf(file="${file}${mid}.pdf", onefile=FALSE, 
+paper="special", width=8, height=6, bg="white", pointsize=12)
 
-if (${y_add} != 0){
-	data_m\$value <- data_m\$value + ${y_add}
-}
+plot(data, xlim=c(-100, 0), ylim=c(0, 100000), type='b',
+xlab="Expression values",
+ylab="Number of features", xaxt="n")
 
-if ("${level}" != ""){
-	level_i <- c(${level})
-	data_m\$variable <- factor(data_m\$variable, levels=level_i)
-} else if(! $melted){
-	data_m\$variable <- factor(data_m\$variable, levels=data_colnames,
-	ordered=T)
-}
+axis(1, at=seq(-100, 0, by=10), 
+	labels=paste('>',seq(100,0,by=-10)))
 
-#if (${x_type}){
-#	if ("${x_level}" != ""){
-#		x_level <- c(${x_level})
-#		data_m\$${xvariable} <- factor(data_m\$${xvariable},levels=x_level)
-#	} else if(! $melted){
-#		data_m\$${xvariable} <- factor(data_m\$${xvariable},levels=data_rownames,ordered=TRUE)
+filt_data <- data[data[,1] > -100 & data[,1] < -10, ]
+
+fit <- lm(filt_data[,2] ~ filt_data[,1])
+
+abline(fit, col='green', lwd=3)
+
+dev.off()
+
+#if(! $melted){
+#
+#	data_rownames <- rownames(data)
+#	data_colnames <- colnames(data)
+#	data\$${xvariable} <- data_rownames
+#	data_m <- melt(data, id.vars=c("${xvariable}"))
+#} else {
+#	data_m <- read.table(file="$file", sep="\t",
+#	header=$header, check.names=F)
+#}
+#
+#if (${y_add} != 0){
+#	data_m\$value <- data_m\$value + ${y_add}
+#}
+#
+#if ("${level}" != ""){
+#	level_i <- c(${level})
+#	data_m\$variable <- factor(data_m\$variable, levels=level_i)
+#} else if(! $melted){
+#	data_m\$variable <- factor(data_m\$variable, levels=data_colnames,
+#	ordered=T)
+#}
+#
+##if (${x_type}){
+##	if ("${x_level}" != ""){
+##		x_level <- c(${x_level})
+##		data_m\$${xvariable} <- factor(data_m\$${xvariable},levels=x_level)
+##	} else if(! $melted){
+##		data_m\$${xvariable} <- factor(data_m\$${xvariable},levels=data_rownames,ordered=TRUE)
+##	}
+##} 
+#
+#if ("${x_level}" != ""){
+#	x_level <- c(${x_level})
+#	data_m\$${xvariable} <- factor(data_m\$${xvariable},levels=x_level)
+#} else if(! $melted){
+#	data_m\$${xvariable} <- factor(data_m\$${xvariable},levels=data_rownames,ordered=TRUE)
+#}
+#
+#if (! ${x_type}){
+#	data_m\$${xvariable} <- 
+#		as.numeric(levels(data_m\$${xvariable}))[data_m\$${xvariable}]
+#}
+#
+##if(! ${color}){
+##	data_m\$variable <- 
+##		as.numeric(levels(data_m\$variable))[data_m\$variable]
+##}
+#
+#
+#${facet_o}
+#
+#p <- ggplot(data_m, aes(x=$xvariable, y=value, color=variable,
+#	group=variable)) + 
+#	xlab("$xlab") + ylab("$ylab") + theme_bw() +
+#	theme(legend.title=element_blank(),
+#   	panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+#
+#p <- p ${facet}
+#
+#p <- p + expand_limits(y = 0)
+##p <- p + scale_y_continuous(expand=c(0, 0))
+#
+#p <- p + theme(legend.key=element_blank()) 
+#
+##legend.background = element_rect(colour='white'))
+#
+##legend.background = element_rect(fill = "white"), legend.box=NULL, 
+##legend.margin=unit(0,"cm"))
+#
+#if (${smooth}){
+#	if ("${line_size}" != ""){
+#		p <- p + stat_smooth(method="${smooth_method}", se=FALSE,
+#		size=${line_size})
+#	}else{
+#		p <- p + stat_smooth(method="${smooth_method}", se=FALSE,
+#		size=${line_size})
+#	}	
+#}else{
+#	if ("${line_size}" != ""){
+#		p <- p + geom_line(size=${line_size}) 
+#	}else{
+#	p <- p + geom_line() 
 #	}
+#}
+#
+#if("$scaleY"){
+#	p <- p + $scaleY_x
+#}
+#
+#if(${color}){
+#	p <- p + scale_color_manual(values=c(${color_v}))
 #} 
-
-if ("${x_level}" != ""){
-	x_level <- c(${x_level})
-	data_m\$${xvariable} <- factor(data_m\$${xvariable},levels=x_level)
-} else if(! $melted){
-	data_m\$${xvariable} <- factor(data_m\$${xvariable},levels=data_rownames,ordered=TRUE)
-}
-
-if (! ${x_type}){
-	data_m\$${xvariable} <- 
-		as.numeric(levels(data_m\$${xvariable}))[data_m\$${xvariable}]
-}
-
-#if(! ${color}){
-#	data_m\$variable <- 
-#		as.numeric(levels(data_m\$variable))[data_m\$variable]
+##else {
+#	#p <- p + scale_colour_brewer()
+#	#p <- p + scale_colour_discrete(limits=levels(data_m\$variable),
+#	#breaks=unique(data_m\$variable))
+##}
+#
+#if ("$xtics" == "FALSE"){
+#	p <- p + theme(axis.text.x=element_blank(), axis.ticks.x = element_blank())
+#}else{
+#	if (${xtics_angle} != 0){
+#	p <- p + theme(axis.text.x=element_text(angle=${xtics_angle},hjust=1))
+#	}
 #}
-
-
-${facet_o}
-
-p <- ggplot(data_m, aes(x=$xvariable, y=value, color=variable,
-	group=variable)) + 
-	xlab("$xlab") + ylab("$ylab") + theme_bw() +
-	theme(legend.title=element_blank(),
-   	panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-
-p <- p ${facet}
-
-p <- p + expand_limits(y = 0)
-#p <- p + scale_y_continuous(expand=c(0, 0))
-
-p <- p + theme(legend.key=element_blank()) 
-
-#legend.background = element_rect(colour='white'))
-
-#legend.background = element_rect(fill = "white"), legend.box=NULL, 
-#legend.margin=unit(0,"cm"))
-
-if (${smooth}){
-	if ("${line_size}" != ""){
-		p <- p + stat_smooth(method="${smooth_method}", se=FALSE,
-		size=${line_size})
-	}else{
-		p <- p + stat_smooth(method="${smooth_method}", se=FALSE,
-		size=${line_size})
-	}	
-}else{
-	if ("${line_size}" != ""){
-		p <- p + geom_line(size=${line_size}) 
-	}else{
-	p <- p + geom_line() 
-	}
-}
-
-if("$scaleY"){
-	p <- p + $scaleY_x
-}
-
-if(${color}){
-	p <- p + scale_color_manual(values=c(${color_v}))
-} 
-#else {
-	#p <- p + scale_colour_brewer()
-	#p <- p + scale_colour_discrete(limits=levels(data_m\$variable),
-	#breaks=unique(data_m\$variable))
+#if ("$ytics" == "FALSE"){
+#	p <- p + theme(axis.text.y=element_blank())
 #}
-
-if ("$xtics" == "FALSE"){
-	p <- p + theme(axis.text.x=element_blank(), axis.ticks.x = element_blank())
-}else{
-	if (${xtics_angle} != 0){
-	p <- p + theme(axis.text.x=element_text(angle=${xtics_angle},hjust=1))
-	}
-}
-if ("$ytics" == "FALSE"){
-	p <- p + theme(axis.text.y=element_blank())
-}
-
-
-top='top'
-botttom='bottom'
-left='left'
-right='right'
-none='none'
-legend_pos_par <- ${legend_pos}
-
-p <- p + theme(legend.position=legend_pos_par)
-
-xtics_pos <- ${xtics_pos}
-xtics_value <- ${xtics_value}
-
-if(length(xtics_pos) > 1){
-	if(length(xtics_value) <= 1){
-		xtics_value <- xtics_pos
-	}
-	p <- p + scale_x_continuous(breaks=xtics_pos, labels=xtics_value)
-}
-
-custom_vline_coord <- ${vline}
-if(length(custom_vline_coord) > 1){
-	p <- p + geom_vline(xintercept=custom_vline_coord, 
-	linetype="dotted" )
-}
-
-p <- p${par}
-
-#png(filename="${file}${mid}.png", width=$uwid, height=$vhig,
-#res=$res)
-
-ggsave(p, filename="${file}${mid}.${ext}", dpi=$res, width=$uwid,
-height=$vhig, units=c("cm"))
-#postscript(file="${file}${mid}.eps", onefile=FALSE, horizontal=FALSE, 
-#paper="special", width=10, height = 12, pointsize=10)
-#dev.off()
+#
+#
+#top='top'
+#botttom='bottom'
+#left='left'
+#right='right'
+#none='none'
+#legend_pos_par <- ${legend_pos}
+#
+#p <- p + theme(legend.position=legend_pos_par)
+#
+#xtics_pos <- ${xtics_pos}
+#xtics_value <- ${xtics_value}
+#
+#if(length(xtics_pos) > 1){
+#	if(length(xtics_value) <= 1){
+#		xtics_value <- xtics_pos
+#	}
+#	p <- p + scale_x_continuous(breaks=xtics_pos, labels=xtics_value)
+#}
+#
+#custom_vline_coord <- ${vline}
+#if(length(custom_vline_coord) > 1){
+#	p <- p + geom_vline(xintercept=custom_vline_coord, 
+#	linetype="dotted" )
+#}
+#
+#p <- p${par}
+#
+##png(filename="${file}${mid}.png", width=$uwid, height=$vhig,
+##res=$res)
+#
+#ggsave(p, filename="${file}${mid}.${ext}", dpi=$res, width=$uwid,
+#height=$vhig, units=c("cm"))
 END
 
 if [ "$execute" == "TRUE" ]; then
 	Rscript ${file}${mid}.r
+	convert -density 150 ${file}${mid}.pdf ${file}${mid}.png
 if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
 fi
 

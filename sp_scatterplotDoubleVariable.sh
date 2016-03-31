@@ -61,8 +61,20 @@ ${txtbld}OPTIONS${txtrst}:
 		[The description for vertical variable]
 	-P	Legend position[${txtred}Default right. Accept
 		top, bottom, left, none,  or c(0.08, 0.8).${txtrst}]
+	-R	Rotation angle for x-axis value(anti clockwise)
+		[Default 0]
+	-H	Hjust when rotation angle for x-axis value is not zero(anti clockwise)
+		[Default 0.5; angle 45, hjust 0 vjust 0]
+	-V	Vjust when rotation angle for x-axis value is not zero(anti clockwise)
+		[Default 1; angle 90, hjust 0 vjust 1]
 	-o	The variable for horizontal axis.
 		${bldred}[NECESSARY, such Sample]${txtrst}
+	-O	The order for horizontal axis.
+		${bldred}[Default alphabetical order, accept a string like
+		"'K562','hESC','GM12878','HUVEC','NHEK','IMR90','HMEC'"  
+		***When -m is used, this default will be ignored too.********* 
+	   	${txtrst}]
+		]${txtrst}
 	-v	The variable for vertical axis.
 		${bldred}[NECESSARY, such as Term]${txtrst}
 	-c	The variable for point color.
@@ -97,6 +109,10 @@ ${txtbld}OPTIONS${txtrst}:
 	-z	Other parameters in ggplot format.[${bldred}selection${txtrst}]
 	-e	Execute or not[${bldred}Default TRUE${txtrst}]
 	-i	Install the required packages[${bldred}Default FALSE${txtrst}]
+
+
+s-plot scatterplotDoubleVariable -f sampleGODoubleVariable -o Sample -v Term -c p_value -s count
+
 EOF
 }
 
@@ -105,6 +121,7 @@ title=''
 xlab=''
 ylab=''
 xval=''
+xval_ho=''
 yval=''
 execute='TRUE'
 ist='FALSE'
@@ -120,8 +137,11 @@ size=''
 other=''
 facet_o=''
 legend_pos='right'
+xtics_angle=0
+hjust=0.5
+vjust=1
 
-while getopts "hf:t:x:y:o:P:v:c:C:l:w:a:r:E:s:b:d:z:e:i:" OPTION
+while getopts "hf:t:x:y:o:O:P:R:H:V:v:c:C:l:w:a:r:E:s:b:d:z:e:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -143,8 +163,20 @@ do
 		P)
 			legend_pos=$OPTARG
 			;;
+		R)
+			xtics_angle=$OPTARG
+			;;
+		H)
+			hjust=$OPTARG
+			;;
+		V)
+			vjust=$OPTARG
+			;;
 		o)
 			xval=$OPTARG
+			;;
+		O)
+			xval_ho=$OPTARG
 			;;
 		v)
 			yval=$OPTARG
@@ -212,7 +244,7 @@ library(plyr)
 library(ggplot2)
 library(grid)
 
-data <- read.table(file="$file", sep="\t", header=T)
+data <- read.table(file="$file", sep="\t", quote="", comment="", header=T)
 
 # First order by Term, then order by Sample
 data <- data[order(data\$${yval}, data\$${xval}), ]
@@ -239,6 +271,12 @@ data3 <- data2[order(data2\$ID, data2\$sam_ct_ct_ct, data2\$${xval}, data2\$${co
 term_order <- unique(data3\$${yval})
 
 data\$${yval} <- factor(data\$${yval}, levels=term_order, ordered=T)
+
+xval_ho <- c(${xval_ho})
+
+if (length(xval_ho) > 1) {
+	data\$${xval} <- factor(data\$${xval}, levels=xval_ho, ordered=T)
+}
 
 #print(data)
 rm(data_freq, data2, data3)
@@ -270,6 +308,12 @@ p <- p ${facet}
 p <- p $other
 
 p <- p + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
+if (${xtics_angle} != 0){
+	p <- p +
+	theme(axis.text.x=element_text(angle=${xtics_angle},hjust=${hjust},
+	vjust=${vjust}))
+}
 
 top='top'
 bottom='bottom'

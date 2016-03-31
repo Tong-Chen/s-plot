@@ -48,21 +48,26 @@ ${txtbld}OPTIONS${txtrst}:
 	-a	The name for label1.
 		${bldred}[Necessary when -f is not FALSE, 
 		one string in your second column,ordered. ]${txtrst}
-	-b	The name for label1.
+	-b	The name for label2.
 		${bldred}[Necessary when -f is not FALSE, 
 		one string in your second column,
 		ordered. A parameter to -b is enough for 2-way venn.]${txtrst}
-	-c	The name for label1.
+	-c	The name for label3.
 		${bldred}[Necessary when -f is not FALSE, 
 		one string in your second column,
 		ordered. A parameter to -c is enough for 3-way venn.]${txtrst}
-	-d	The name for label1.
+	-d	The name for label4.
 		${bldred}[Necessary when -f is not FALSE, 
 		one string in your second column],
 		ordered. A parameter to -d is enough for 4-way venn.]${txtrst}
+	-p	The label of output files.
+		${bldred}[Optional. But when one main file is used to generate 
+		multiple vennDIagrams, this parameter should be specified.]
+		${txtrst}
 	-n	List of numbers for venn plot (used when -F is TRUE).
 
-		For two-set venn, the format is "100, 110, 50" represents (length_a, length_b,
+		For two-set venn, the format is "100, 110, 50" represents 
+		(length_a, length_b,
 		a_b_overlap).  
 
 		For three-set venn, the format is "100, 110, 90, 50, 40, 40, 20" 
@@ -115,14 +120,15 @@ numList=
 labelList=
 execute='TRUE'
 ist='FALSE'
-uwid=20
-vhig=20
+uwid=10
+vhig=10
 res=300
 ext='pdf'
 line_size=1
 color_v='"cornflowerblue", "green", "yellow", "darkorchid1"'
+prefix=''
 
-while getopts "hf:F:a:b:c:d:n:l:C:w:u:r:e:E:i:" OPTION
+while getopts "hf:F:a:b:c:d:n:l:C:p:w:u:r:e:E:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -152,6 +158,9 @@ do
 			;;
 		l)
 			labelList=$OPTARG
+			;;
+		p)
+			prefix=$OPTARG
 			;;
 		C)
 			color_v=$OPTARG
@@ -186,7 +195,7 @@ if [ -z $file ]; then
 	exit 1
 fi
 
-mid='.vennDiagram'
+mid=${prefix}'.vennDiagram'
 
 cat <<END >${file}${mid}.r
 
@@ -207,6 +216,9 @@ if ("${ext}" == "png") {
 } else if ("${ext}" == "pdf") {
 	pdf(file="${file}${mid}.pdf", onefile=FALSE, 
 	paper="special")
+}else if ("${ext}" == "svg") {
+	svg(filename="${file}${mid}.svg", width=$uwid, height=$vhig,
+	pointsize=10)
 } else {
 	print("This format is currently unsupported. Please check the file <Rplots.pdf> in current directory.")
 }
@@ -214,7 +226,7 @@ if ("${ext}" == "png") {
 
 if (! ${numGiven}) {
 
-	data <- read.table(file="$file", sep="\t")
+	data <- read.table(file="$file", sep="\t", quote="")
 
 	num <- 0
 
@@ -239,7 +251,7 @@ if (! ${numGiven}) {
 	}
 
 	color_v <- c(${color_v})[1:num]
-
+	#label.col = c("orange", "white", "darkorchid4", "white", "white", "white", "white", "white", "darkblue", "white", "white", "white", "white", "darkgreen", "white"),
 	if(num == 4){
 		p <- venn.diagram( 
 			x = list($label1=$label1, $label4=$label4, $label2=$label2,
@@ -247,9 +259,9 @@ if (! ${numGiven}) {
 			filename = NULL, col = "black", lwd = 1, 
 			fill = color_v,
 			alpha = 0.50,
-			label.col = c("orange", "white", "darkorchid4", "white", "white", "white", "white", "white", "darkblue", "white", "white", "white", "white", "darkgreen", "white"),
-			cex = 2.5, fontfamily = "Helvetica",
-			cat.col = color_v,cat.cex = 2.5,
+			label.col = c("black"),
+			cex = 2, fontfamily = "Helvetica",
+			cat.col = c("black"),cat.cex = 1.1, margin=0.1, 
 			cat.fontfamily = "Helvetica"
 		)
 	} else if (num==3) {
@@ -258,10 +270,10 @@ if (! ${numGiven}) {
 			filename = NULL, col = "transparent", 
 			fill = color_v,
 			alpha = 0.50,
-			label.col = c("white", "white", "white", "white", "white", "white", "white"),
-			cex = 2.5, fontfamily = "Helvetica", cat.default.pos="text",
-			cat.pos=0,  
-			cat.col = color_v,cat.cex = 2.5,cat.fontfamily = "Helvetica"
+			label.col = c("black", "black", "black", "black", "black", "black", "black"),
+			cex = 2, fontfamily = "Helvetica", cat.default.pos="text",
+			cat.pos=0,  magrin=0.1, 
+			cat.col = c("black", "black", "black"),cat.cex = 1,cat.fontfamily = "Helvetica"
 		)
 	} else if (num==2) {
 		p <- venn.diagram( 
@@ -269,10 +281,11 @@ if (! ${numGiven}) {
 			filename = NULL, col = "transparent", 
 			fill = color_v,
 			alpha = 0.50,
-			label.col = c("white"),
-			cex = 2.5, fontfamily = "Helvetica", cat.default.pos="text",
-			cat.pos=0,  
-			cat.col = color_v,cat.cex = 2.5,cat.fontfamily = "Helvetica"
+			label.col = c("black"),
+			cex = 2, fontfamily = "Helvetica",
+			cat.default.pos="outer",
+			cat.pos=0, margin=0.1,  
+			cat.col = color_v,cat.cex = 2,cat.fontfamily = "Helvetica"
 		)
 	}
 	grid.draw(p)

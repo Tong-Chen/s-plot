@@ -27,9 +27,13 @@ p <- p${par}
 
 # output pictures
 
-ggsave(p, filename="${file}${mid}.${ext}", dpi=$res, width=$uwid,
-height=$vhig, units=c("cm"),colormodel="${colormodel}")
-
+if ("${ext}" == "pdf") {
+	ggsave(p, filename="${file}${mid}.${ext}", dpi=$res, width=$uwid,
+	height=$vhig, units=c("cm"),colormodel="${colormodel}")
+} else {
+	ggsave(p, filename="${file}${mid}.${ext}", dpi=$res, width=$uwid,
+	height=$vhig, units=c("cm"))
+}
 #png(filename="${file}${mid}.png", width=$uwid, height=$vhig,
 #res=$res)
 #p
