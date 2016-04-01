@@ -27,16 +27,37 @@ ${txtbld}OPTIONS${txtrst}:
 		[Scatter plot of horizontal and vertical variable]
 	-a	Display xtics. ${bldred}[Default TRUE]${txtrst}
 	-A	Rotation angle for x-axis value(anti clockwise)
-		${bldred}[Default 0]${txtrst}
-	-b	Display ytics. ${bldred}[Default FALSE]${txtrst}
+		${bldred}[Default 0, unused]${txtrst}
+	-b	Display ytics. ${bldred}[Default TRUE]${txtrst}
 	-H	Hieratical cluster for columns.
-		${bldred}Default FALSE, accept TRUE ${txtrst}
+		${bldred}Default FALSE, accept TRUE${txtrst}
+	-R	Hieratical cluster for rows.
+		${bldred}Default TRUE, accept FALSE${txtrst}
+	-c	Clustering method, Default "complete". 
+		Accept "ward.D", "ward.D2","single", "average" (=UPGMA), 
+		"mcquitty" (=WPGMA), "median" (=WPGMC) or "centroid" (=UPGMC)
+	-D	Clustering the distance for rows.
+		${bldred}Default 'correlation', accept 'euclidean', 
+		"manhattan", "maximum", "canberra", "binary", "minkowski". ${txtrst}
+	-I	Clustering the distance for cols.
+		${bldred}Default 'correlation', accept 'euclidean', 
+		"manhattan", "maximum", "canberra", "binary", "minkowski". ${txtrst}
 	-L	First get log-value, then do other analysis.
-		Accept an R function log2 or log10. You may want to add
-		parameter to -J (scale_add) and -s (small). Every logged value
-		less than -s will be assigned by -J.[Default -s is -Inf and -J
-		is 1. Usually -s should be 0 and -J should be -1.] 
+		Accept an R function log2 or log10. 
 		${bldred}[Default FALSE]${txtrst}
+	-d	Scale the data or not for clustering and visualization.
+		[Default 'none' means no scale, accept 'row', 'column' to 
+		scale by row or column.]
+	-k	Aggregate the rows using kmeans clustering. 
+		This is advisable if number of rows is so big that R cannot 
+		handle their hierarchical clustering anymore, roughly more than 1000.
+		Instead of showing all the rows separately one can cluster the
+		rows in advance and show only the cluster centers. The number
+		of clusters can be tuned here.
+		[${txtred}Default 'NA' which means no
+		cluster, other positive interger is accepted for executing
+		kmeans cluster, also the parameter represents the number of
+		expected clusters.${txtrst}]
 	-u	The width of output picture.[${txtred}Default 20${txtrst}]
 	-v	The height of output picture.[${txtred}Default 20${txtrst}] 
 	-E	The type of output figures.[${txtred}Default pdf, accept
@@ -56,19 +77,6 @@ ${txtbld}OPTIONS${txtrst}:
 		used as a separator point. The program will separate data into
 		two parts, [minimum, midpoint] and [midpoint, minimum]. Each
 		of these parts will be binned to same number of regions.]${txtrst}]
-	-k	Aggregate the rows using kmeans clustering. 
-		This is advisable if number of rows is so big that R cannot 
-		handle their hierarchical clustering anymore, roughly more than 1000.
-		Instead of showing all the rows separately one can cluster the
-		rows in advance and show only the cluster centers. The number
-		of clusters can be tuned here.
-		[${txtred}Default 'NA' which means no
-		cluster, other positive interger is accepted for executing
-		kmeans cluster, also the parameter represents the number of
-		expected clusters.${txtrst}]
-	-d	Scale the data or not for clustering and visualization.
-		[Default 'none' means no scale, accept 'row', 'column' to 
-		scale by row or column.]
 	-s	The smallest value you want to keep, any number smaller will
 		be taken as 0.[${bldred}Default -Inf, Optional${txtrst}]  
 	-m	The maximum value you want to keep, any number larger willl
@@ -78,24 +86,22 @@ ${txtbld}OPTIONS${txtrst}:
 		to given value to get different color representation.${txtrst}]
 	-Y	Color for NA value.
 		[${txtred}Default grey${txtrst}]
-	-J	When -j is TRUE,  supply a value to add to all values in data
-		to avoid zero. When -L is used, the supplied value will be
-		used to substitute values less than -s generated log
-		processing. However, this has no effection to final data.
-	   	[${bldred}Default 1${txtrst}]
-	-G	Use quantile for color distribution. Default 5 color scale
-		for each quantile.[Default FALSE, accept TRUE. Suitable for data range
-		vary large. This has high priviority than -Z. -X can work when
-		-G is TRUE]
+	-G	Set data breaks.
+		<1> represents automatically break data for color view.
+		<2> represents quantile data for color view. 
+			Default 5 color scale for each quantile.
+			Specially when -X is given, it will be used as midpoint to
+			get same number of breaks flanking midpoint.
+		<3> represents using given data breaks for color view.
 	-C	Color list for plot when -G is TRUE.
 		[${bldred}Default 'green','yellow','dark red'.
 		Accept a list of colors each wrapped by '' and totally wrapped
 		by "" ${txtrst}]
-	-O	When -G is TRUE, using given data points as separtor to
-		assign colors. [${bldred}Default -G default. Normally you can
+	-O	When -G is <3>, using given data points as separtor to
+		assign colors. [${bldred}Normally you can
 		select a mid-point and give same bins between the minimum and
 		midpoint, the midpoint and maximum.
-		[0,0.2,0.4,0.6,0.8,1,2,4,6,8,10]${txtrst}]
+		Here is the format "0,0.2,0.4,0.6,0.8,1,2,4,6,8,10"${txtrst}]
 	-e	Execute or not[${bldred}Default TRUE${txtrst}]
 	-i	Install the required packages[${bldred}Default FALSE${txtrst}]
 EOF
@@ -103,31 +109,26 @@ EOF
 
 file=''
 title=''
-cluster_rows='FALSE'
+cluster_rows='TRUE'
+cluster_cols='FALSE'
+clustering_distance_rows='correlation'
+clustering_distance_cols='correlation'
+clustering_method='complete'
+legend_breaks='NA'
 width=''
 label=''
 logv='FALSE'
-logv_pos='before'
 kclu='NA'
-clu='kmeans'
 scale='none'
-clusterInclu='TRUE'
-group=0
 execute='TRUE'
 ist='FALSE'
 legend=' '
 na_color='grey'
-legend_pos='right'
-small="-Inf"
-maximum="Inf"
-log=''
 uwid=20
 vhig=20
 res=300
 fontsize=14
 ext='pdf'
-scale_op='FALSE'
-scale_add=1
 xcol='green'
 ycol='red'
 mcol='yellow'
@@ -135,20 +136,14 @@ mid_value_use='FALSE'
 mid_value='Inf'
 xtics='TRUE'
 xtics_angle=0
-ytics='FALSE'
-quiet='TRUE'
-delZero='FALSE'
-cvSort='FALSE'
-gradient='FALSE'
-hcluster='FALSE'
+ytics='TRUE'
+gradient=1
 givenSepartor=''
 gradientC="'green','yellow','red'"
 generateNA='FALSE'
 digits='FALSE'
-colormodel='srgb'
-reverse_rows='FALSE'
 
-while getopts "hf:t:u:v:H:x:y:Y:M:R:I:L:K:X:r:F:E:w:l:a:A:b:B:k:c:d:n:g:s:N:j:J:m:o:G:D:C:O:q:e:i:p:Z:z:" OPTION
+while getopts "hf:t:a:A:b:H:R:c:D:I:L:d:k:u:v:E:r:F:x:y:M:Z:X:s:m:N:Y:G:C:O:e:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -162,17 +157,53 @@ do
 		t)
 			title=$OPTARG
 			;;
+		a)
+			xtics=$OPTARG
+			;;
+		A)
+			xtics_angle=$OPTARG
+			;;
+		b)
+			ytics=$OPTARG
+			;;
+		H)
+			cluster_cols=$OPTARG
+			;;
+		R)
+			cluster_rows=$OPTARG
+			;;
+		c)
+			clustering_method=$OPTARG
+			;;
+		D)
+			clustering_distance_rows=$OPTARG
+			;;
+		I)
+			clustering_distance_cols=$OPTARG
+			;;
+		L)
+			logv=$OPTARG
+			;;
+		d)
+			scale=$OPTARG
+			;;
+		k)
+			kclu=$OPTARG
+			;;
 		u)
 			uwid=$OPTARG
 			;;
 		v)
 			vhig=$OPTARG
 			;;
-		H)
-			hcluster=$OPTARG
-			;;
 		E)
 			ext=$OPTARG
+			;;
+		r)
+			res=$OPTARG
+			;;
+		F)
+			fontsize=$OPTARG
 			;;
 		x)
 			xcol=$OPTARG
@@ -183,15 +214,6 @@ do
 		M)
 			mcol=$OPTARG
 			;;
-		Y)
-			na_color=$OPTARG
-			;;
-		R)
-			reverse_rows=$OPTARG
-			;;
-		L)
-			logv=$OPTARG
-			;;
 		K)
 			logv_pos=$OPTARG
 			;;
@@ -200,54 +222,6 @@ do
 			;;
 		X)
 			mid_value=$OPTARG
-			;;
-		r)
-			res=$OPTARG
-			;;
-		F)
-			fontsize=$OPTARG
-			;;
-		w)
-			width=$OPTARG
-			;;
-		l)
-			legend_pos=$OPTARG
-			;;
-		I)
-			legend=$OPTARG
-			;;
-		a)
-			xtics=$OPTARG
-			;;
-		A)
-			xtics_angle=$OPTARG
-			;;
-		b)
-			ytics=$OPTARG
-			;;
-		B)
-			colormodel=$OPTARG
-			;;
-		k)
-			kclu=$OPTARG
-			;;
-		c)
-			clu=$OPTARG
-			;;
-		d)
-			scale=$OPTARG
-			;;
-		n)
-			clusterInclu=$OPTARG
-			;;
-		g)
-			group=$OPTARG
-			;;
-		p)
-			delZero=$OPTARG
-			;;
-		z)
-			cvSort=$OPTARG
 			;;
 		s)
 			small=$OPTARG
@@ -258,29 +232,17 @@ do
 		N)
 			generateNA=$OPTARG
 			;;
-		j)
-			scale_op=$OPTARG
-			;;
-		J)
-			scale_add=$OPTARG
-			;;
-		o)
-			log=$OPTARG
+		Y)
+			na_color=$OPTARG
 			;;
 		G)
 			gradient=$OPTARG
-			;;
-		D)
-			digits=$OPTARG
 			;;
 		C)
 			gradientC=$OPTARG
 			;;
 		O)
 			givenSepartor=$OPTARG
-			;;
-		q)
-			quiet=$OPTARG
 			;;
 		e)
 			execute=$OPTARG
@@ -304,9 +266,6 @@ if [ -z $file ] ; then
 	exit 1
 fi
 
-if test $kclu -gt 1; then
-	mid=${mid}".${clu}.$kclu.$group"
-fi
 
 if test "$log" != ''; then
 	mid=${mid}".$log"
@@ -316,9 +275,6 @@ if test "${scale}" == "TRUE"; then
 	mid=${mid}".scale"
 fi
 
-if test "${colormodel}" == "cmyk"; then
-	mid=${mid}".cmyk"
-fi
 
 cat <<END >${file}${mid}.r
 
@@ -335,359 +291,46 @@ if($gradient){
 data <- read.table(file="$file", sep="\t", header=T, row.names=1,
 	check.names=F, quote="", comment="")
 
-pheatmap(data, kmean_k=$kclu, scale=${scale}, border_color=NA,
-cluster_rows=${cluster_rows}, cluster_cols=${cluster_cols}, 
-breaks=NA${breaks}, clustering_method=, 
-legend_breaks=, show_rownames=, show_colnames=, main=$title,
-fontsize=, filenames=, width=, height=)
-	
-if ($hcluster) {
-	if (! $quiet){
-		print("reorder columns using hieratical cluster")
-	}
-	t_data <- t(data)
-	fit <- hcluster(t_data)
-	data <- t(t_data[fit\$order, ])
-	data <- as.data.frame(data)
-}
-
-#print("Read in label.")
-#label is for group level
-#label <- as.vector(read.table(file="$label", sep="\t", header=F)\$V1)
-#dimD <- dim(data)
-##size <- dimD[1] * $width
-#size <- dimD[1] * ($width+1)
-#print("Prepare group")
-#grp <- rep(label, each=size)
-#print("Rename each column to make each one uniqu")
-#names(data) <- paste0(rep(label, each=$width), names(data))
-
-if ("${logv_pos}" == "before" && "${logv}" != "FALSE"){
-	if (! $quiet){
-		print("${logv} data before clustering.")
-	}
+if ("${logv}" != "FALSE"){
 	data[data==1] <- 1.0001
 	data <- ${logv}(data)
-	data[data<${small}] = ${scale_add}
 }
 
-if ($kclu>1){
-
-	if (! $quiet){
-		print("Delete rows containing 0 only.")
-	}
-	data.zero <- data[rowSums(data)==0,]
-	rowZero <- nrow(data.zero)
-	data <- data[rowSums(data)!=0,]
-
-	if (! $quiet){
-		print("Prepare data for clustering.")
-	}
-	if ($small != "-Inf"){
-		mindata <- $small
-	}else{
-		mindata <- min(data)
-	}
-	if ($maximum != "Inf"){
-		maxdata <- $maximum
-	}else{
-		maxdata <- max(data)
-	}
-	step <- (maxdata-mindata)/$kclu
-	if ($cvSort){
-		if (! $quiet){
-			print("Sort data by coefficient variance.")
-		}
-		sd <- apply(data, 1, sd) #1 means row, 2 means col
-		mean <- rowMeans(data)
-		cv <- sd/mean
-		data <- data[order(cv),]
-	}
-	if ($group == 0){
-		data.k <- data
-	}
-	else if ($group > 0){
-		start = ($group-1) * $width + 1
-		end = $group * $width
-		data.k <- data[,start:end]
-	}
-	if ($scale){
-		if (! $quiet){
-			print("Scale data.")
-		}
-		data.k <- t(apply(data.k,1,scale))
-	}
-	if (! $quiet){
-		print("Cluster data.")
-	}
-	if ("$clu" == "clara" ){
-		data.d <- t(apply(data.k,1,diff))
-		data.clara <- clara(data.d, $kclu)
-		cluster_172 <- data.clara\$clustering
-		#data.clara <- kmeans(data.d, $kclu, iter.max=1000)
-		#cluster_172 <- data.clara\$cluster
-		rm(data.d)
-	}else
-	if ("$clu" == 'kmeans'){
-		set.seed(3)
-		data.clara <- kmeans(data.k, $kclu, iter.max = 1000)
-		cluster_172 <- data.clara\$cluster
-	}
-	tmp_cluster_172 <- mindata + (cluster_172-1) * step
-	data.m1 <- cbind(cluster=cluster_172, rownames(data))[,1]
-	if (! $quiet){
-		print("Output clustered result")
-		output <- paste("${file}${mid}", "cluster", sep='.')
-		#data.m1 <- data.m1[order(cluster_172),]
-		write.table(data.m1, file=output, sep="\t", quote=F, col.names=F)
-		print("Sort data by cluster.")
-	}
-	if (${scale_op}){
-		data <- data + ${scale_add}
-		data.s <- as.data.frame(t(apply(data, 1, scale)))
-		colnames(data.s) <- colnames(data)
-
-		mindata <- min(data.s)
-		maxdata <- max(data.s)
-		step <- (maxdata-mindata)/$kclu
-		tmp_cluster_172 <- mindata + (cluster_172-1) * step
-		#---------------add cluster info-------------------
-		if ($clusterInclu){
-			data.s\$cluster <- tmp_cluster_172
-		}
-		#----------sort data by cluster-----this must be after add
-		#-----cluster info-------------
-		data.s <- data.s[order(cluster_172),]
-		if ((rowZero > 0) & (! ${delZero})){
-			if (! $quiet) {
-				print("Add rows which are all zero")
-			}
-			if ($clusterInclu){
-				if (! $quiet) {
-					print("Add cluster info for rows which are all zero")
-				}
-				newcluster <- mindata - step
-				cluster_315_for_zero <- c(rep(newcluster, rowZero)) 
-				data.zero\$cluster <- cluster_315_for_zero
-			}
-			data.s <- rbind(data.zero, data.s)
-		}
-		if (! $quiet){
-			output <- paste("${file}${mid}", \
-				"cluster.scaleop.final", sep='.')
-			write.table(data.s, file=output, sep="\t", \
-				quote=F, col.names=NA)
-		}
-	}
-	#--for output original data ---------------------------
-	if ($clusterInclu){
-		data\$cluster <- cluster_172
-	}
-	data <- data[order(cluster_172),]
-
-	if ((rowZero > 0) & (! ${delZero})){
-		if (! $quiet) {
-			print("Add rows which are all zero")
-		}
-		if ($clusterInclu){
-			if (! $quiet) {
-				print("Add cluster info for rows which are all zero")
-			}
-			newcluster <- mindata - step
-			cluster_315_for_zero <- c(rep(newcluster, rowZero)) 
-			data.zero\$cluster <- cluster_315_for_zero
-		}
-		data <- rbind(data.zero, data)
+if ($gradient == 1){
+	legend_breaks = NA
+} else if ($gradient == 2){
+	if (${mid_value} == Inf){
+		summary_v <- c(t(data))
+		legend_breaks <- unique(c(seq(summary_v[1]*0.95,summary_v[2],length=6),
+		  seq(summary_v[2],summary_v[3],length=6),
+		  seq(summary_v[3],summary_v[5],length=5),
+		  seq(summary_v[5],summary_v[6]*1.05,length=5)))
+	} else {
+		legend_breaks <- unique(c(seq(summary_v[1]*0.95, ${mid_value},
+		 length=10), seq(${mid_value},summary_v[6]*1.05,length=10)))
 	}
 
-
-	if (! $quiet){
-		output <- paste("${file}${mid}", "cluster.final", sep='.')
-		write.table(data, file=output, sep="\t", quote=F, col.names=T)
-	}
-	#--for output original data ---------------------------
-	#--for use scaled data-----------------------------
-	if ($scale_op){
-		data <- data.s
-	}
-	rm(data.m1, data.k, data.clara)
-	
-}else{
-	#---for raw data scale-----no cluster------------
-	if ($scale_op){
-		colname <- colnames(data)
-		data <- as.data.frame(t(apply(data,1,scale)))
-		colnames(data) <- colname
-	}
-}
-
-if ("${logv_pos}" == "after" && "${logv}" != "FALSE"){
-	if (! $quiet){
-		print("${logv} data after clustering.")
-	}
-	data[data==1] <- 1.0001
-	data <- ${logv}(data)
-	data[data<${small}] = ${scale_add}
-}
-
-if (! $quiet){
-	print("Melt data.")
-}
-#oriLen <- dimD[2]
-data\$id <- rownames(data)
-idlevel <- as.vector(rownames(data))
-
-if (${reverse_rows}) {
-	idlevel <- rev(idlevel)
-}
-
-#data\$idsort <- data\$id[order(data\$cluster)]
-#data\$idsort <- order(data\$idsort)
-if (! $quiet){
-	print("Reorganize data.")
-}
-#data.m <- melt(data, id.vars = c("id", "idsort"))
-#---------------
-#data.m <- melt(data, c("id"), names(data)[1:oriLen])
-data.m <- melt(data, c("id"))
-if (! $quiet){
-	output2 <- paste("${file}${mid}", "cluster.melt", sep='.')
-	write.table(data.m, file=output2, sep="\t" , quote=F,
-	col.names=T, row.names=F)
-}
-
-if("${generateNA}" != "FALSE"){
-	data.m\$value[data.m\$value == ${generateNA}] <- NA
-}
-
-data.m\$id <- factor(data.m\$id, levels=idlevel, ordered=T)
-
-data.m\$value[data.m\$value < $small] <- 0
-
-data.m\$value[data.m\$value > $maximum] <- $maximum
-
-if (! $quiet){
-	print("Prepare ggplot layers.")
-}
-
-#p <- ggplot(data=data.m, aes(x=variable, y=id)) + \
-#geom_tile(aes(fill=value)) 
-#facet_grid( .~grp) 
-
-if($gradient){
-	gradientC <- c(${gradientC})
-	summary_v <- summary(data.m\$value)
-	break_v <- c($givenSepartor)
-	if (length(break_v) < 3){
-		if (${mid_value} == Inf){
-			break_v <- \
-			unique(c(seq(summary_v[1]*0.95,summary_v[2],length=6),seq(summary_v[2],summary_v[3],length=6),seq(summary_v[3],summary_v[5],length=5),seq(summary_v[5],summary_v[6]*1.05,length=5)))
-		} else {
-			break_v <- \
-			unique(c(seq(summary_v[1]*0.95, ${mid_value},
-			length=10),
-			seq(${mid_value},summary_v[6]*1.05,length=10)))
-		}
-
-		if("${digits}" != "FALSE"){
-			break_v <- prettyNum(break_v, digits=${digits})
-		}
-		data.m\$value <- cut(data.m\$value, breaks=break_v,\
-			labels=break_v[2:length(break_v)])
-
-		break_v=unique(data.m\$value)
-	}else {
-		data.m\$value <- cut(data.m\$value, breaks=break_v,\
-			labels=break_v[2:length(break_v)])
-		#break_v=unique(data.m\$value)
+	if("${digits}" != "FALSE"){
+		legend_breaks <- prettyNum(legend_breaks, digits=${digits})
 	}
 	
-	col <- colorRampPalette(gradientC)(length(break_v))
 	print(col)
-	print(break_v)
-	#p <- p + scale_fill_gradientn(colours = c("$xcol", "$mcol","$ycol"), breaks=break_v, labels=format(break_v))
-	p <- ggplot(data=data.m, aes(x=variable, y=id)) + \
-	geom_tile(aes(fill=value)) + scale_fill_manual(values=col,
-	name="${legend}", na.value="${na_color}")
-	#scale_fill_brewer(palette="PRGn")
+	print(legend_breaks)
 } else {
-	p <- ggplot(data=data.m, aes(x=variable, y=id)) + \
-	geom_tile(aes(fill=value)) 
-	if( "$log" == ''){
-		if (${mid_value_use}){
-			if (${mid_value} == Inf){
-				midpoint = median(data.m\$value)
-			}else {
-				midpoint = ${mid_value}
-			}
-			p <- p + scale_fill_gradient2(low="$xcol", mid="$mcol",
-				high="$ycol", midpoint=midpoint, name="$legend",
-				na.value="${na_color}")
-		}else {
-			p <- p + scale_fill_gradient(low="$xcol", high="$ycol",
-				name="${legend}", na.value="${na_color}")
-		}
-	}else {
-		p <- p + scale_fill_gradient(low="$xcol", high="$ycol",
-		trans="$log", name="${legend}", na.value="${na_color}")
-	}
-} #end the else of gradient 
-
-p <- p + theme(axis.ticks=element_blank()) + theme_bw() + 
-	theme(panel.grid.major = element_blank(), 
-	panel.grid.minor = element_blank()) + xlab(NULL) + ylab(NULL)
-
-	#theme(legend.title=element_blank(),
-#if ("${legend}" != " "){
-#	p <- p + theme(legend.title="${legend}")
-#}
-
-if ("$xtics" == "FALSE"){
-	p <- p + theme(axis.text.x=element_blank())
-}else{
-	if (${xtics_angle} != 0){
-	#p <- p + theme(axis.text.x=element_text(angle=${xtics_angle},hjust=1))
-	p <- p + theme(axis.text.x=element_text(angle=${xtics_angle}))
-	}
-}
-if ("$ytics" == "FALSE"){
-	p <- p + theme(axis.text.y=element_blank())
+	legend_breaks <- c($givenSepartor)
 }
 
-top='top'
-botttom='bottom'
-left='left'
-right='right'
-none='none'
-legend_pos_par <- ${legend_pos}
+pheatmap(data, kmean_k=$kclu, scale="${scale}", border_color=NA,
+cluster_rows=${cluster_rows}, cluster_cols=${cluster_cols}, 
+breaks=legend_breaks, clustering_method="${clustering_method}",
+clustering_distance_rows="${clustering_distance_rows}", 
+clustering_distance_cols="${clustering_distance_cols}", 
+legend_breaks=legend_breaks, show_rownames=${xtics}, show_colnames=${ytics}, 
+main="$title",
+fontsize=${fontsize}, filename="${file}${mid}.${ext}", width=${uwid},
+height=${vhig})
+	
 
-#if ("${legend_pos}" != "right"){
-p <- p + theme(legend.position=legend_pos_par)
-#}
-
-if (! $quiet){
-	print("Begin plotting.")
-}
-
-#p <- p + theme(text=element_text(family="Arial", size=${fontsize}))
-p <- p + theme(text=element_text(size=${fontsize}))
-
-
-if ("${ext}" == "pdf") {
-	ggsave(p, filename="${file}${mid}.${ext}", dpi=$res, width=$uwid,
-	height=$vhig, units=c("cm"), colormodel="${colormodel}")
-} else {
-	ggsave(p, filename="${file}${mid}.${ext}", dpi=$res, width=$uwid,
-	height=$vhig, units=c("cm"))
-}
-
-#ggsave(p, filename="${file}${mid}.${ext}", dpi=$res, width=$uwid,
-#height=$vhig, units=c("cm"), colormodel="${colormodel}")
-
-#png(filename="${file}${mid}.png", width=$uwid, height=$vhig,
-#res=$res)
-#p
-#dev.off()
 END
 
 if [ "$execute" == "TRUE" ]; then
@@ -695,7 +338,4 @@ if [ "$execute" == "TRUE" ]; then
 if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
 fi
 
-#if [ "$quiet" == "TRUE" ]; then
-#	/bin/rm -f ${file}${mid}.r
-#fi
 #convert -density 200 -flatten ${file}${mid}.eps ${first}${mid}.png
