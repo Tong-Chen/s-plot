@@ -9,6 +9,48 @@ ${txtcyn}
 
 ***CREATED BY Chen Tong (chentong_biology@163.com)***
 
+----Matrix file--------------
+Name	T0_1	T0_2	T0_3	T4_1	T4_2
+TR19267|c0_g1|CYP703A2	1.431	0.77	1.309	1.247	0.485
+TR19612|c1_g3|CYP707A1	0.72	0.161	0.301	2.457	2.794
+TR60337|c4_g9|CYP707A1	0.056	0.09	0.038	7.643	15.379
+TR19612|c0_g1|CYP707A3	2.011	0.689	1.29	0	0
+TR35761|c0_g1|CYP707A4	1.946	1.575	1.892	1.019	0.999
+TR58054|c0_g2|CYP707A4	12.338	10.016	9.387	0.782	0.563
+TR14082|c7_g4|CYP707A4	10.505	8.709	7.212	4.395	6.103
+TR60509|c0_g1|CYP707A7	3.527	3.348	2.128	3.257	2.338
+TR26914|c0_g1|CYP710A1	1.899	1.54	0.998	0.255	0.427
+----Matrix file--------------
+
+----Row annorarion file --------------
+------1. At least two columns--------------
+------2. The first column should be the same as the first column in
+---------matrix (order does not matter)--------------
+Name	Clan	Family
+TR19267|c0_g1|CYP703A2	CYP71	CYP703
+TR19612|c1_g3|CYP707A1	CYP85	CYP707
+TR60337|c4_g9|CYP707A1	CYP85	CYP707
+TR19612|c0_g1|CYP707A3	CYP85	CYP707
+TR35761|c0_g1|CYP707A4	CYP85	CYP707
+TR58054|c0_g2|CYP707A4	CYP85	CYP707
+TR14082|c7_g4|CYP707A4	CYP85	CYP707
+TR60509|c0_g1|CYP707A7	CYP85	CYP707
+TR26914|c0_g1|CYP710A1	CYP710	CYP710
+----Row annorarion file --------------
+
+----Column annorarion file --------------
+------1. At least two columns--------------
+------2. The first column should be the same as the first row in
+---------matrix (order does not matter)--------------
+Name	Sample
+T0_1	T0
+T0_2	T0
+T0_3	T0
+T4_1	T4
+T4_2	T4
+----Column annorarion file --------------
+
+
 Usage:
 
 $0 options${txtrst}
@@ -58,6 +100,8 @@ ${txtbld}OPTIONS${txtrst}:
 		cluster, other positive interger is accepted for executing
 		kmeans cluster, also the parameter represents the number of
 		expected clusters.${txtrst}]
+	-P	A file to specify row-annotation.[${txtred}Default NA${txtrst}]
+	-Q	A file to specify col-annotation.[${txtred}Default NA${txtrst}]
 	-u	The width of output picture.[${txtred}Default 20${txtrst}]
 	-v	The height of output picture.[${txtred}Default 20${txtrst}] 
 	-E	The type of output figures.[${txtred}Default pdf, accept
@@ -142,8 +186,10 @@ givenSepartor=''
 gradientC="'green','yellow','red'"
 generateNA='FALSE'
 digits='FALSE'
+annotation_row='NA'
+annotation_col='NA'
 
-while getopts "hf:t:a:A:b:H:R:c:D:I:L:d:k:u:v:E:r:F:x:y:M:Z:X:s:m:N:Y:G:C:O:e:i:" OPTION
+while getopts "hf:t:a:A:b:H:R:c:D:I:L:d:k:u:v:E:r:F:P:Q:x:y:M:Z:X:s:m:N:Y:G:C:O:e:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -183,6 +229,12 @@ do
 			;;
 		L)
 			logv=$OPTARG
+			;;
+		P)
+			annotation_row=$OPTARG
+			;;
+		Q)
+			annotation_col=$OPTARG
 			;;
 		d)
 			scale=$OPTARG
@@ -320,13 +372,32 @@ if ($gradient == 1){
 	legend_breaks <- c($givenSepartor)
 }
 
+
+if ("${annotation_row}" != "NA") {
+	annotation_row <- read.table(file="${annotation_row}", header=T,
+		row.names=1, sep="\t", quote="", check.names=F, comment="")
+} else {
+	annotation_row <- "NA"
+}
+
+if ("${annotation_col}" != "NA") {
+	annotation_col <- read.table(file="${annotation_col}", header=T,
+		row.names=1, sep="\t", quote="", check.names=F, comment="")
+	levs <- unique(unlist(lapply(annotation_col, unique)))
+	annotation_col <- data.frame(lapply(annotation_col, factor,
+		levels=levs), row.names=rownames(annotation_col))
+} else {
+	annotation_col <- "NA"
+}
+
 pheatmap(data, kmean_k=$kclu, scale="${scale}", border_color=NA,
 cluster_rows=${cluster_rows}, cluster_cols=${cluster_cols}, 
 breaks=legend_breaks, clustering_method="${clustering_method}",
 clustering_distance_rows="${clustering_distance_rows}", 
 clustering_distance_cols="${clustering_distance_cols}", 
 legend_breaks=legend_breaks, show_rownames=${xtics}, show_colnames=${ytics}, 
-main="$title",
+main="$title", annotation_col=annotation_col,
+annotation_row=annotation_row, 
 fontsize=${fontsize}, filename="${file}${mid}.${ext}", width=${uwid},
 height=${vhig})
 	
