@@ -51,15 +51,19 @@ ${txtbld}OPTIONS${txtrst}:
 	-b	The name for label2.
 		${bldred}[Necessary when -f is not FALSE, 
 		one string in your second column,
-		ordered. A parameter to -b is enough for 2-way venn.]${txtrst}
+		ordered. A parameter to -b is needed for 2-way venn.]${txtrst}
 	-c	The name for label3.
 		${bldred}[Necessary when -f is not FALSE, 
 		one string in your second column,
-		ordered. A parameter to -c is enough for 3-way venn.]${txtrst}
+		ordered. A parameter to -c is needed for 3-way venn.]${txtrst}
 	-d	The name for label4.
 		${bldred}[Necessary when -f is not FALSE, 
 		one string in your second column],
-		ordered. A parameter to -d is enough for 4-way venn.]${txtrst}
+		ordered. A parameter to -d is needed for 4-way venn.]${txtrst}
+	-g	The name for label5.
+		${bldred}[Necessary when -f is not FALSE, 
+		one string in your second column],
+		ordered. A parameter to -f is needed for 5-way venn.]${txtrst}
 	-p	The label of output files.
 		${bldred}[Optional. But when one main file is used to generate 
 		multiple vennDIagrams, this parameter should be specified.]
@@ -73,6 +77,12 @@ ${txtbld}OPTIONS${txtrst}:
 		For three-set venn, the format is "100, 110, 90, 50, 40, 40, 20" 
 		represents (length_a, length_b, length_c, 
 		a_b_overlap,  b_c_overlap, a_c_overlap, a_b_c_overlap).  
+
+		For four-set venn, the format is "100, 110, 90, 50, 40, 40, 20" 
+		represents (length_a, length_b, length_c, 
+		a_b_overlap, a_c_overlap, a_d_overlap, b_c_overlap, 
+		b_d_overlap, c_d_overlap, abc_overlap, abd_overlap, 
+		acd_overlap, bcd_overlap, abcd_overlap).  
 
 	-l	List of labels for venn plot (used when -F is TRUE).
 
@@ -116,6 +126,7 @@ label1="CHENTONG"
 label2="CHENTONG"
 label3="CHENTONG"
 label4="CHENTONG"
+label5="CHENTONG"
 numList=
 labelList=
 execute='TRUE'
@@ -125,10 +136,11 @@ vhig=10
 res=300
 ext='pdf'
 line_size=1
-color_v='"cornflowerblue", "green", "yellow", "darkorchid1"'
+#color_v='"cornflowerblue", "green", "yellow", "darkorchid1"'
+color_v='"dodgerblue", "goldenrod1", "darkorange1", "seagreen3", "orchid3"'
 prefix=''
 
-while getopts "hf:F:a:b:c:d:n:l:C:p:w:u:r:e:E:i:" OPTION
+while getopts "hf:F:a:b:c:d:g:n:l:C:p:w:u:r:e:E:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -152,6 +164,9 @@ do
 			;;
 		d)
 			label4=$OPTARG
+			;;
+		g)
+			label5=$OPTARG
 			;;
 		n)
 			numList=$OPTARG
@@ -195,7 +210,7 @@ if [ -z $file ]; then
 	exit 1
 fi
 
-mid=${prefix}'.vennDiagram'
+mid='.'${prefix}'.vennDiagram'
 
 cat <<END >${file}${mid}.r
 
@@ -250,9 +265,15 @@ if (! ${numGiven}) {
 		num <- num + 1
 	}
 
+	if("${label5}" != "CHENTONG"){
+		$label5 <- data[grepl("\\\\<${label5}\\\\>",data[,2]),1]
+		num <- num + 1
+	}
+
 	color_v <- c(${color_v})[1:num]
 	#label.col = c("orange", "white", "darkorchid4", "white", "white", "white", "white", "white", "darkblue", "white", "white", "white", "white", "darkgreen", "white"),
-	if(num == 4){
+
+	if(num == 5){
 		p <- venn.diagram( 
 			x = list($label1=$label1, $label4=$label4, $label2=$label2,
 			$label3=$label3),
@@ -263,6 +284,19 @@ if (! ${numGiven}) {
 			cex = 2, fontfamily = "Helvetica",
 			cat.col = c("black"),cat.cex = 1.1, margin=0.1, 
 			cat.fontfamily = "Helvetica"
+		)
+	}else if(num == 4){
+		p <- venn.diagram( 
+			x = list($label1=$label1, $label4=$label4,
+			$label5=$label5, $label2=$label2,
+			$label3=$label3),
+			filename = NULL, col = "black", lwd = 1, 
+			fill = color_v,
+			alpha = 0.50,
+			label.col = c("black"),
+			cex = 2, fontfamily = "Helvetica",
+			cat.col = c("black"),cat.cex = 1.1, margin=0.05, 
+			cat.fontfamily = "Helvetica", 
 		)
 	} else if (num==3) {
 		p <- venn.diagram( 
@@ -308,6 +342,17 @@ if (! ${numGiven}) {
 		n13=numList[6], n123=numList[7], 
 		category=labelList, col="transparent", fill=color_v,
 		cat.col=color_v, reverse=FALSE)
+	}else if (num==4) {
+		draw.quad.venn(area1=numList[1], area2=numList[2],
+		area3=numList[3], area4=numList[4], n12=numList[5], 
+		n13=numList[6], n14=numList[7], n23=numList[8],
+		n24=numList[9], n34=numList[10], n123=numList[11], 
+	    n124=numList[12], n134=numList[13], n234=numList[14], 
+   		n1234=numList[15]	   
+		category=labelList, col="transparent", fill=color_v,
+		cat.col=color_v, reverse=FALSE)
+	}else if (num==5){
+		#draw.quintuple.venn()
 	}
 }
 
