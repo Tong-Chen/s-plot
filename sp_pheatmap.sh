@@ -377,7 +377,7 @@ if ("${annotation_row}" != "NA") {
 	annotation_row <- read.table(file="${annotation_row}", header=T,
 		row.names=1, sep="\t", quote="", check.names=F, comment="")
 } else {
-	annotation_row <- "NA"
+	annotation_row <- NA
 }
 
 if ("${annotation_col}" != "NA") {
@@ -387,7 +387,7 @@ if ("${annotation_col}" != "NA") {
 	annotation_col <- data.frame(lapply(annotation_col, factor,
 		levels=levs), row.names=rownames(annotation_col))
 } else {
-	annotation_col <- "NA"
+	annotation_col <- NA
 }
 
 pheatmap(data, kmean_k=$kclu, scale="${scale}", border_color=NA,
