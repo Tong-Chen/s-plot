@@ -348,7 +348,7 @@ if (! ${numGiven}) {
 		n13=numList[6], n14=numList[7], n23=numList[8],
 		n24=numList[9], n34=numList[10], n123=numList[11], 
 	    n124=numList[12], n134=numList[13], n234=numList[14], 
-   		n1234=numList[15]	   
+   		n1234=numList[15], 	   
 		category=labelList, col="transparent", fill=color_v,
 		cat.col=color_v, reverse=FALSE)
 	}else if (num==5){
@@ -369,6 +369,9 @@ END
 
 if [ "$execute" == "TRUE" ]; then
 	Rscript ${file}${mid}.r
-if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
+	if [ "$?" == "0" ]; then 
+		/bin/rm -f ${file}${mid}.r
+		/bin/rm -f VennDiagram*.log 
+	fi
 fi
 
