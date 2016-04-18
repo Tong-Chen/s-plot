@@ -406,7 +406,10 @@ END
 
 if [ "$execute" == "TRUE" ]; then
 	Rscript ${file}${mid}.r
-if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
+	if [ "$?" == "0" ]; then 
+		/bin/rm -f ${file}${mid}.r
+		/bin/rm -f Rplots.pdf	
+	fi
 fi
 
 #convert -density 200 -flatten ${file}${mid}.eps ${first}${mid}.png
