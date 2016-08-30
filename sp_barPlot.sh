@@ -32,11 +32,13 @@ Pos	h3k27ac	ctcf	enhancer	h3k4me3	polII
 3000	8.43869	10.41010	11.9760	9.80665	7.94148
 4000	8.48877	10.57570	11.6562	9.71986	8.17849
 -------------------------------------------------------------
-fileformat when -m is true
+fileformat when -m is true 
+#Three columns needed, the column given to -a should not be variable
+#or value. Be carefull to name you x-axis variable.
 #The name "value" and "variable" shoud not be altered.
 #Actually this format is the melted result of last format.
 --------------------------------------------------------------
-Pos variable    value
+Pos variable    value 
 -5000	h3k27ac	8.71298
 -4000	h3k27ac	8.43246
 -3000	h3k27ac	8.25497
@@ -135,9 +137,9 @@ ${txtbld}OPTIONS${txtrst}:
 		 rgb(0/255,255/255,0/255),rgb(255/255,255/255,0/255)"
 		${txtrst}]
 	-s	Scale y axis
-		[${txtred}Default null. Accept TRUE. This function is
-		depleted. If the supplied number after -S is not 0, this
-		parameter is TRUE${txtrst}]
+		[${txtred}Default null. Accept TRUE. 
+		If the supplied number after -S is not 0, this
+		parameter will be automatically TRUE${txtrst}]
 	-v	If scale is TRUE, give the following
 		scale_y_log10()[default], coord_trans(y="log10"), or other legal
 		command for ggplot2)${txtrst}]
@@ -423,7 +425,16 @@ if ("$xtics" == "FALSE"){
 	p <- p + theme(axis.text.x=element_blank())
 }else{
 	if (${xtics_angle} != 0){
-	p <- p + theme(axis.text.x=element_text(angle=${xtics_angle},hjust=1))
+		if (${xtics_angle} == 90){
+			p <- p + theme(axis.text.x=
+			  element_text(angle=${xtics_angle},hjust=1, vjust=0.5))
+		}else if (${xtics_angle} == 45){
+			p <- p + theme(axis.text.x=
+			  element_text(angle=${xtics_angle},hjust=1, vjust=0.5))
+		} else {
+			p <- p + theme(axis.text.x=
+			  element_text(angle=${xtics_angle},hjust=1, vjust=0.5))
+		}
 	}
 }
 if ("$ytics" == "FALSE"){
