@@ -68,8 +68,8 @@ ${txtbld}OPTIONS${txtrst}:
 	-t	Title of picture[${txtred}Default empty title${txtrst}]
 		[Scatter plot of horizontal and vertical variable]
 	-a	Display xtics. ${bldred}[Default TRUE]${txtrst}
-	-A	Rotation angle for x-axis value(anti clockwise)
-		${bldred}[Default 0, unused]${txtrst}
+	-A	Rotation angle for x-axis value (anti clockwise)
+		${bldred}[Default 90]${txtrst}
 	-b	Display ytics. ${bldred}[Default TRUE]${txtrst}
 	-H	Hieratical cluster for columns.
 		${bldred}Default FALSE, accept TRUE${txtrst}
@@ -78,10 +78,14 @@ ${txtbld}OPTIONS${txtrst}:
 	-c	Clustering method, Default "complete". 
 		Accept "ward.D", "ward.D2","single", "average" (=UPGMA), 
 		"mcquitty" (=WPGMA), "median" (=WPGMC) or "centroid" (=UPGMC)
-	-D	Clustering the distance for rows.
+	-C	Color vector. 
+		${bldred}Default pheatmap_default. Aceept a vector containing
+		multiple colors such as <c("white", "blue")> or 
+		a R function generating a list of colors.${txtrst}
+	-D	Clustering distance method for rows.
 		${bldred}Default 'correlation', accept 'euclidean', 
 		"manhattan", "maximum", "canberra", "binary", "minkowski". ${txtrst}
-	-I	Clustering the distance for cols.
+	-I	Clustering distance method for cols.
 		${bldred}Default 'correlation', accept 'euclidean', 
 		"manhattan", "maximum", "canberra", "binary", "minkowski". ${txtrst}
 	-L	First get log-value, then do other analysis.
@@ -108,6 +112,7 @@ ${txtbld}OPTIONS${txtrst}:
 		eps/ps, tex (pictex), png, jpeg, tiff, bmp, svg and wmf)${txtrst}]
 	-r	The resolution of output picture.[${txtred}Default 300 ppi${txtrst}]
 	-F	Font size [${txtred}Default 14${txtrst}]
+	-------Below unused--------------------------------
 	-x	The color for representing low value.[${txtred}Default 
 		green${txtrst}]
 	-y	The color for representing high value.[${txtred}Default
@@ -137,10 +142,6 @@ ${txtbld}OPTIONS${txtrst}:
 			Specially when -X is given, it will be used as midpoint to
 			get same number of breaks flanking midpoint.
 		<3> represents using given data breaks for color view.
-	-C	Color list for plot when -G is TRUE.
-		[${bldred}Default 'green','yellow','dark red'.
-		Accept a list of colors each wrapped by '' and totally wrapped
-		by "" ${txtrst}]
 	-O	When -G is <3>, using given data points as separtor to
 		assign colors. [${bldred}Normally you can
 		select a mid-point and give same bins between the minimum and
@@ -159,6 +160,7 @@ clustering_distance_rows='correlation'
 clustering_distance_cols='correlation'
 clustering_method='complete'
 legend_breaks='NA'
+color_vector='colorRampPalette(rev(brewer.pal(n=7, name="RdYlBu")))(100)'
 width=''
 label=''
 logv='FALSE'
@@ -179,7 +181,7 @@ mcol='yellow'
 mid_value_use='FALSE'
 mid_value='Inf'
 xtics='TRUE'
-xtics_angle=0
+xtics_angle=270
 ytics='TRUE'
 gradient=1
 givenSepartor=''
@@ -291,7 +293,7 @@ do
 			gradient=$OPTARG
 			;;
 		C)
-			gradientC=$OPTARG
+			color_vector=$OPTARG
 			;;
 		O)
 			givenSepartor=$OPTARG
@@ -333,17 +335,80 @@ cat <<END >${file}${mid}.r
 if ($ist){
 	install.packages("pheatmap", repo="http://cran.us.r-project.org")
 }
+
+library(grid)
 library(pheatmap)
 
 if($gradient){
 	library(RColorBrewer)
 }
 
+#draw_colnames_custom <- function (coln, ...){
+#	m = length(coln)
+#	x = (1:m)/m - 1/2/m
+#	grid.text(coln, x=x, y=unit(0.96, "npc"), vjust=.5, hjust=1,
+#	rot=${xtics_angle}, gp=gpar(...))
+#}
+#
+#
+##Ref:http://stackoverflow.com/questions/15505607/diagonal-labels-orientation-on-x-axis-in-heatmaps
+
+
+# Get the function to edit trace(pheatmap:::draw_colnames,  edit=TRUE)
+# in R console
+
+find_coordinates = function(n, gaps, m=1:n) {
+	if(length(gaps)==0){
+		return(list(coord=unit(m/n, "npc"), size=unit(1/n,"npc")))
+	}
+
+	if(max(gaps)>n){
+		stop("Gaps do not match matrix size")
+	}
+
+	size = (1/n)*(unit(1, "npc")-length(gaps)*unit("4", "bigpts"))
+
+	gaps2 = apply(sapply(gaps, function(gap, x){x>gap}, m), 1, sum)
+	coord = m * size + (gaps2 * unit("4", "bigpts"))
+
+	return(list(coord=coord, size=size))
+}
+
+
+vjust <- 0
+hjust <- 0.5
+
+if(${xtics_angle}==270){
+	vjust <- 0.5
+	hjust <- 0
+}else if(${xtics_angle}==45){
+	vjust <- .5
+	hjust <- 1
+}else if(${xtics_angle}==0){
+	vjust <- 1
+	hjust <- 0.5
+}
+
+
+
+draw_colnames_custom <- function (coln, gaps, ...){
+	coord = find_coordinates(length(coln),  gaps)
+	x = coord\$coord - 0.5 * coord\$size
+	res = textGrob(coln, x=x, y=unit(1, "npc")-unit(3, "bigpts"),
+		vjust = vjust, hjust=hjust, rot=${xtics_angle}, gp=gpar(...))
+	return(res)
+}
+
+
+# Overwrite default draw_colnames with your own version
+assignInNamespace(x="draw_colnames", value="draw_colnames_custom", 
+	ns=asNamespace("pheatmap"))
 
 data <- read.table(file="$file", sep="\t", header=T, row.names=1,
 	check.names=F, quote="", comment="")
 
 if ("${logv}" != "FALSE"){
+	data[data==0] <- 1
 	data[data==1] <- 1.0001
 	data <- ${logv}(data)
 }
@@ -390,7 +455,8 @@ if ("${annotation_col}" != "NA") {
 	annotation_col <- NA
 }
 
-pheatmap(data, kmean_k=$kclu, scale="${scale}", border_color=NA,
+pheatmap(data, kmean_k=$kclu, color=${color_vector}, 
+scale="${scale}", border_color=NA,
 cluster_rows=${cluster_rows}, cluster_cols=${cluster_cols}, 
 breaks=legend_breaks, clustering_method="${clustering_method}",
 clustering_distance_rows="${clustering_distance_rows}", 
