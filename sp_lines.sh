@@ -157,7 +157,7 @@ ${txtbld}OPTIONS${txtrst}:
 		"l2",...,"l10"), ordered=T) ${txtrst}]
 	-v	If scale is TRUE, give the following
 		scale_y_log10()[default], coord_trans(y="log10"), or other legal
-		command for ggplot2)${txtrst}]
+		command for ggplot2 or simply log2.)${txtrst}]
 	-S	A number to add if scale is used.
 		[${txtred}Default 0. If a non-zero number is given, -s is
 		TRUE.${txtrst}]	
@@ -367,6 +367,9 @@ if(! $melted){
 
 if (${y_add} != 0){
 	data_m\$value <- data_m\$value + ${y_add}
+	if ("${scaleY_x}" == "log2") {
+		data_m\$value <- log2(data_m\$value)
+	}
 }
 
 if ("${level}" != ""){
@@ -440,7 +443,7 @@ if (${smooth}){
 	}
 }
 
-if("$scaleY"){
+if($scaleY & ("$scaleY_x" != "log2")){
 	p <- p + $scaleY_x
 }
 
