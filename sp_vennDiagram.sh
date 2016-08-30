@@ -210,7 +210,11 @@ if [ -z $file ]; then
 	exit 1
 fi
 
-mid='.'${prefix}'.vennDiagram'
+if [ -z ${prefix} ]; then
+	mid='.vennDiagram'
+else
+	mid='.'${prefix}'.vennDiagram'
+fi
 
 cat <<END >${file}${mid}.r
 
@@ -275,18 +279,6 @@ if (! ${numGiven}) {
 
 	if(num == 5){
 		p <- venn.diagram( 
-			x = list($label1=$label1, $label4=$label4, $label2=$label2,
-			$label3=$label3),
-			filename = NULL, col = "black", lwd = 1, 
-			fill = color_v,
-			alpha = 0.50,
-			label.col = c("black"),
-			cex = 2, fontfamily = "Helvetica",
-			cat.col = c("black"),cat.cex = 1.1, margin=0.1, 
-			cat.fontfamily = "Helvetica"
-		)
-	}else if(num == 4){
-		p <- venn.diagram( 
 			x = list($label1=$label1, $label4=$label4,
 			$label5=$label5, $label2=$label2,
 			$label3=$label3),
@@ -294,7 +286,19 @@ if (! ${numGiven}) {
 			fill = color_v,
 			alpha = 0.50,
 			label.col = c("black"),
-			cex = 2, fontfamily = "Helvetica",
+			cex = 1, fontfamily = "Helvetica",
+			cat.col = c("black"),cat.cex = 1.1, margin=0.1, 
+			cat.fontfamily = "Helvetica"
+		)
+	}else if(num == 4){
+		p <- venn.diagram( 
+			x = list($label1=$label1, $label4=$label4, $label2=$label2,
+			$label3=$label3),
+			filename = NULL, col = "black", lwd = 1, 
+			fill = color_v,
+			alpha = 0.50,
+			label.col = c("black"),
+			cex = 1, fontfamily = "Helvetica",
 			cat.col = c("black"),cat.cex = 1.1, margin=0.05, 
 			cat.fontfamily = "Helvetica", 
 		)
@@ -305,7 +309,7 @@ if (! ${numGiven}) {
 			fill = color_v,
 			alpha = 0.50,
 			label.col = c("black", "black", "black", "black", "black", "black", "black"),
-			cex = 2, fontfamily = "Helvetica", cat.default.pos="text",
+			cex = 1, fontfamily = "Helvetica", cat.default.pos="text",
 			cat.pos=0,  magrin=0.1, 
 			cat.col = c("black", "black", "black"),cat.cex = 1,cat.fontfamily = "Helvetica"
 		)
@@ -316,7 +320,7 @@ if (! ${numGiven}) {
 			fill = color_v,
 			alpha = 0.50,
 			label.col = c("black"),
-			cex = 2, fontfamily = "Helvetica",
+			cex = 1, fontfamily = "Helvetica",
 			cat.default.pos="outer",
 			cat.pos=0, margin=0.1,  
 			cat.col = color_v,cat.cex = 2,cat.fontfamily = "Helvetica"
