@@ -117,6 +117,11 @@ ${txtbld}OPTIONS${txtrst}:
 	-I	Manually set xtics.${bldred}[Default FALSE, accept a series of
 		numbers in following format "c(1,2,3,4,5)" or other R code
 		that can generate a vector]${txtrst}
+	-W	Manually set the value of xtics when -I is specified.
+		${bldred}[Default the content of -I when -I is specified, 
+		accept a series of
+		numbers in following format "c(1,2,3,4,5)" or other R code
+		that can generate a vector to set the position of xtics]${txtrst}
 	-R	Rotation angle for x-axis value(anti clockwise)
 		${bldred}[Default 0]${txtrst}
 	-V	Add vline by given point. 
@@ -188,6 +193,7 @@ color='FALSE'
 color_v=''
 pos="identity"
 xtics_input=0
+xtics_value=0
 custom_vline='NULL'
 custom_vanno='NULL'
 facet='haha'
@@ -197,7 +203,7 @@ facet_scale='fixed'
 j_facet='haha'
 j_facet_order=''
 
-while getopts "hf:m:M:t:a:x:b:l:D:d:V:A:g:G:j:J:H:I:k:P:y:c:C:B:X:Y:R:s:S:w:u:r:E:p:z:v:e:i:" OPTION
+while getopts "hf:m:M:t:a:x:b:l:D:d:V:A:g:G:j:J:H:I:W:k:P:y:c:C:B:X:Y:R:s:S:w:u:r:E:p:z:v:e:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -245,6 +251,9 @@ do
 			;;
 		I)
 			xtics_input=$OPTARG
+			;;
+		W)
+			xtics_value=$OPTARG
 			;;
 		d)
 			type_p=$OPTARG
@@ -451,12 +460,12 @@ if ("${type_p}"=="line" || "${type_p}"=="both"){
 }
 
 if (${vline}){
-	cdf <- ddply(data_m, .(value), summarise, rating.mean=mean(rating))
+	cdf <- ddply(data_m, .(variable), summarise, rating.mean=mean(value))
 	p <- p + geom_vline(data=cdf, aes(xintercept=rating.mean,
 	colour=variable),linetype="dashed", size=1)
 }
 
-p <- p + xlab($xlab) + ylab($ylab) + theme_bw() +
+p <- p + xlab("$xlab") + ylab("$ylab") + theme_bw() +
 	theme(legend.title=element_blank(),
    	panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
@@ -510,9 +519,13 @@ legend_pos_par <- ${legend_pos}
 p <- p + theme(legend.position=legend_pos_par)
 
 xtics_v <- ${xtics_input}
+xtics_value <- ${xtics_value}
 
 if(length(xtics_v) > 1){
-	p <- p + scale_x_continuous(breaks=xtics_v, labels=xtics_v)
+	if(length(xtics_value)<=1){
+		xtics_value <- xtics_v
+	}
+	p <- p + scale_x_continuous(breaks=xtics_v, labels=xtics_value)
 }
 
 custom_vline_coord <- ${custom_vline}
