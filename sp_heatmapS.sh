@@ -30,6 +30,10 @@ ${txtbld}OPTIONS${txtrst}:
 	-a	Display xtics. ${bldred}[Default TRUE]${txtrst}
 	-A	Rotation angle for x-axis value(anti clockwise)
 		${bldred}[Default 0]${txtrst}
+	-T	Hjust when rotation angle for x-axis value is not zero(anti clockwise)
+		[Default 0.5; angle 45, hjust 0.5 vjust 0.5]
+	-V	Vjust when rotation angle for x-axis value is not zero(anti clockwise)
+		[Default 1; angle 90, hjust 1 vjust 0.5]
 	-l	The position of legend. [${bldred}
 		Default right. Accept top,bottom,left,none,c(0.1,0.8).${txtrst}]
 	-I	The title of legend [${bldred}Default no title${txtrst}]
@@ -174,8 +178,10 @@ generateNA='FALSE'
 digits='FALSE'
 colormodel='srgb'
 reverse_rows='FALSE'
+hjust=0.5
+vjust=1
 
-while getopts "hf:t:u:v:H:x:y:Y:M:R:I:L:K:X:r:F:E:w:l:a:A:b:B:k:c:d:n:g:s:N:j:J:m:o:G:D:C:O:q:e:i:p:Z:z:" OPTION
+while getopts "hf:t:u:v:H:x:y:T:V:Y:M:R:I:L:K:X:r:F:E:w:l:a:A:b:B:k:c:d:n:g:s:N:j:J:m:o:G:D:C:O:q:e:i:p:Z:z:" OPTION
 do
 	case $OPTION in
 		h)
@@ -197,6 +203,12 @@ do
 			;;
 		H)
 			hcluster=$OPTARG
+			;;
+		T)
+			hjust=$OPTARG
+			;;
+		V)
+			vjust=$OPTARG
 			;;
 		E)
 			ext=$OPTARG
@@ -691,7 +703,8 @@ if ("$xtics" == "FALSE"){
 }else{
 	if (${xtics_angle} != 0){
 	#p <- p + theme(axis.text.x=element_text(angle=${xtics_angle},hjust=1))
-	p <- p + theme(axis.text.x=element_text(angle=${xtics_angle}))
+	p <- p + theme(axis.text.x=element_text(angle=${xtics_angle}, 
+		hjust=${hjust}, vjust=${vjust}))
 	}
 }
 if ("$ytics" == "FALSE"){
