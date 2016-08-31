@@ -419,9 +419,9 @@ data <- read.table(file="$file", sep="\t", header=T, row.names=1,
 	check.names=F, quote="", comment="")
 
 if ("${logv}" != "FALSE"){
-	data[data==0] <- 1
-	data[data==1] <- 1.0001
-	data <- ${logv}(data)
+	#data[data==0] <- 1.0000001
+	#data[data==1] <- 1.0001
+	data <- ${logv}(data+1)
 }
 
 if ($gradient == 1){
