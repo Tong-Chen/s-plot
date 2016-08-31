@@ -112,6 +112,9 @@ ${txtbld}OPTIONS${txtrst}:
 		eps/ps, tex (pictex), png, jpeg, tiff, bmp, svg and wmf)${txtrst}]
 	-r	The resolution of output picture.[${txtred}Default 300 ppi${txtrst}]
 	-F	Font size [${txtred}Default 14${txtrst}]
+	-p	Preprocess data matrix to avoid STDERR 0 In cor(t(mat)).
+		Lowercase <p>.
+		[${txtred}Default TRUE${txtrst}]
 	-------Below unused--------------------------------
 	-x	The color for representing low value.[${txtred}Default 
 		green${txtrst}]
@@ -190,8 +193,9 @@ generateNA='FALSE'
 digits='FALSE'
 annotation_row='NA'
 annotation_col='NA'
+preprocess='TRUE'
 
-while getopts "hf:t:a:A:b:H:R:c:D:I:L:d:k:u:v:E:r:F:P:Q:x:y:M:Z:X:s:m:N:Y:G:C:O:e:i:" OPTION
+while getopts "hf:t:a:A:b:H:R:c:D:p:I:L:d:k:u:v:E:r:F:P:Q:x:y:M:Z:X:s:m:N:Y:G:C:O:e:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -228,6 +232,9 @@ do
 			;;
 		I)
 			clustering_distance_cols=$OPTARG
+			;;
+		p)
+			preprocess=$OPTARG
 			;;
 		L)
 			logv=$OPTARG
@@ -329,6 +336,10 @@ if test "${scale}" == "TRUE"; then
 	mid=${mid}".scale"
 fi
 
+if test "${preprocess}" == "TRUE"; then
+	/bin/mv -f ${file} ${file}".nostd0"
+	dealWithSTD0.py -i ${file}".nostd0" >${file}
+fi
 
 cat <<END >${file}${mid}.r
 
@@ -461,7 +472,7 @@ cluster_rows=${cluster_rows}, cluster_cols=${cluster_cols},
 breaks=legend_breaks, clustering_method="${clustering_method}",
 clustering_distance_rows="${clustering_distance_rows}", 
 clustering_distance_cols="${clustering_distance_cols}", 
-legend_breaks=legend_breaks, show_rownames=${xtics}, show_colnames=${ytics}, 
+legend_breaks=legend_breaks, show_rownames=${ytics}, show_colnames=${xtics}, 
 main="$title", annotation_col=annotation_col,
 annotation_row=annotation_row, 
 fontsize=${fontsize}, filename="${file}${mid}.${ext}", width=${uwid},
@@ -476,6 +487,10 @@ if [ "$execute" == "TRUE" ]; then
 		/bin/rm -f ${file}${mid}.r
 		/bin/rm -f Rplots.pdf	
 	fi
+fi
+
+if test "${preprocess}" == "TRUE"; then
+	/bin/mv -f ${file}".nostd0" ${file}
 fi
 
 #convert -density 200 -flatten ${file}${mid}.eps ${first}${mid}.png
