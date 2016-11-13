@@ -102,14 +102,13 @@ ${txtbld}OPTIONS${txtrst}:
 	-V	Do violin plot instead of boxplot.${txtred}[Default FALSE]${txtrst}
 	-W	Do violin plot without inner boxplot.${txtred}[Default FALSE]${txtrst}
 	-j	Do jitter plot instead of boxplot.${txtred}[Default FALSE]${txtrst}
-	-J	Do jitter plot overlay with boxplot.${txtred}[Default FALSE]${txtrst}
+	-J	Do jitter plot overlay with violinplot or boxplot or both.${txtred}[Default FALSE]${txtrst}
 	-A	The value given to scale for violin plot.
-		if "area" (default), all violins have the same area (before
-		trimming the tails). If "count", areas are scaled
-		proportionally to the number of observations. If "width",
-		all violins have the same maximum width. 'equal' is also
-		accepted.
-		${txtred}[Default 'area']${txtrst}
+		if "area", all violins have the same area (before trimming the tails). 
+		If "count", areas are scaled proportionally to the number of observations. 
+		If "width", all violins have the same maximum width. 
+		'equal' is also accepted.
+		${txtred}[Default 'width']${txtrst}
 	-t	Title of picture[${txtred}Default empty title${txtrst}]
 	-x	xlab of picture[${txtred}Default empty xlab${txtrst}]
 	-y	ylab of picture[${txtred}Default empty ylab${txtrst}]
@@ -183,7 +182,7 @@ color='FALSE'
 ext='pdf'
 violin='FALSE'
 violin_nb='FALSE'
-scale_violin='area'
+scale_violin='width'
 ID_var=""
 jitter='FALSE'
 jitter_bp='FALSE'
@@ -375,7 +374,15 @@ if ($ist){
 	install.packages("ggplot2", repo="http://cran.us.r-project.org")
 	install.packages("reshape2", repo="http://cran.us.r-project.org")
 	install.packages("scales", repo="http://cran.us.r-project.org")
+	if(${jitter_bp}){
+		install.packages("ggbeeswarm", repo="http://cran.us.r-project.org")
+	}
 }
+
+if(${jitter_bp}){
+	library(ggbeeswarm)
+}
+
 library(ggplot2)
 library(reshape2)
 library(scales)
@@ -422,7 +429,7 @@ if ("${x_cut}" != ""){
 }
 
 p <- ggplot(data_m, aes(factor($xvariable), ${value})) + xlab("$xlab") +
-ylab("$ylab")
+ylab("$ylab") + labs(title="$title")
 
 
 if (${violin}){
@@ -430,8 +437,7 @@ if (${violin}){
 	stat = "ydensity", position = "dodge", trim = TRUE,  
 	scale = "${scale_violin}") + 
 	geom_boxplot(aes(fill=factor(${variable})), alpha=.25, width=0.15, 
-	position = position_dodge(width = .9), outlier.colour='NA',
-	scale="${scale_violin}") + 
+	position = position_dodge(width = .9), outlier.colour='NA') + 
 	stat_summary(aes(group=${variable}), fun.y=mean,  
 	geom="point", fill="black", shape=19, size=1,
 	position = position_dodge(width = .9))
@@ -442,7 +448,8 @@ if (${violin}){
 	stat = "ydensity", position = "dodge", trim = TRUE,  
 	scale = "${scale_violin}") 
 } else if (${jitter}){
-	p <- p + geom_jitter(aes(colour=factor(${variable})))
+	p <- p + geom_quasirandom(aes(colour=factor(${variable})))
+	#p <- p + geom_jitter(aes(colour=factor(${variable})))
 } else {
 	if (${notch}){
 		if (${outlier}){
@@ -463,7 +470,9 @@ if (${violin}){
 }
 
 if (${jitter_bp}){
-	p <- p + geom_jitter(aes(colour=factor(${variable})))
+	#p <- p + geom_jitter(aes(colour=factor(${variable})))
+	#p <- p + geom_jitter()
+	p <- p + geom_quasirandom()
 }
 
 if($scaleY){
