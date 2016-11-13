@@ -30,6 +30,8 @@ ${txtbld}OPTIONS${txtrst}:
 	-a	Display xtics. ${bldred}[Default TRUE]${txtrst}
 	-A	Rotation angle for x-axis value(anti clockwise)
 		${bldred}[Default 0]${txtrst}
+	-U	Rotation angle for y-axis value(anti clockwise)
+		${bldred}[Default 0]${txtrst}
 	-T	Hjust when rotation angle for x-axis value is not zero(anti clockwise)
 		[Default 0.5; angle 45, hjust 0.5 vjust 0.5]
 	-V	Vjust when rotation angle for x-axis value is not zero(anti clockwise)
@@ -166,6 +168,7 @@ mid_value_use='FALSE'
 mid_value='Inf'
 xtics='TRUE'
 xtics_angle=0
+ytics_angle=0
 ytics='FALSE'
 quiet='TRUE'
 delZero='FALSE'
@@ -181,7 +184,7 @@ reverse_rows='FALSE'
 hjust=0.5
 vjust=1
 
-while getopts "hf:t:u:v:H:x:y:T:V:Y:M:R:I:L:K:X:r:F:E:w:l:a:A:b:B:k:c:d:n:g:s:N:j:J:m:o:G:D:C:O:q:e:i:p:Z:z:" OPTION
+while getopts "hf:t:u:v:H:x:y:T:V:Y:M:R:I:L:K:X:r:F:E:w:l:a:A:U:b:B:k:c:d:n:g:s:N:j:J:m:o:G:D:C:O:q:e:i:p:Z:z:" OPTION
 do
 	case $OPTION in
 		h)
@@ -260,6 +263,9 @@ do
 			;;
 		A)
 			xtics_angle=$OPTARG
+			;;
+		U)
+			ytics_angle=$OPTARG
 			;;
 		b)
 			ytics=$OPTARG
@@ -709,6 +715,11 @@ if ("$xtics" == "FALSE"){
 }
 if ("$ytics" == "FALSE"){
 	p <- p + theme(axis.text.y=element_blank())
+} else {
+	if (${ytics_angle} != 0){
+		p <- p + theme(axis.text.y=element_text(angle=${ytics_angle}, 
+			hjust=${hjust}, vjust=${vjust}))
+		}
 }
 
 top='top'
