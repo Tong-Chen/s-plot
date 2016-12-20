@@ -101,6 +101,11 @@ ${txtbld}OPTIONS${txtrst}:
 	-V	Add vertical lines.${bldred}[Default FALSE, accept a series of
 		numbers in following format "c(1,2,3,4,5)" or other
 		R code that can generate a vector]${txtrst}
+	-D	Add labels to vline.
+		${bldred}[Default same as -V
+		Accept a series of numbers in following format "c(1,2,3,4,5)" or other R code
+		that can generate a vector as labels.
+		Or one can give '1' to disallow labels]${txtrst}
 	-I	Manually set the position of xtics.
 		${bldred}[Default FALSE,  accept a series of
 		numbers in following format "c(1,2,3,4,5)" or other R code
@@ -203,14 +208,15 @@ xtics_angle=0
 ytics='TRUE'
 color='FALSE'
 color_v=''
-vline=0
+custom_vline='NULL'
+custom_vanno='NULL'
 facet=''
 facet_o=''
 xtics_pos=0
 xtics_value=0
 
 
-while getopts "hf:m:a:A:b:I:t:x:l:F:G:P:L:y:V:c:C:B:X:Y:R:w:u:r:o:O:s:S:p:z:v:e:E:i:" OPTION
+while getopts "hf:m:a:A:b:I:t:x:l:F:G:P:L:y:V:D:c:C:B:X:Y:R:w:u:r:o:O:s:S:p:z:v:e:E:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -230,7 +236,10 @@ do
 			x_type=$OPTARG
 			;;
 		V)
-			vline=$OPTARG
+			custom_vline=$OPTARG
+			;;
+		D)
+			custom_vanno=$OPTARG
 			;;
 		I)
 			xtics_pos=$OPTARG
@@ -406,7 +415,6 @@ if (! ${x_type}){
 #		as.numeric(levels(data_m\$variable))[data_m\$variable]
 #}
 
-
 ${facet_o}
 
 p <- ggplot(data_m, aes(x=$xvariable, y=value, color=variable,
@@ -415,7 +423,6 @@ p <- ggplot(data_m, aes(x=$xvariable, y=value, color=variable,
 	theme(legend.title=element_blank(),
    	panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
-p <- p ${facet}
 
 p <- p + expand_limits(y = 0)
 #p <- p + scale_y_continuous(expand=c(0, 0))
@@ -437,9 +444,9 @@ if (${smooth}){
 	}	
 }else{
 	if ("${line_size}" != ""){
-		p <- p + geom_line(size=${line_size}) 
+		p <- p + geom_line(size=${line_size}, alpha=0.6) 
 	}else{
-	p <- p + geom_line() 
+	p <- p + geom_line(alpha=0.6) 
 	}
 }
 
@@ -460,7 +467,16 @@ if ("$xtics" == "FALSE"){
 	p <- p + theme(axis.text.x=element_blank(), axis.ticks.x = element_blank())
 }else{
 	if (${xtics_angle} != 0){
-	p <- p + theme(axis.text.x=element_text(angle=${xtics_angle},hjust=1))
+		if (${xtics_angle} == 90){
+			p <- p + theme(axis.text.x=
+			  element_text(angle=${xtics_angle},hjust=1, vjust=0.5))
+		}else if (${xtics_angle} == 45){
+			p <- p + theme(axis.text.x=
+			  element_text(angle=${xtics_angle},hjust=1, vjust=1))
+		} else {
+			p <- p + theme(axis.text.x=
+			  element_text(angle=${xtics_angle},hjust=0.5, vjust=0.5))
+		}
 	}
 }
 if ("$ytics" == "FALSE"){
@@ -487,11 +503,35 @@ if(length(xtics_pos) > 1){
 	p <- p + scale_x_continuous(breaks=xtics_pos, labels=xtics_value)
 }
 
-custom_vline_coord <- ${vline}
-if(length(custom_vline_coord) > 1){
-	p <- p + geom_vline(xintercept=custom_vline_coord, 
-	linetype="dotted" )
+#custom_vline_coord <- ${vline}
+#if(length(custom_vline_coord) > 1){
+#	p <- p + geom_vline(xintercept=custom_vline_coord, 
+#	linetype="dotted" )
+#}
+
+custom_vline_coord <- ${custom_vline}
+custom_vline_anno <- ${custom_vanno}
+if ("${custom_vanno}" == "NULL" ){
+	custom_vline_anno <- custom_vline_coord
 }
+
+if(is.vector(custom_vline_coord)){
+	p <- p + geom_vline(xintercept=custom_vline_coord,
+	linetype="dotted", size=0.5)
+	if(is.vector(custom_vline_anno)){
+		ymax_range <- ggplot_build(p)\$panel\$ranges[[1]]\$y.range
+		ymax_v <- ymax_range[2]
+		if ("${facet}" != ""){
+			ymax_v = 0
+		}
+		p <- p + annotate("text", x=custom_vline_coord, y=ymax_v,
+		label=custom_vline_anno, hjust=0)
+	}
+}
+
+
+
+p <- p ${facet}
 
 p <- p${par}
 
