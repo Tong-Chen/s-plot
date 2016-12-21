@@ -27,7 +27,17 @@ ${txtbld}OPTIONS${txtrst}:
 		know what you are doing.)${bldred}[NECESSARY]${txtrst}
 	-t	Title of picture[${txtred}Default empty title${txtrst}]
 		[Scatter plot of horizontal and vertical variable]
-	-a	Display xtics. ${bldred}[Default TRUE]${txtrst}
+	-a	Display xtics. ${bldred}[Default TRUE. 
+		This should also be set to TRUE even using manual x-tics.]${txtrst}
+	-Q	Manually set the position of xtics.
+		${bldred}[Default FALSE,  accept a series of
+		numbers in following format "c(1,2,3,4,5)" or other R code
+		that can generate a vector to set the position of xtics]${txtrst}
+	-S	[Uppercase] Manually set the value of xtics when -Q is specified.
+		${bldred}[Default the content of -Q when -Q is specified, 
+		accept a series of
+		numbers in following format "c(1,2,3,4,5)" or other R code
+		that can generate a vector to set the text of xtics]${txtrst}
 	-A	Rotation angle for x-axis value(anti clockwise)
 		${bldred}[Default 0]${txtrst}
 	-U	Rotation angle for y-axis value(anti clockwise)
@@ -183,8 +193,10 @@ colormodel='srgb'
 reverse_rows='FALSE'
 hjust=0.5
 vjust=1
+xtics_pos=0
+xtics_value=0
 
-while getopts "hf:t:u:v:H:x:y:T:V:Y:M:R:I:L:K:X:r:F:E:w:l:a:A:U:b:B:k:c:d:n:g:s:N:j:J:m:o:G:D:C:O:q:e:i:p:Z:z:" OPTION
+while getopts "hf:t:u:v:H:Q:S:x:y:T:V:Y:M:R:I:L:K:X:r:F:E:w:l:a:A:U:b:B:k:c:d:n:g:s:N:j:J:m:o:G:D:C:O:q:e:i:p:Z:z:" OPTION
 do
 	case $OPTION in
 		h)
@@ -215,6 +227,12 @@ do
 			;;
 		E)
 			ext=$OPTARG
+			;;
+		Q)
+			xtics_pos=$OPTARG
+			;;
+		S)
+			xtics_value=$OPTARG
 			;;
 		x)
 			xcol=$OPTARG
@@ -735,6 +753,17 @@ p <- p + theme(legend.position=legend_pos_par)
 
 if (! $quiet){
 	print("Begin plotting.")
+}
+
+
+xtics_pos <- ${xtics_pos}
+xtics_value <- ${xtics_value}
+
+if(length(xtics_pos) > 1){
+	if(length(xtics_value) <= 1){
+		xtics_value <- xtics_pos
+	}
+	p <- p + scale_x_discrete(breaks=xtics_pos, labels=xtics_value)
 }
 
 #p <- p + theme(text=element_text(family="Arial", size=${fontsize}))
