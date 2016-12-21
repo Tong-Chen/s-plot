@@ -106,6 +106,14 @@ ${txtbld}OPTIONS${txtrst}:
 		Accept a series of numbers in following format "c(1,2,3,4,5)" or other R code
 		that can generate a vector as labels.
 		Or one can give '1' to disallow labels]${txtrst}
+	-j	Add horizontal lines.${bldred}[Default FALSE, accept a series of
+		numbers in following format "c(1,2,3,4,5)" or other
+		R code that can generate a vector]${txtrst}
+	-d	Add labels to hline.
+		${bldred}[Default same as -j
+		Accept a series of numbers in following format "c(1,2,3,4,5)" or other R code
+		that can generate a vector as labels.
+		Or one can give '1' to disallow labels]${txtrst}
 	-I	Manually set the position of xtics.
 		${bldred}[Default FALSE,  accept a series of
 		numbers in following format "c(1,2,3,4,5)" or other R code
@@ -210,13 +218,15 @@ color='FALSE'
 color_v=''
 custom_vline='NULL'
 custom_vanno='NULL'
+custom_hline='NULL'
+custom_hanno='NULL'
 facet=''
 facet_o=''
 xtics_pos=0
 xtics_value=0
 
 
-while getopts "hf:m:a:A:b:I:t:x:l:F:G:P:L:y:V:D:c:C:B:X:Y:R:w:u:r:o:O:s:S:p:z:v:e:E:i:" OPTION
+while getopts "hf:m:a:A:b:I:t:x:l:j:d:F:G:P:L:y:V:D:c:C:B:X:Y:R:w:u:r:o:O:s:S:p:z:v:e:E:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -240,6 +250,12 @@ do
 			;;
 		D)
 			custom_vanno=$OPTARG
+			;;
+		j)
+			custom_hline=$OPTARG
+			;;
+		d)
+			custom_hanno=$OPTARG
 			;;
 		I)
 			xtics_pos=$OPTARG
@@ -526,6 +542,26 @@ if(is.vector(custom_vline_coord)){
 		}
 		p <- p + annotate("text", x=custom_vline_coord, y=ymax_v,
 		label=custom_vline_anno, hjust=0)
+	}
+}
+
+custom_hline_coord <- ${custom_hline}
+custom_hline_anno <- ${custom_hanno}
+if ("${custom_hanno}" == "NULL" ){
+	custom_hline_anno <- custom_hline_coord
+}
+
+if(is.vector(custom_hline_coord)){
+	p <- p + geom_hline(yintercept=custom_hline_coord,
+	linetype="dotted", size=0.5)
+	if(is.vector(custom_hline_anno)){
+		#xmax_range <- ggplot_build(p)\$panel\$ranges[[1]]\$x.range
+		#xmax_v <- xmax_range[2]
+		#if ("${facet}" != ""){
+		#	xmax_v = 0
+		#}
+		p <- p + annotate("text", y=custom_hline_coord, x=0,
+		label=custom_hline_anno, vjust=0, hjust=0)
 	}
 }
 
