@@ -75,6 +75,8 @@ ${txtbld}OPTIONS${txtrst}:
 		${txtrst}]
 	-b	Rotation angle for x-axis value(anti clockwise)
 		${bldred}[Default 0]${txtrst}
+	-R	Rotate the plot. Usefull for plots with many values or very long labels at X-axis.
+		${bldred}[Default FALSE]${txtrst}
 	-l	Levels for legend variable
 		[${txtred}Default data order,accept a string like
 		"'TP16','TP22','TP23'" ***for <variable> column***.
@@ -187,8 +189,9 @@ ID_var=""
 jitter='FALSE'
 jitter_bp='FALSE'
 colormodel='srgb'
+rotate_plot='FALSE'
 
-while getopts "ha:A:b:B:c:C:d:D:e:E:f:F:i:I:j:J:l:L:m:n:o:O:p:P:r:s:S:t:u:v:V:w:W:x:y:z:" OPTION
+while getopts "ha:A:b:B:c:C:d:D:e:E:f:F:i:I:R:j:J:l:L:m:n:o:O:p:P:r:s:S:t:u:v:V:w:W:x:y:z:" OPTION
 do
 	case $OPTION in
 		h)
@@ -266,6 +269,9 @@ do
 			;;
 		u)
 			vhig=$OPTARG
+			;;
+		R)
+			rotate_plot=$OPTARG
 			;;
 		r)
 			res=$OPTARG
@@ -381,6 +387,8 @@ if ($ist){
 
 if(${jitter_bp}){
 	library(ggbeeswarm)
+}else if(${jitter}){
+	library(ggbeeswarm)
 }
 
 library(ggplot2)
@@ -388,7 +396,7 @@ library(reshape2)
 library(scales)
 
 if(! $melted){
-	ID_var <- c(${ID_var})
+	ID_var <- c("${ID_var}")
 	ID_var <- ID_var[ID_var!=""]
 	data <- read.table(file="${file}", sep="\t", header=$header,
 	row.names=1)
@@ -489,7 +497,14 @@ if(${outlier}){
 if($color){
 	p <- p + scale_fill_manual(values=c(${color_v}))
 }
+
+if(${rotate_plot}){
+	p <- p + coord_flip()	
+}
+
+
 END
+
 
 `ggplot2_configure`
 
