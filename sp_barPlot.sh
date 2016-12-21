@@ -38,7 +38,7 @@ fileformat when -m is true
 #The name "value" and "variable" shoud not be altered.
 #Actually this format is the melted result of last format.
 --------------------------------------------------------------
-Pos variable    value 
+Pos variable    value	Set 
 -5000	h3k27ac	8.71298
 -4000	h3k27ac	8.43246
 -3000	h3k27ac	8.25497
@@ -118,6 +118,10 @@ ${txtbld}OPTIONS${txtrst}:
 		${txtred}[one of -o and -O is enough]${txtrst}
 	-O	The number of columns one want when -B is used.Default NULL.
 		${txtred}[one of -o and -O is enough]${txtrst}
+	-k	Paramter for scales for facet.
+		[${txtred}Optional, only used when -g is given. Default each 
+	    inner graph use same scale [x,y range]. 'free','free_x','free_y' 
+	    is accepted. ${txtrst}]
 	-c	Manually set colors for each bar.[${txtred}Default FALSE,
 		meaning using ggplot2 default.${txtrst}]
 	-C	Color for each bar.[${txtred}
@@ -150,8 +154,8 @@ ${txtbld}OPTIONS${txtrst}:
 		[${txtres}Begin with '+' ${txtrst}]
 	-w	The width of output picture.[${txtred}Default 20${txtrst}]
 	-u	The height of output picture.[${txtred}Default 12${txtrst}] 
-	-E	The type of output figures.[${txtred}Default png, accept
-		eps/ps, tex (pictex), pdf, jpeg, tiff, bmp, svg and wmf)${txtrst}]
+	-E	The type of output figures.[${txtred}Default pdf, accept
+		eps/ps, tex (pictex), png, jpeg, tiff, bmp, svg and wmf)${txtrst}]
 	-r	The resolution of output picture.[${txtred}Default 500${txtrst}]
 	-z	Is there a header[${bldred}Default TRUE${txtrst}]
 	-e	Execute or not[${bldred}Default TRUE${txtrst}]
@@ -192,8 +196,9 @@ ytics='TRUE'
 color='FALSE'
 color_v=''
 vline=0
+scales='fixed'
 
-while getopts "hf:m:a:A:t:x:l:d:D:P:L:y:V:o:O:B:b:c:C:X:Y:R:w:u:r:s:S:p:z:v:e:E:i:" OPTION
+while getopts "hf:m:a:A:t:x:l:k:d:D:P:L:y:V:o:O:B:b:c:C:X:Y:R:w:u:r:s:S:p:z:v:e:E:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -229,6 +234,9 @@ do
 			;;
 		l)
 			level=$OPTARG
+			;;
+		k)
+			scales=$OPTARG
 			;;
 		P)
 			legend_pos=$OPTARG
@@ -374,9 +382,11 @@ if ("${facet_level}" != "NA") {
 }
 
 if ("${stat}" == "bin"){
-	p <- ggplot(data_m, aes($xvariable, fill=factor(variable)))
+	#p <- ggplot(data_m, aes($xvariable, fill=factor(variable)))
+	p <- ggplot(data_m, aes($xvariable))
 } else {
-	p <- ggplot(data_m, aes($xvariable, value, fill=factor(variable)))
+	#p <- ggplot(data_m, aes($xvariable, value, fill=factor(variable)))
+	p <- ggplot(data_m, aes($xvariable, value))
 }
 
 p <- p + xlab("${xlab}") + ylab("${ylab}") + theme_bw() +
@@ -390,11 +400,12 @@ p <- p + theme(axis.ticks.x = element_blank(), legend.key=element_blank())
 #legend.background = element_rect(fill = "white"), legend.box=NULL, 
 #legend.margin=unit(0,"cm"))
 
-p <- p + geom_bar(stat="${stat}", position="${position}")
+#p <- p + geom_bar(stat="${stat}", position="${position}")
+p <- p + geom_bar(stat="${stat}", position="${position}", aes(fill=variable))
 
 if ("${facet}" != "NoMeAnInGTh_I_n_G_s"){
 	p <- p + facet_wrap( ~ ${facet}, nrow=${nrow}, ncol=${ncol},
-	scale="free")
+	scale="${scales}")
 }
 
 #if (${smooth}){
@@ -430,10 +441,10 @@ if ("$xtics" == "FALSE"){
 			  element_text(angle=${xtics_angle},hjust=1, vjust=0.5))
 		}else if (${xtics_angle} == 45){
 			p <- p + theme(axis.text.x=
-			  element_text(angle=${xtics_angle},hjust=1, vjust=0.5))
+			  element_text(angle=${xtics_angle},hjust=0.5, vjust=0.5))
 		} else {
 			p <- p + theme(axis.text.x=
-			  element_text(angle=${xtics_angle},hjust=1, vjust=0.5))
+			  element_text(angle=${xtics_angle},hjust=0.5, vjust=0.5))
 		}
 	}
 }
