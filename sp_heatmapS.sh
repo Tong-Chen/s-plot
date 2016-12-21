@@ -42,10 +42,10 @@ ${txtbld}OPTIONS${txtrst}:
 		${bldred}[Default 0]${txtrst}
 	-U	Rotation angle for y-axis value(anti clockwise)
 		${bldred}[Default 0]${txtrst}
-	-T	Hjust when rotation angle for x-axis value is not zero(anti clockwise)
-		[Default 0.5; angle 45, hjust 0.5 vjust 0.5]
-	-V	Vjust when rotation angle for x-axis value is not zero(anti clockwise)
-		[Default 1; angle 90, hjust 1 vjust 0.5]
+	-T	Legend width (horizental direction always)
+		[Default ggplot2 default. Unit 'cm']
+	-V	Legend height (vertical direction always)
+		[Default ggplot2 default. Unit 'cm']
 	-l	The position of legend. [${bldred}
 		Default right. Accept top,bottom,left,none,c(0.1,0.8).${txtrst}]
 	-I	The title of legend [${bldred}Default no title${txtrst}]
@@ -122,7 +122,7 @@ ${txtbld}OPTIONS${txtrst}:
 		processing. However, this has no effection to final data.
 	   	[${bldred}Default 1${txtrst}]
 	-o	Log transfer ot not.[${bldred}Default no log transfer,
-		accept log or log2 ${txtrst}]
+		accept log or log2 . Normally do not use this.${txtrst}]
 	-g	Cluster by which group.[${bldred}Default by all group${txtrst}]
 	-G	Use quantile for color distribution. Default 5 color scale
 		for each quantile.[Default FALSE, accept TRUE. Suitable for data range
@@ -195,6 +195,8 @@ hjust=0.5
 vjust=1
 xtics_pos=0
 xtics_value=0
+legend_width=0
+legend_height=0
 
 while getopts "hf:t:u:v:H:Q:S:x:y:T:V:Y:M:R:I:L:K:X:r:F:E:w:l:a:A:U:b:B:k:c:d:n:g:s:N:j:J:m:o:G:D:C:O:q:e:i:p:Z:z:" OPTION
 do
@@ -220,10 +222,10 @@ do
 			hcluster=$OPTARG
 			;;
 		T)
-			hjust=$OPTARG
+			legend_width=$OPTARG
 			;;
 		V)
-			vjust=$OPTARG
+			legend_height=$OPTARG
 			;;
 		E)
 			ext=$OPTARG
@@ -726,9 +728,16 @@ if ("$xtics" == "FALSE"){
 	p <- p + theme(axis.text.x=element_blank())
 }else{
 	if (${xtics_angle} != 0){
-	#p <- p + theme(axis.text.x=element_text(angle=${xtics_angle},hjust=1))
-	p <- p + theme(axis.text.x=element_text(angle=${xtics_angle}, 
-		hjust=${hjust}, vjust=${vjust}))
+		if (${xtics_angle} == 90){
+			p <- p + theme(axis.text.x=
+			  element_text(angle=${xtics_angle},hjust=1, vjust=0.5))
+		}else if (${xtics_angle} == 45){
+			p <- p + theme(axis.text.x=
+			  element_text(angle=${xtics_angle},hjust=1, vjust=1))
+		} else {
+			p <- p + theme(axis.text.x=
+			  element_text(angle=${xtics_angle},hjust=0.5, vjust=0.5))
+		}
 	}
 }
 if ("$ytics" == "FALSE"){
@@ -738,6 +747,13 @@ if ("$ytics" == "FALSE"){
 		p <- p + theme(axis.text.y=element_text(angle=${ytics_angle}, 
 			hjust=${hjust}, vjust=${vjust}))
 		}
+}
+
+if (${legend_width} != 0){
+	p <- p + theme(legend.key.width=unit(${legend_width}, "cm"))
+}
+if (${legend_height} != 0){
+	p <- p + theme(legend.key.height=unit(${legend_height}, "cm"))
 }
 
 top='top'
@@ -750,6 +766,7 @@ legend_pos_par <- ${legend_pos}
 #if ("${legend_pos}" != "right"){
 p <- p + theme(legend.position=legend_pos_par)
 #}
+
 
 if (! $quiet){
 	print("Begin plotting.")
