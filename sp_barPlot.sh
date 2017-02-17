@@ -78,8 +78,10 @@ ${txtbld}OPTIONS${txtrst}:
 		FALSE means X-axis label is number.${txtrst}]
 	-d	The ways to place multiple bars for one group if there are. 
 		Multiple bars in same place will be stacked together by
-		default. One can give "dodge" to arrange multiple bars
-		side-to-side. [${txtred}Default stack, accept dodge. ${txtrst}]
+		default.
+		Giving "fill" to get stacked percent barplot.	
+		Giving "dodge" to arrange multiple bars side-by-side. 
+		[${txtred}Default stack, accept dodge, fill. ${txtrst}]
 	-D	The ways to show the height of bars.
 		The height of bars represent the numerical values in each group
 		by default. One can also give 'bin' to let
@@ -105,6 +107,9 @@ ${txtbld}OPTIONS${txtrst}:
 	-Y	Display ytics. ${bldred}[Default TRUE]${txtrst}
 	-R	Rotation angle for x-axis value(anti clockwise)
 		${bldred}[Default 0]${txtrst}
+	-F	Rotate the plot. 
+		Usefull for plots with many values or very long labels at X-axis.
+		${bldred}[Default FALSE]${txtrst}
 	-t	Title of picture[${txtred}Default empty title${txtrst}]
 	-x	xlab of picture[${txtred}Default empty xlab${txtrst}]
 	-y	ylab of picture[${txtred}Default empty ylab${txtrst}]
@@ -120,8 +125,8 @@ ${txtbld}OPTIONS${txtrst}:
 		${txtred}[one of -o and -O is enough]${txtrst}
 	-k	Paramter for scales for facet.
 		[${txtred}Optional, only used when -g is given. Default each 
-	    inner graph use same scale [x,y range]. 'free','free_x','free_y' 
-	    is accepted. ${txtrst}]
+		inner graph use same scale [x,y range]. 'free','free_x','free_y' 
+		is accepted. ${txtrst}]
 	-c	Manually set colors for each bar.[${txtred}Default FALSE,
 		meaning using ggplot2 default.${txtrst}]
 	-C	Color for each bar.[${txtred}
@@ -197,8 +202,9 @@ color='FALSE'
 color_v=''
 vline=0
 scales='fixed'
+rotate_plot='FALSE'
 
-while getopts "hf:m:a:A:t:x:l:k:d:D:P:L:y:V:o:O:B:b:c:C:X:Y:R:w:u:r:s:S:p:z:v:e:E:i:" OPTION
+while getopts "hf:m:a:A:t:x:F:l:k:d:D:P:L:y:V:o:O:B:b:c:C:X:Y:R:w:u:r:s:S:p:z:v:e:E:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -252,6 +258,9 @@ do
 			;;
 		R)
 			xtics_angle=$OPTARG
+			;;
+		F)
+			rotate_plot=$OPTARG
 			;;
 		Y)
 			ytics=$OPTARG
@@ -403,6 +412,10 @@ p <- p + theme(axis.ticks.x = element_blank(), legend.key=element_blank())
 #p <- p + geom_bar(stat="${stat}", position="${position}")
 p <- p + geom_bar(stat="${stat}", position="${position}", aes(fill=variable))
 
+if ("${position}" == "fill"){
+	p <- p + scale_y_continuous(labels = scales::percent)
+}
+
 if ("${facet}" != "NoMeAnInGTh_I_n_G_s"){
 	p <- p + facet_wrap( ~ ${facet}, nrow=${nrow}, ncol=${ncol},
 	scale="${scales}")
@@ -441,7 +454,7 @@ if ("$xtics" == "FALSE"){
 			  element_text(angle=${xtics_angle},hjust=1, vjust=0.5))
 		}else if (${xtics_angle} == 45){
 			p <- p + theme(axis.text.x=
-			  element_text(angle=${xtics_angle},hjust=0.5, vjust=0.5))
+			  element_text(angle=${xtics_angle},hjust=1, vjust=1))
 		} else {
 			p <- p + theme(axis.text.x=
 			  element_text(angle=${xtics_angle},hjust=0.5, vjust=0.5))
@@ -467,6 +480,11 @@ p <- p + theme(legend.position=legend_pos_par)
 #	p <- p + geom_vline(xintercept=custom_vline_coord, 
 #	linetype="dotted" )
 #}
+
+
+if(${rotate_plot}){
+	p <- p + coord_flip()	
+}
 
 p <- p${par}
 
