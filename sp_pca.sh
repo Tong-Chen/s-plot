@@ -99,11 +99,11 @@ ${txtbld}OPTIONS${txtrst}:
 	-L	Label points.
 		${bldred}[Default no-label (FALSE), accept TRUE]${txtrst}
 	-N	Label font size.
-		${bldred}[Default 5.]${txtrst}
+		${bldred}[Default system default.]${txtrst}
 	-M	Points check_overlap.
 		${bldred}[Default FALSE, accept TRUE]${txtrst}
 	-Q	Point hjust.
-		${bldred}[Default 0, accept a positive (at right) and negative value (at left)]${txtrst}
+		${bldred}[Default 0, accept a positive (at leftt) and negative value (at right)]${txtrst}
 	-w	The width of output picture.[${txtred}Default 20${txtrst}]
 	-u	The height of output picture.[${txtred}Default 20${txtrst}] 
 	-E	The type of output figures.[${txtred}Default pdf, accept
@@ -170,11 +170,11 @@ hjust=0.5
 vjust=1
 alpha=1
 jitter='FALSE'
-label=''
+label='FALSE'
 log_add=1
 check_overlap="FALSE"
 colormodel='srgb'
-label_font_size=5
+label_font_size=""
 scale_y='FALSE'
 scale_y_way='scale_y_continuous(trans="log2")'
 
@@ -311,6 +311,14 @@ if [ -z $file ] ; then
 	exit 1
 fi
 
+if [ "${log}" != "nolog" ]; then
+	mid=${mid}"."${log}
+fi
+
+if [ "${scale}" == "TRUE" ]; then
+	mid=${mid}".scale"
+fi
+
 . `dirname $0`/sp_configure.sh
 
 cat <<END >${file}${mid}.r
@@ -319,6 +327,7 @@ if ($ist){
 	install.packages("ggplot2", repo="http://cran.us.r-project.org")
 	install.packages("ggfortify", repo="http://cran.us.r-project.org")
 	install.packages("data.table", repo="http://cran.us.r-project.org")
+	install.packages("ggrepel", repo="http://cran.us.r-project.org")
 }
 library(plyr)
 library(ggplot2)
@@ -326,6 +335,9 @@ library(grid)
 library(data.table, quietly=T)
 library(ggfortify)
 
+if (${label}) {
+	library("ggrepel")
+}
 data <- read.table(file="$file", sep="\t", quote="", comment="", header=T, row.names=1)
 
 data <- data[rowSums(data)!=0, ]
@@ -342,6 +354,7 @@ sampleL = rownames(data)
 if ("${grp_file}" == "") {
 	data_t_label <- data
 	data_t_label\$group = sampleL
+	data_t_label\$Row.names = sampleL
 } else {
 	grp_data <- read.table("${grp_file}", sep="\t", quote="", header=T, row.names=1)
 	data_t_label <- merge(data, grp_data, by=0, all.x=T)
@@ -411,9 +424,14 @@ if (${dimensions} == 2) {
 	}
 
 
-	if ("${label}" != "") {
-		p <- p + geom_text(aes(label=${label}), position="identity",
-		hjust=${point_hjust}, size=${label_font_size}, check_overlap=${check_overlap})
+	if (${label}) {
+		#p <- p + geom_text(aes(label=Row.names), position="identity",
+		#hjust=${point_hjust}, size=${label_font_size}, check_overlap=${check_overlap})
+		if ("${label_font_size}" != "") {
+			p <- p + geom_text_repel(aes(label=Row.names), size=${label_font_size})
+		} else {
+			p <- p + geom_text_repel(aes(label=Row.names))
+		}
 	}
 
 	p <- p + xlab(paste0("PC1 (", round(percentVar[1]*100), "% variance)")) + 
