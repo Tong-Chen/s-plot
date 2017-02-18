@@ -65,11 +65,19 @@ ${txtbld}OPTIONS${txtrst}:
 		${txtrst}
 	-c	The variable for point color.
 		${bldred}[Optional, such as color]${txtrst}
+	-I	The order for color variable.
+		${bldred}[Default alphabetical order, accept a string like
+		"'K562','hESC','GM12878','HUVEC','NHEK','IMR90','HMEC'"]
+		${txtrst}
 	-s	The variable for point size.
 		${bldred}[Optional, such as a number or 
 		a variable like count, normally should be number column]${txtrst}
 	-S	The variable for point shape.
 		${bldred}[Optional, such as shape]${txtrst}
+	-K	The order for shape variable.
+		${bldred}[Default alphabetical order, accept a string like
+		"'K562','hESC','GM12878','HUVEC','NHEK','IMR90','HMEC'"]
+		${txtrst}
 	-C	Manually specified colors.
 		${bldred}[Default system default. 
 		Accept string in format like <'"green", "red"'> (both types of quotes needed).]
@@ -84,15 +92,29 @@ ${txtbld}OPTIONS${txtrst}:
 	-L	Label points.
 		${bldred}[Default no-label, accept a string like <Samp> here 
 		to label Samp column text to points.]${txtrst}
+	-Z	Label points using <geom_text_repel> which will generate
+   		non-overlap label texts by adding arrows when necessary.
+		If there is sth wrong labeled especially when -J is TRUE, 
+		please specify FALSE and use default
+		<geom_text> to label text.
+		${bldred}[Default TRUE.]${txtrst}
 	-N	Label font size.
 		${bldred}[Default 5.]${txtrst}
 	-M	Points check_overlap.
 		${bldred}[Optional, such as shape]${txtrst}
+	-Q	Point hjust.
+		[Default 0,  accept a positive (at left) and negative value (at right)]
 	-J	Jitter points. Normally used when x and y axis variable is in text format 
 		or represents group information to avoid point overlaps.
 		${bldred}[Default FALSE]${txtrst}
+	-D	Scale y axis.
+		${bldred}[Default FALSE]${txtrst}
+	-F	The way to scale Y-axis.
+		${bldred}[scale_y_log10, coord_trans(y="log10"), 
+		scale_y_continuous(trans="log2")(default), coord_trans(y="log2")
+		]${txtrst}
 	-w	The width of output picture.[${txtred}Default 20${txtrst}]
-	-a	The height of output picture.[${txtred}Default 20${txtrst}] 
+	-u	The height of output picture.[${txtred}Default 20${txtrst}] 
 	-E	The type of output figures.[${txtred}Default pdf, accept
 		eps/ps, tex (pictex), png, jpeg, tiff, bmp, svg and wmf)${txtrst}]
 	-r	The resolution of output picture.[${txtred}Default 300 ppi${txtrst}]
@@ -111,7 +133,8 @@ ${txtbld}OPTIONS${txtrst}:
 		(one level one sentence, separate by';') 
 		data\$size <- factor(data\$size, levels=c("l1",
 		"l2",...,"l10"), ordered=T) ${txtrst}]
-	-z	Other parameters in ggplot format.[${bldred}selection${txtrst}]
+	-z	Other parameters in ggplot format.
+		[${bldred}optional${txtrst}]
 	-e	Execute or not[${bldred}Default TRUE${txtrst}]
 	-i	Install the required packages[${bldred}Default FALSE${txtrst}]
 
@@ -131,7 +154,7 @@ yval_order=''
 yval=''
 execute='TRUE'
 ist='FALSE'
-color=''
+color='c_t_c_t0304'
 color_v=''
 log='nolog'
 uwid=20
@@ -140,12 +163,16 @@ res=300
 ext='pdf'
 facet=''
 size=''
+geom_text_repel='TRUE'
 shape='c_t_c_t0304'
 par=''
 variable_order=''
+color_order=''
+shape_order=''
 legend_pos='right'
 xtics_angle=0
 hjust=0.5
+point_hjust=0
 vjust=1
 alpha=1
 jitter='FALSE'
@@ -153,8 +180,10 @@ label=''
 check_overlap="FALSE"
 colormodel='srgb'
 label_font_size=5
+scale_y='FALSE'
+scale_y_way='scale_y_continuous(trans="log2")'
 
-while getopts "hf:t:x:y:p:X:O:R:Y:B:H:V:v:c:C:A:l:N:L:M:J:w:a:r:E:s:S:b:d:z:e:i:" OPTION
+while getopts "hf:t:x:y:p:X:O:R:Y:Z:B:H:V:L:I:K:v:c:C:A:l:D:F:N:L:M:J:w:u:r:E:s:S:b:d:z:e:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -209,13 +238,28 @@ do
 		M)
 			check_overlap=$OPTARG
 			;;
+		Z)
+			geom_text_repel=$OPTARG
+			;;
 		N)
 			label_font_size=$OPTARG
+			;;
+		I)
+			color_order=$OPTARG
+			;;
+		K)
+			shape_order=$OPTARG
+			;;
+		D)
+			scale_y=$OPTARG
+			;;
+		F)
+			scale_y_way=$OPTARG
 			;;
 		w)
 			uwid=$OPTARG
 			;;
-		a)
+		u)
 			vhig=$OPTARG
 			;;
 		r)
@@ -236,6 +280,9 @@ do
 		J)
 			jitter=$OPTARG
 			;;
+		L)
+			point_hjust=$OPTARG
+			;;
 		S)
 			shape=$OPTARG
 			;;
@@ -255,7 +302,7 @@ do
 	esac
 done
 
-mid=".scatterplot"
+mid=".scatterplot2"
 if [ -z $file ] || [ -z $xval ] || [ -z $yval ] ; then
 	echo 1>&2 "Please give filename, xval and yval."
 	usage
@@ -269,6 +316,7 @@ cat <<END >${file}${mid}.r
 if ($ist){
 	install.packages("ggplot2", repo="http://cran.us.r-project.org")
 	install.packages("ggbeeswarm", repo="http://cran.us.r-project.org")
+	install.packages("ggrepel", repo="http://cran.us.r-project.org")
 }
 library(plyr)
 library(ggplot2)
@@ -278,6 +326,9 @@ if (${jitter}) {
 	library(ggbeeswarm)
 }
 
+if (("${label}" != "") & (${geom_text_repel}) ) {
+	library('ggrepel')
+}
 data <- read.table(file="$file", sep="\t", quote="", comment="", header=T)
 
 yval_order <- c(${yval_order})
@@ -290,6 +341,19 @@ xval_order <- c(${xval_order})
 if (length(xval_order) > 1) {
 	data\$${xval} <- factor(data\$${xval}, levels=xval_order, ordered=T)
 }
+
+shape_order <- c(${shape_order})
+
+if (length(shape_order) > 1) {
+	data\$${shape} <- factor(data\$${shape}, levels=shape_order, ordered=T)
+}
+
+color_order <- c(${color_order})
+
+if (length(color_order) > 1) {
+	data\$${color} <- factor(data\$${color}, levels=color_order, ordered=T)
+}
+
 
 if ("${log}" != "nolog"){
 	data\$${log} <- log10(data\$${log}) * (-1)
@@ -322,17 +386,17 @@ p <- p + labs(x=xlab, y=ylab) + labs(title="$title")
 
 
 if (${jitter}) {
-	if (("${size}" != "") && ("${color}" != "") && ("${shape}" != "c_t_c_t0304")) {
+	if (("${size}" != "") && ("${color}" != "c_t_c_t0304") && ("${shape}" != "c_t_c_t0304")) {
 		p <- p + geom_quasirandom(aes(size=${size}, color=${color}, shape=${shape}), alpha=${alpha}) 
-	} else if (("${color}" != "") && ("${shape}" != "c_t_c_t0304")) {
+	} else if (("${color}" != "c_t_c_t0304") && ("${shape}" != "c_t_c_t0304")) {
 		p <- p + geom_quasirandom(aes(color=${color}, shape=${shape}), alpha=${alpha}) 
 	} else if (("${size}" != "") && ("${shape}" != "c_t_c_t0304")) {
 		p <- p + geom_quasirandom(aes(size=${size}, shape=${shape})) 
-	} else if (("${size}" != "") && ("${color}" != "")) {
+	} else if (("${size}" != "") && ("${color}" != "c_t_c_t0304")) {
 		p <- p + geom_quasirandom(aes(size=${size}, color=${color}), alpha=${alpha}) 
 	} else if ("${size}" != "") {
 		p <- p + geom_quasirandom(aes(size=${size}))
-	} else if ("${color}" != "") {
+	} else if ("${color}" != "c_t_c_t0304") {
 		p <- p + geom_quasirandom(aes(color=${color}), alpha=${alpha})
 	} else if ("${shape}" != "c_t_c_t0304") {
 		p <- p + geom_quasirandom(aes(shape=${shape}))
@@ -340,17 +404,17 @@ if (${jitter}) {
 		p <- p + geom_quasirandom()
 	}
 } else {
-	if (("${size}" != "") && ("${color}" != "") && ("${shape}" != "c_t_c_t0304")) {
+	if (("${size}" != "") && ("${color}" != "c_t_c_t0304") && ("${shape}" != "c_t_c_t0304")) {
 		p <- p + geom_point(aes(size=${size}, color=${color}, shape=${shape}), alpha=${alpha}) 
-	} else if (("${color}" != "") && ("${shape}" != "c_t_c_t0304")) {
+	} else if (("${color}" != "c_t_c_t0304") && ("${shape}" != "c_t_c_t0304")) {
 		p <- p + geom_point(aes(color=${color}, shape=${shape}), alpha=${alpha}) 
 	} else if (("${size}" != "") && ("${shape}" != "c_t_c_t0304")) {
 		p <- p + geom_point(aes(size=${size}, shape=${shape})) 
-	} else if (("${size}" != "") && ("${color}" != "")) {
+	} else if (("${size}" != "") && ("${color}" != "c_t_c_t0304")) {
 		p <- p + geom_point(aes(size=${size}, color=${color}), alpha=${alpha}) 
 	} else if ("${size}" != "") {
 		p <- p + geom_point(aes(size=${size}))
-	} else if ("${color}" != "") {
+	} else if ("${color}" != "c_t_c_t0304") {
 		p <- p + geom_point(aes(color=${color}), alpha=${alpha})
 	} else if ("${shape}" != "c_t_c_t0304") {
 		p <- p + geom_point(aes(shape=${shape}))
@@ -359,25 +423,32 @@ if (${jitter}) {
 	}
 }
 
-if (("${color}" != "") && length(color_v) == 2) {
+if (("${color}" != "c_t_c_t0304") && length(color_v) == 2) {
 	p <- p + scale_colour_gradient(low=color_v[1], high=color_v[2], name="${color}")
 }
 
-if (("${shape}" != "c_t_c_t0304") && length(shape_level) > 6) {
+if (("${shape}" != "c_t_c_t0304") && shape_level > 6) {
 	p <- p + scale_shape_manual(values=shapes)
 }
 
 
 if ("${label}" != "") {
+	if (${geom_text_repel}) {
+		p <- p + geom_text_repel(aes(label=${label}))
+	} else {
 	if (${jitter}) {
 		p <- p + geom_text(aes(label=${label}), position=position_quasirandom(), 
-		hjust=-1, size=${label_font_size}, check_overlap=${check_overlap})
+		hjust=${point_hjust}, size=${label_font_size}, check_overlap=${check_overlap})
 	} else {
 		p <- p + geom_text(aes(label=${label}), position="identity",
-		hjust=-1, size=${label_font_size}, check_overlap=${check_overlap})
+		hjust=${point_hjust}, size=${label_font_size}, check_overlap=${check_overlap})
+	}
 	}
 }
 
+if (${scale_y}) {
+	p <- p + ${scale_y_way}
+}
 
 p <- p ${facet}
 
