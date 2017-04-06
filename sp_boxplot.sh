@@ -111,6 +111,21 @@ ${txtbld}OPTIONS${txtrst}:
 		If "width", all violins have the same maximum width. 
 		'equal' is also accepted.
 		${txtred}[Default 'width']${txtrst}
+	-G	Wrap plots by given column. This is used to put multiple plot
+		in one picture. Used when -m is TRUE, normally a string <set>
+		should be suitable for this parameter.
+	-g	The levels of wrapping to set the order of each group.
+		${txtred}Normally the unique value of the column given to B in
+		a format like <"'a','b','c','d'">.${txtrst}
+	-M	The number of rows one want when -B is used.Default NULL.
+		${txtred}[one of -o and -O is enough]${txtrst}
+	-N	The number of columns one want when -B is used.Default NULL.
+		${txtred}[one of -o and -O is enough]${txtrst}
+	-k	Paramter for scales for facet.
+		[${txtred}Optional, only used when -B is given. Default each 
+		inner graph use same scale [x,y range]. 'free','free_x','free_y' 
+		is accepted. ${txtrst}]
+
 	-t	Title of picture[${txtred}Default empty title${txtrst}]
 	-x	xlab of picture[${txtred}Default empty xlab${txtrst}]
 	-y	ylab of picture[${txtred}Default empty ylab${txtrst}]
@@ -162,6 +177,7 @@ xvariable=''
 value='value'
 variable='variable'
 xtics_angle=0
+xtics='TRUE'
 level=""
 legend_cut=""
 x_level=""
@@ -190,8 +206,13 @@ jitter='FALSE'
 jitter_bp='FALSE'
 colormodel='srgb'
 rotate_plot='FALSE'
+facet='NoMeAnInGTh_I_n_G_s'
+nrow='NULL'
+ncol='NULL'
+scales='fixed'
+facet_level='NA'
 
-while getopts "ha:A:b:B:c:C:d:D:e:E:f:F:i:I:R:j:J:l:L:m:n:o:O:p:P:r:s:S:t:u:v:V:w:W:x:y:z:" OPTION
+while getopts "ha:A:b:B:c:C:d:D:e:E:f:F:g:G:M:N:k:i:I:R:j:J:l:L:m:n:o:O:p:P:r:s:S:t:u:v:V:w:W:x:y:z:" OPTION
 do
 	case $OPTION in
 		h)
@@ -224,6 +245,21 @@ do
 			;;
 		b)
 			xtics_angle=$OPTARG
+			;;
+		G)
+			facet=$OPTARG
+			;;
+		g)
+			facet_level=$OPTARG
+			;;
+		M)
+			nrow=$OPTARG
+			;;
+		N)
+			ncol=$OPTARG
+			;;
+		k)
+			scales=$OPTARG
 			;;
 		t)
 			title=$OPTARG
@@ -399,7 +435,7 @@ if(! $melted){
 	ID_var <- c("${ID_var}")
 	ID_var <- ID_var[ID_var!=""]
 	data <- read.table(file="${file}", sep="\t", header=$header,
-	row.names=1)
+	row.names=1, quote="")
 	if ("$xvariable" != "${variable}"){
 		if (length(ID_var) > 0){
 			ID_var <- c(ID_var, "${xvariable}")
@@ -416,7 +452,7 @@ if(! $melted){
 	}
 } else {
 	data_m <- read.table(file="$file", sep="\t",
-	header=$header)
+	header=$header, quote="")
 }
 
 if (${y_add} != 0){
@@ -435,6 +471,13 @@ if ("${x_cut}" != ""){
 	x_level <- c(${x_level})
 	data_m\$${xvariable} <- factor(data_m\$${xvariable},levels=x_level)
 }
+
+if ("${facet_level}" != "NA") {
+	facet_level <- c(${facet_level})
+	data_m\$${facet} <- factor(data_m\$${facet},
+        levels=facet_level, ordered=T)
+}
+
 
 p <- ggplot(data_m, aes(factor($xvariable), ${value})) + xlab("$xlab") +
 ylab("$ylab") + labs(title="$title")
@@ -457,6 +500,7 @@ if (${violin}){
 	scale = "${scale_violin}") 
 } else if (${jitter}){
 	p <- p + geom_quasirandom(aes(colour=factor(${variable})))
+	p <- p + stat_summary(fun.y = "mean", geom = "text", label="----", size= 10, color= "black")
 	#p <- p + geom_jitter(aes(colour=factor(${variable})))
 } else {
 	if (${notch}){
@@ -485,6 +529,7 @@ if (${jitter_bp}){
 
 if($scaleY){
 	p <- p + $scaleY_x
+	p <- p + stat_summary(fun.y = "mean", geom = "text", label="----", size= 10, color= "black")
 }
 
 if(${outlier}){
@@ -500,6 +545,11 @@ if($color){
 
 if(${rotate_plot}){
 	p <- p + coord_flip()	
+}
+
+if ("${facet}" != "NoMeAnInGTh_I_n_G_s"){
+	p <- p + facet_wrap( ~ ${facet}, nrow=${nrow}, ncol=${ncol},
+	scale="${scales}")
 }
 
 
