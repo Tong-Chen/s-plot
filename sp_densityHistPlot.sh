@@ -75,6 +75,8 @@ ${txtbld}OPTIONS${txtrst}:
 		y-axis.[${txtred}Default <frequency>,
 		accept <..density..>, <..count..>. 
 		When -d is <both>,  <frequency> will be given here.${txtrst}]
+	-N	Scale value. All values will be divided by supplied one.
+		Default 1.
 	-s	Variable name for facet.[${txtred}Optional, the name of one
 		column representing a group should be given if group
 		information is needed. Here 'set' can be given if you want to
@@ -192,6 +194,7 @@ ytics='TRUE'
 color='FALSE'
 color_v=''
 pos="identity"
+scale=1
 xtics_input=0
 xtics_value=0
 custom_vline='NULL'
@@ -203,7 +206,7 @@ facet_scale='fixed'
 j_facet='haha'
 j_facet_order=''
 
-while getopts "hf:m:M:t:a:x:b:l:D:d:V:A:g:G:j:J:H:I:W:k:P:y:c:C:B:X:Y:R:s:S:w:u:r:E:p:z:v:e:i:" OPTION
+while getopts "hf:m:M:N:t:a:x:b:l:D:d:V:A:g:G:j:J:H:I:W:k:P:y:c:C:B:X:Y:R:s:S:w:u:r:E:p:z:v:e:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -224,6 +227,9 @@ do
 			;;
 		A)
 			custom_vanno=$OPTARG
+			;;
+		N)
+			scale=$OPTARG
 			;;
 		t)
 			title=$OPTARG
@@ -360,7 +366,7 @@ if(! $melted){
 	#cat("Currently not supported for unmelted files")
 	#quit()
 	#currently this part is unused
-	data <- read.table(file="${file}", sep="\t", header=$header)
+	data <- read.table(file="${file}", sep="\t", header=$header, quote="")
 #	data_rownames <- rownames(data)
 #	data_colnames <- colnames(data)
 #	data\$${xvariable} <- data_rownames
@@ -368,9 +374,12 @@ if(! $melted){
 	#data_m <- melt(data)
 } else {
 	data_m <- read.table(file="$file", sep="\t",
-	header=$header)
+	header=$header, quote="")
 }
 
+if(${scale} != 1) {
+	data_m\$value <- data_m\$value/${scale}
+}
 
 if ("${level}" != ""){
 	level_i <- c(${level})
