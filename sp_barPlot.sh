@@ -76,6 +76,15 @@ ${txtbld}OPTIONS${txtrst}:
 	-A	The attribute of x-axis variable.
 		[${txtred}Default TRUE, means X-axis label is text.
 		FALSE means X-axis label is number.${txtrst}]
+	-G	Name for legend column.
+		[${txtred}Default 'variable'. Should only be changed when -m is TRUE.${txtrst}]
+	-I	Name for value column.
+		[${txtred}Default 'value'. Should only be changed when -m is TRUE.${txtrst}]
+	-T	Tag for this plot. Normally used when multiple plots generated from one file.
+		[${txtred}Optional.${txtrst}]
+	-g	Error-bar column.
+		Specify the column containing error bars.
+		Melted format should be supplied (-m TRUE) and -d should be set to dodge.
 	-d	The ways to place multiple bars for one group if there are. 
 		Multiple bars in same place will be stacked together by
 		default.
@@ -84,10 +93,12 @@ ${txtbld}OPTIONS${txtrst}:
 		[${txtred}Default stack, accept dodge, fill. ${txtrst}]
 	-D	The ways to show the height of bars.
 		The height of bars represent the numerical values in each group
-		by default. One can also give 'bin' to let
-		the program count the number of items in each group (Normally
-		the 'variable' column after melt).
-		[${txtred}Default identity, accept bin when categorial data
+		by default (normally in value column of melted data). 
+		One can also give 'count' to let the program count the number of 
+		items in each group (Normally the 'variable' column is used to group 
+		'xvariable' colum after melt).
+		Or one can give 'weight' which will sum values of eacg group.
+		[${txtred}Default identity, accept count when categorial data
 		are given. ${txtrst}]
 	-l	Levels for legend variable
 		[${txtred}Default column order, accept a string like
@@ -124,7 +135,7 @@ ${txtbld}OPTIONS${txtrst}:
 	-O	The number of columns one want when -B is used.Default NULL.
 		${txtred}[one of -o and -O is enough]${txtrst}
 	-k	Paramter for scales for facet.
-		[${txtred}Optional, only used when -g is given. Default each 
+		[${txtred}Optional, only used when -B is given. Default each 
 		inner graph use same scale [x,y range]. 'free','free_x','free_y' 
 		is accepted. ${txtrst}]
 	-c	Manually set colors for each bar.[${txtred}Default FALSE,
@@ -174,8 +185,8 @@ melted='FALSE'
 xlab=' '
 ylab=' '
 xvariable='xvariable'
-level=""
-x_level=""
+level="''"
+x_level="''"
 x_type='TRUE'
 scaleY='FALSE'
 y_add=0
@@ -191,6 +202,7 @@ ncol='NULL'
 ist='FALSE'
 uwid=20
 vhig=12
+error_bar='ctCTct'
 res=500
 ext='pdf'
 par=''
@@ -203,8 +215,11 @@ color_v=''
 vline=0
 scales='fixed'
 rotate_plot='FALSE'
+variable='variable'
+value='value'
+tag=''
 
-while getopts "hf:m:a:A:t:x:F:l:k:d:D:P:L:y:V:o:O:B:b:c:C:X:Y:R:w:u:r:s:S:p:z:v:e:E:i:" OPTION
+while getopts "hf:m:a:A:t:x:F:l:G:I:T:g:k:d:D:P:L:y:V:o:O:B:b:c:C:X:Y:R:w:u:r:s:S:p:z:v:e:E:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -241,8 +256,20 @@ do
 		l)
 			level=$OPTARG
 			;;
+		G)
+			variable=$OPTARG
+			;;
+		I)
+			value=$OPTARG
+			;;
+		T)
+			tag=$OPTARG
+			;;
 		k)
 			scales=$OPTARG
+			;;
+		g)
+			error_bar=$OPTARG
 			;;
 		P)
 			legend_pos=$OPTARG
@@ -332,7 +359,7 @@ if test ${y_add} -ne 0; then
 	scaleY="TRUE"
 fi
 
-mid='.'${position}'Bars'
+mid='.'${position}${tag}'Bars'
 
 cat <<END >${file}${mid}.r
 
@@ -358,28 +385,28 @@ if(! $melted){
 }
 
 if (${y_add} != 0){
-	data_m\$value <- data_m\$value + ${y_add}
+	data_m\$${value} <- data_m\$${value} + ${y_add}
 }
 
-if ("${level}" != ""){
-	level_i <- c(${level})
-	data_m\$variable <- factor(data_m\$variable, levels=level_i)
+level_i <- c(${level})
+if (length(level_i) >1){
+	data_m\$${variable} <- factor(data_m\$${variable}, levels=level_i)
 } else {
 	if (! $melted) {
-	data_m\$variable <- factor(data_m\$variable, levels=data_colnames,
+	data_m\$${variable} <- factor(data_m\$${variable}, levels=data_colnames,
 	ordered=T)
 	}
 }
 
 if (${x_type}){
-	if ("${x_level}" != ""){
-		x_level <- c(${x_level})
+	x_level <- c(${x_level})
+	if (length(x_level)>1){
 		data_m\$${xvariable} <- factor(data_m\$${xvariable},levels=x_level)
 	}else{
-	if (! $melted) {
-		data_m\$${xvariable} <- factor(data_m\$${xvariable}, 
-		levels=data_rownames,ordered=TRUE)
-	}
+		if (! $melted) {
+			data_m\$${xvariable} <- factor(data_m\$${xvariable}, 
+			levels=data_rownames,ordered=TRUE)
+		}
 	}
 }
 
@@ -390,12 +417,12 @@ if ("${facet_level}" != "NA") {
 	levels=facet_level, ordered=T)
 }
 
-if ("${stat}" == "bin"){
-	#p <- ggplot(data_m, aes($xvariable, fill=factor(variable)))
+if ("${stat}" == "count"){
+	#p <- ggplot(data_m, aes($xvariable, fill=factor(${variable})))
 	p <- ggplot(data_m, aes($xvariable))
 } else {
-	#p <- ggplot(data_m, aes($xvariable, value, fill=factor(variable)))
-	p <- ggplot(data_m, aes($xvariable, value))
+	#p <- ggplot(data_m, aes($xvariable, ${value}, fill=factor(${variable})))
+	p <- ggplot(data_m, aes($xvariable, ${value}))
 }
 
 p <- p + xlab("${xlab}") + ylab("${ylab}") + theme_bw() +
@@ -410,7 +437,11 @@ p <- p + theme(axis.ticks.x = element_blank(), legend.key=element_blank())
 #legend.margin=unit(0,"cm"))
 
 #p <- p + geom_bar(stat="${stat}", position="${position}")
-p <- p + geom_bar(stat="${stat}", position="${position}", aes(fill=variable))
+p <- p + geom_bar(stat="${stat}", position="${position}", aes(fill=${variable}))
+
+if ("${error_bar}" != "ctCTct") {
+	p <- p + geom_errorbar(aes(ymin=${value}-${error_bar}, ymax=${value}+${error_bar}, colour="black", width=0.1, position=position_dodge(.9)))
+}
 
 if ("${position}" == "fill"){
 	p <- p + scale_y_continuous(labels = scales::percent)
