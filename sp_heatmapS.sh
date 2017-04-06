@@ -26,7 +26,9 @@ ${txtbld}OPTIONS${txtrst}:
  		rowname, tab seperated. Colnames must be unique unless you
 		know what you are doing.)${bldred}[NECESSARY]${txtrst}
 	-t	Title of picture[${txtred}Default empty title${txtrst}]
-		[Scatter plot of horizontal and vertical variable]
+		[Heatmap of horizontal and vertical variable]
+	-w	Title for xlab (lowercase w)[${txtred}Default empty title${txtrst}]
+	-P	Title for ylab (uppercase P)[${txtred}Default empty title${txtrst}]
 	-a	Display xtics. ${bldred}[Default TRUE. 
 		This should also be set to TRUE even using manual x-tics.]${txtrst}
 	-Q	Manually set the position of xtics.
@@ -75,7 +77,7 @@ ${txtbld}OPTIONS${txtrst}:
 	-x	The color for representing low value.[${txtred}Default 
 		green${txtrst}]
 	-y	The color for representing high value.[${txtred}Default
-		red${txtrst}]
+		blue${txtrst}]
 	-M	The color representing mid-value.
 		[${txtred}Default yellow${txtrst}]
 	-Z	Use mid-value or not. [${txtred}Default FALSE, which means
@@ -172,7 +174,7 @@ ext='pdf'
 scale_op='FALSE'
 scale_add=1
 xcol='green'
-ycol='red'
+ycol='blue'
 mcol='yellow'
 mid_value_use='FALSE'
 mid_value='Inf'
@@ -197,8 +199,10 @@ xtics_pos=0
 xtics_value=0
 legend_width=0
 legend_height=0
+xlab=''
+ylab=''
 
-while getopts "hf:t:u:v:H:Q:S:x:y:T:V:Y:M:R:I:L:K:X:r:F:E:w:l:a:A:U:b:B:k:c:d:n:g:s:N:j:J:m:o:G:D:C:O:q:e:i:p:Z:z:" OPTION
+while getopts "hf:t:u:v:H:Q:S:x:y:T:V:Y:M:R:I:L:K:X:r:F:E:w:l:a:A:U:b:B:k:c:d:n:g:s:N:j:J:m:o:G:D:C:O:q:e:i:p:P:Z:z:" OPTION
 do
 	case $OPTION in
 		h)
@@ -270,7 +274,10 @@ do
 			fontsize=$OPTARG
 			;;
 		w)
-			width=$OPTARG
+			xlab=$OPTARG
+			;;
+		P)
+			ylab=$OPTARG
 			;;
 		l)
 			legend_pos=$OPTARG
@@ -596,6 +603,9 @@ if ($kclu>1){
 	
 }else{
 	#---for raw data scale-----no cluster------------
+	if (${delZero}) {
+		data <- data[rowSums(data)!=0,]
+	}
 	if ($scale_op){
 		colname <- colnames(data)
 		data <- as.data.frame(t(apply(data,1,scale)))
@@ -717,7 +727,8 @@ if($gradient){
 
 p <- p + theme(axis.ticks=element_blank()) + theme_bw() + 
 	theme(panel.grid.major = element_blank(), 
-	panel.grid.minor = element_blank()) + xlab(NULL) + ylab(NULL)
+	panel.grid.minor = element_blank()) + xlab("${xlab}") + 
+	ylab("${ylab}") + labs(title="$title")
 
 	#theme(legend.title=element_blank(),
 #if ("${legend}" != " "){
