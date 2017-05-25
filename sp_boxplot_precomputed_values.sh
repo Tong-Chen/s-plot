@@ -17,63 +17,34 @@ ${bldblu}Function${txtrst}:
 
 This script is used to do boxplot using ggplot2.
 
-fileformat for -f (suitable for data extracted from one sample, the
-number of columns is unlimited. Column 'Set' is not necessary unless
-you have multiple groups)
+fileformat for -f
+(At least first 6 columns are needed, column names should not be changed)
+(Column 'Set' is not necessary unless you have multiple groups)
 
-Gene	hmC	expr	Set
-NM_001003918_26622	0	83.1269257376101	TP16
-NM_001011535_3260	0	0	TP16
-NM_001012640_14264	0	0	TP16
-NM_001012640_30427	0	0	TP16
-NM_001003918_2662217393_30486	0	0	TP16
-NM_001017393_30504	0	0	TP16
-NM_001025241_30464	0	0	TP16
-NM_001017393_30504001025241_30513	0	0	TP16
+Samp	minimum	maximum	lower_quantile	median	upper_quantile	Set
+A	1	10	2	5	7	cl1
+B	1	10	2	5	7	cl2
+C	1	10	2	5	7	cl1
+D	1	10	2	5	7	cl2
 
-For file using "Set" column, you can use 
 boxplot.onefile.sh -f file -a Set 
 
-fileformat when -m is true
-#Default we use string "value" and "variable" to represent the data
-#column and sub-class column. If you have other strings as column
-#names, please give them to -d and -F.
-#The "Set" column is optional.
-#If you do have several groups, they can put at the "Set" column 
-#with "Set" or other string as labels. The label should be given
-#to parameter -a.
-#Actually this format is the melted result of last format.
-value	variable	Set
-0	hmC	g
-1	expr	g
-2	hmC	a
-3	expr	a
 
 ${txtbld}OPTIONS${txtrst}:
 	-f	Data file (with header line, the first column is the
  		colname, tab seperated)${bldred}[NECESSARY]${txtrst}
-	-m	When true, it will skip preprocess. But the format must be
-		the same as listed before.
-		${bldred}[Default FALSE, accept TRUE]${txtrst}
-	-d	The column represents the digital values.
-		${bldred}[Default "value" represents the column named "value".
-		This parameter can only set when -m is TRUE.]${txtrst}
+	-a	Name for x-axis variable
+		[${txtred}Default parameter values given to <-F>, 
+		For the given example, 'Set' which represents groups of each gene, 
+		and should be supplied to this parameter.
+		${txtrst}]
 	-F	The column represents the variable information, means
 		sub-class.
 		${bldred}[Default "variable" represents the column named
-		"variable". If no-subclass, this will be treated as X-axus varuable.
-		This parameter can only set when -m is TRUE.]${txtrst}
-	-I	Other columns you want to treat as ID variable columns except
-		the one given to -a.
-		${bldred}[Default empty string, accept comma separated strings
-		like "'Id1','Id2','Id3'" or single string "id1"]${txtrst}
-	-a	Name for x-axis variable
-		[${txtred}Default variable, which is an inner name, suitable 
-		for data without 'Set' column. For the given example, 
-		'Set' which represents groups of each gene, and should be 
-		supplied to this parameter.
-		${txtrst}]
-	-b	Rotation angle for x-axis value(anti clockwise)
+		"variable". For given example, "Samp" should given here.
+		For files with both <Samp> and <Set> columns, each is suitable for 
+		<-a> or <-F> but with different output.]${txtrst}
+	-b	Rotation angle for x-axis value (anti clockwise)
 		${bldred}[Default 0]${txtrst}
 	-R	Rotate the plot. Usefull for plots with many values or very long labels at X-axis.
 		${bldred}[Default FALSE]${txtrst}
@@ -101,16 +72,6 @@ ${txtbld}OPTIONS${txtrst}:
 		[10 will generate 10 intervals or 
 		"c(-1, 0, 1, 2, 5, 10)" will generate (-1,0],(0,1]...(5,10]]	
 	-n	Using notch or not.${txtred}[Default TRUE]${txtrst}
-	-V	Do violin plot instead of boxplot.${txtred}[Default FALSE]${txtrst}
-	-W	Do violin plot without inner boxplot.${txtred}[Default FALSE]${txtrst}
-	-j	Do jitter plot instead of boxplot.${txtred}[Default FALSE]${txtrst}
-	-J	Do jitter plot overlay with violinplot or boxplot or both.${txtred}[Default FALSE]${txtrst}
-	-A	The value given to scale for violin plot.
-		if "area", all violins have the same area (before trimming the tails). 
-		If "count", areas are scaled proportionally to the number of observations. 
-		If "width", all violins have the same maximum width. 
-		'equal' is also accepted.
-		${txtred}[Default 'width']${txtrst}
 	-G	Wrap plots by given column. This is used to put multiple plot
 		in one picture. Used when -m is TRUE, normally a string <set>
 		should be suitable for this parameter.
@@ -125,7 +86,6 @@ ${txtbld}OPTIONS${txtrst}:
 		[${txtred}Optional, only used when -B is given. Default each 
 		inner graph use same scale [x,y range]. 'free','free_x','free_y' 
 		is accepted. ${txtrst}]
-
 	-t	Title of picture[${txtred}Default empty title${txtrst}]
 	-x	xlab of picture[${txtred}Default empty xlab${txtrst}]
 	-y	ylab of picture[${txtred}Default empty ylab${txtrst}]
@@ -138,11 +98,6 @@ ${txtbld}OPTIONS${txtrst}:
 		scale_y_continuous(trans=log2_trans()), coord_trans(y="log2"), 
 	   	or other legal
 		command for ggplot2)${txtrst}]
-	-o	Exclude outliers.
-		[${txtred}Exclude outliers or not, default FALSE means not.${txtrst}]
-	-O	The scales for you want to zoom in to exclude outliers.
-		[${txtred}Default 1.05. No recommend to change unless you know
-		what you are doing.${txtrst}]
 	-S	A number to add if scale is used.
 		[${txtred}Default 0. If a non-zero number is given, -s is
 		TRUE.${txtrst}]	
@@ -359,14 +314,14 @@ fi
 
 mid='.boxplot'
 
-if test "${melted}" == "FALSE"; then
-	if test "${value}" != "value" || test "${variable}" != "variable"; then
-		value="value"
-		variable="variable"
-		echo "Warning, there is no need to set -d and -F for unmelted \
-files. We will ignore this setting and not affect the result."
-	fi
-fi
+#if test "${melted}" == "FALSE"; then
+#	if test "${value}" != "value" || test "${variable}" != "variable"; then
+#		value="value"
+#		variable="variable"
+#		echo "Warning, there is no need to set -d and -F for unmelted \
+#files. We will ignore this setting and not affect the result."
+#	fi
+#fi
 
 if test "${xvariable}" == ""; then
 	xvariable=${variable}
@@ -431,117 +386,48 @@ library(ggplot2)
 library(reshape2)
 library(scales)
 
-if(! $melted){
-	ID_var <- c("${ID_var}")
-	ID_var <- ID_var[ID_var!=""]
-	data <- read.table(file="${file}", sep="\t", header=$header,
-	row.names=1, quote="")
-	if ("$xvariable" != "${variable}"){
-		if (length(ID_var) > 0){
-			ID_var <- c(ID_var, "${xvariable}")
-		} else {
-			ID_var <- c("${xvariable}")
-		}
-		data_m <- melt(data, id.vars=ID_var)
-	} else {
-		if (length(ID_var) > 0){
-			data_m <- melt(data, id.vars=ID_var)
-		} else {
-			data_m <- melt(data)
-		}
-	}
-} else {
-	data_m <- read.table(file="$file", sep="\t",
-	header=$header, quote="")
-}
-
-if (${y_add} != 0){
-	data_m\$${value} <- data_m\$${value} + ${y_add}
-}
-
-level <- c(${level})
+data_m <- read.table(file="${file}", sep="\t", header=$header,
+row.names=NULL, quote="")
 
 if ("${legend_cut}" != ""){
 	data_m\$${variable} <- cut(data_m\$${variable}, ${legend_cut})
-} else if (length(level)>1){
-	level_i <- level
+} else if ("${level}" != ""){
+	level_i <- c(${level})
 	data_m\$${variable} <- factor(data_m\$${variable}, levels=level_i)
 }
-
-x_level <- c(${x_level})
-
 if ("${x_cut}" != ""){
 	data_m\$${xvariable} <- cut(data_m\$${xvariable},${x_cut})
-}else if (length(x_level)){
+}else if ("${x_level}" != ""){
+	x_level <- c(${x_level})
 	data_m\$${xvariable} <- factor(data_m\$${xvariable},levels=x_level)
 }
 
-facet_level <- c(${facet_level})
-if (length(facet_level)>1) {
+if ("${facet_level}" != "NA") {
+	facet_level <- c(${facet_level})
 	data_m\$${facet} <- factor(data_m\$${facet},
         levels=facet_level, ordered=T)
 }
 
 
-p <- ggplot(data_m, aes(factor($xvariable), ${value})) + xlab("$xlab") +
-ylab("$ylab") + labs(title="$title")
+#Samp	minimum	maximum	lower_quantile	median	upper_quantile	Set
+p <- ggplot(data_m, aes(x=factor($xvariable), ymin=minimum, lower=lower_quantile, 
+			middle=median, upper=upper_quantile, ymax=maximum)) +
+			xlab("$xlab") + ylab("$ylab") + labs(title="$title")
 
 
-if (${violin}){
-	p <- p + geom_violin(aes(fill=factor(${variable})), 
-	stat = "ydensity", position = "dodge", trim = TRUE,  
-	scale = "${scale_violin}") + 
-	geom_boxplot(aes(fill=factor(${variable})), alpha=.25, width=0.15, 
-	position = position_dodge(width = .9), outlier.colour='NA') + 
-	stat_summary(aes(group=${variable}), fun.y=mean,  
-	geom="point", fill="black", shape=19, size=1,
-	position = position_dodge(width = .9))
-   	
-	#+ geom_jitter(height = 0)
-} else if (${violin_nb}){
-	p <- p + geom_violin(aes(fill=factor(${variable})), 
-	stat = "ydensity", position = "dodge", trim = TRUE,  
-	scale = "${scale_violin}") 
-} else if (${jitter}){
-	p <- p + geom_quasirandom(aes(colour=factor(${variable})))
-	p <- p + stat_summary(fun.y = "mean", geom = "text", label="----", size= 10, color= "black")
-	#p <- p + geom_jitter(aes(colour=factor(${variable})))
-} else {
-	if (${notch}){
-		if (${outlier}){
-		p <- p + geom_boxplot(aes(fill=factor(${variable})), notch=TRUE,
-			notchwidth=0.3, outlier.colour='NA')
-		}else{
-		p <- p + geom_boxplot(aes(fill=factor(${variable})), notch=TRUE,
-			notchwidth=0.3)
-		}
-	}else {
-		if (${outlier}){
-			p <- p + geom_boxplot(aes(fill=factor(${variable})),
-			outlier.colour='NA')
-		}else{
-			p <- p + geom_boxplot(aes(fill=factor(${variable})))
-		}
-	}
+if (${notch}){
+	p <- p + geom_boxplot(aes(fill=factor(${variable})), notch=TRUE,
+		notchwidth=0.3, stat = "identity")
+}else {
+	p <- p + geom_boxplot(aes(fill=factor(${variable})), stat = "identity")
 }
 
-if (${jitter_bp}){
-	#p <- p + geom_jitter(aes(colour=factor(${variable})))
-	#p <- p + geom_jitter()
-	p <- p + geom_quasirandom()
-}
 
 if($scaleY){
 	p <- p + $scaleY_x
 	p <- p + stat_summary(fun.y = "mean", geom = "text", label="----", size= 10, color= "black")
 }
 
-if(${outlier}){
-	#ylim_zoomin <- boxplot.stats(data_m\$${value})\$stats[c(1,5)]
-	stats <- boxplot.stats(data_m\$${value})\$stats
-	ylim_zoomin <- c(stats[1]/${out_scale}, stats[5]*${out_scale})
-	p <- p + coord_cartesian(ylim = ylim_zoomin)
-}
 
 if($color){
 	p <- p + scale_fill_manual(values=c(${color_v}))

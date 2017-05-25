@@ -126,7 +126,7 @@ if ($ist){
 	install.packages("car", repo="http://cran.us.r-project.org")
 }
 library(car)
-data <- read.table(file="$file", sep="\t", header=T, row.names=1)
+data <- read.table(file="$file", sep="\t", header=T, quote="", row.names=1)
 #postscript(file="${file}${mid}.eps", onefile=FALSE,
 #horizontal=FALSE,paper="special" , width=10, height = 12,pointsize=10)
 

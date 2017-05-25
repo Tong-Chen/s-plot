@@ -141,7 +141,7 @@ if ($ist){
 	install.packages("hexbin", repo="http://cran.us.r-project.org")
 }
 library(ggplot2)
-data <- read.table(file="$file", sep="\t", header=T, row.names=${row_names})
+data <- read.table(file="$file", sep="\t", header=T, quote="", row.names=${row_names})
 
 p <- ggplot(data,aes(x=${xval},y=${yval}))+stat_binhex(bins=${group})+ labs(x="$xlab",
 y="$ylab") + ggtitle("$title")

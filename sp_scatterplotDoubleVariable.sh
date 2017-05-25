@@ -241,6 +241,7 @@ if ($ist){
 	install.packages("ggplot2", repo="http://cran.us.r-project.org")
 }
 library(plyr)
+library(stringr)
 library(ggplot2)
 library(grid)
 
@@ -276,6 +277,8 @@ xval_ho <- c(${xval_ho})
 
 if (length(xval_ho) > 1) {
 	data\$${xval} <- factor(data\$${xval}, levels=xval_ho, ordered=T)
+} else {
+	data\$${xval} <- factor(data\$${xval})
 }
 
 #print(data)
@@ -305,7 +308,10 @@ if (("${size}" != "") && ("${color}" != "")) {
 
 p <- p ${facet}
 
+p <- p + scale_y_discrete(labels=function(x) str_wrap(x, width=60))
+ 
 p <- p $other
+
 
 p <- p + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 

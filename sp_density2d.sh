@@ -21,61 +21,22 @@ You can specify whether or not smooth your line or lines.
 fileformat for -f (suitable for data extracted from one sample, the
 number of columns is unlimited. Column 'Set' is not necessary)
 ------------------------------------------------------------
-Pos	h3k27ac	ctcf	enhancer	h3k4me3	polII
--5000	8.71298	10.69130	11.7359	10.02510	8.26866
--4000	8.43246	10.76680	11.8442	9.76927	7.78358
--3000	8.25497	10.54410	12.2470	9.40346	6.96859
--2000	7.16265	10.86350	12.6889	8.35070	4.84365
--1000	3.55341	8.45751	12.8372	4.84680	1.26110
-0	3.55030	8.50316	13.4152	5.17401	1.50022
-1000	7.07502	10.91430	12.3588	8.13909	4.88096
-2000	8.24328	10.70220	12.3888	9.47255	7.67968
-3000	8.43869	10.41010	11.9760	9.80665	7.94148
-4000	8.48877	10.57570	11.6562	9.71986	8.17849
--------------------------------------------------------------
-fileformat when -m is true
-#The name "value" shoud not be altered.
-#variable can be altered using -H
-#Actually this format is the melted result of last format.
---------------------------------------------------------------
-Pos variable    value
--5000	h3k27ac	8.71298
--4000	h3k27ac	8.43246
--3000	h3k27ac	8.25497
--2000	h3k27ac	7.16265
--1000	h3k27ac	3.55341
-0	h3k27ac	3.55030
-1000	h3k27ac	7.07502
-2000	h3k27ac	8.24328
-3000	h3k27ac	8.43869
-4000	h3k27ac	8.48877
--5000	ctcf	10.69130
--4000	ctcf	10.76680
--3000	ctcf	10.54410
--2000	ctcf	10.86350
--1000	ctcf	8.45751
-0	ctcf	8.50316
-1000	ctcf	10.91430
-2000	ctcf	10.70220
-3000	ctcf	10.41010
-4000	ctcf	10.57570
+Pos	gene1	gene2	gene3	gene4	gene5 ...
+time1	1	2000	3000	4000	4000  ...
+time2	1	2000	3000	4000	4000  ...
+time3	1	2000	3000	4000	4000  ...
+time4	1	2000	3000	4000	4000  ...
+time5	1	2000	3000	4000	4000  ...
+time6	1	2000	3000	4000	4000  ...
 -------------------------------------------------------------
 
 ${txtbld}OPTIONS${txtrst}:
 	-f	Data file (with header line, the first column is the
- 		will not be treated as rownames, tab seperated)${bldred}[NECESSARY]${txtrst}
-	-m	When true, it will skip melt preprocesses. But the format must be
-		the same as listed before.
-		${bldred}[Default FALSE, accept TRUE]${txtrst}
-	-a	Name for x-axis variable
-		[${txtred}Necessary, no default value when -m is used.  
-		For the second examples, 'Pos' should be given here. 
-		For the first example,  default the first column will be used,
-		program will assign an value 'xvariable' to represent it.
-	   	]${txtrst}]
+ 		rownames (currently only numerical rownames are supported), 
+		tab seperated. First row as column names.)${bldred}[NECESSARY]${txtrst}
 	-A	The attribute of x-axis variable.
-		[${txtred}Default TRUE, means X-axis label is number.
-		FALSE means X-axis label is text.${txtrst}]
+		[${txtred}Default <numeric>, means X-axis label is number.
+		Accept <text> means X-axis label is text.${txtrst}]
 	-H	Name for legend variable.
 		${bldred}[Default variable, this should only be set when -m is TRUE]${txtrst}
 	-J	Name for color variable.
@@ -85,8 +46,10 @@ ${txtbld}OPTIONS${txtrst}:
 		"'ctcf','h3k27ac','enhancer'"  
 		***When -m is used, this default will be ignored too.********* 
 	   	${txtrst}]
-	-P	Legend position[${txtred}Default right. Accept
-		top,bottom,left,none, or c(0.08,0.8).${txtrst}]
+	-P	Legend position[${txtred}Default none. Accept
+		top,bottom,left,right, or c(0.08,0.8).${txtrst}]
+	-g	Set Ylim.
+		${bldred}[Default null. Accept a string in format like '-2,2'.]${txtrst}
 	-L	Levels for x-axis variable, suitable when x-axis is not used
 		as a number. 
 		[${txtred}Default the order of first column, accept a string like
@@ -197,14 +160,14 @@ EOF
 file=
 title=''
 melted='FALSE'
-xlab='NULL'
-ylab='NULL'
-xvariable='xvariable'
+xlab=''
+ylab=''
+xvariable='id'
 variable='variable'
 color_variable='variable'
 level=""
 x_level=""
-x_type='TRUE'
+x_type='numeric'
 scaleY='FALSE'
 y_add=0
 scaleY_x='scale_y_log10()'
@@ -212,11 +175,11 @@ header='TRUE'
 execute='TRUE'
 ist='FALSE'
 uwid=20
-vhig=12
+vhig=8
 res=300
 ext='pdf'
 par=''
-legend_pos='right'
+legend_pos='none'
 smooth='FALSE'
 smooth_method='auto'
 line_size=1
@@ -233,9 +196,10 @@ facet=''
 facet_o=''
 xtics_pos=0
 xtics_value=0
+Ylim='NULL'
 
 
-while getopts "hf:m:a:A:b:I:t:x:l:j:J:d:F:G:H:P:L:y:V:D:c:C:B:X:Y:R:w:u:r:o:O:s:S:p:z:v:e:E:i:" OPTION
+while getopts "hf:m:a:A:b:I:t:x:l:j:J:d:F:g:G:H:P:L:y:V:D:c:C:B:X:Y:R:w:u:r:o:O:s:S:p:z:v:e:E:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -253,6 +217,9 @@ do
 			;;
 		A)
 			x_type=$OPTARG
+			;;
+		g)
+			Ylim=$OPTARG
 			;;
 		H)
 			variable=$OPTARG
@@ -379,7 +346,7 @@ if test "${color_variable}" == "variable"; then
 	color_variable=${variable}
 fi
 
-mid='.lines'
+mid='.density2d'
 
 if test "${smooth}" == 'TRUE'; then
 	mid=${mid}'.smooth'
@@ -402,8 +369,17 @@ if(! $melted){
 	row.names=1, check.names=F, quote="")
 	data_rownames <- rownames(data)
 	data_colnames <- colnames(data)
-	data\$${xvariable} <- data_rownames
-	data_m <- melt(data, id.vars=c("${xvariable}"))
+
+	data_mean <- rowMeans(data)
+	data_mean <- data.frame(${xvariable}=data_rownames, data_mean=data_mean)
+	data_mean\$${xvariable} <- as.numeric(levels(data_mean\$${xvariable}))[data_mean\$${xvariable}]
+
+	data2 <- cbind(${xvariable}=rownames(data), data)
+	data_m <- melt(data2, id="${xvariable}")
+	data_m\$${xvariable} <- as.numeric(levels(data_m\$${xvariable}))[data_m\$${xvariable}]
+
+	#data\$${xvariable} <- data_rownames
+	#data_m <- melt(data, id.vars=c("${xvariable}"))
 } else {
 	data_m <- read.table(file="$file", sep="\t",
 	header=$header, check.names=F, quote="")
@@ -440,7 +416,7 @@ if ("${x_level}" != ""){
 	data_m\$${xvariable} <- factor(data_m\$${xvariable},levels=data_rownames,ordered=TRUE)
 }
 
-if (! ${x_type}){
+if ("${x_type}" == "numeric"){
 	data_m\$${xvariable} <- 
 		as.numeric(levels(data_m\$${xvariable}))[data_m\$${xvariable}]
 }
@@ -452,14 +428,16 @@ if (! ${x_type}){
 
 ${facet_o}
 
-p <- ggplot(data_m, aes(x=$xvariable, y=value, color=${color_variable},
-	group=${variable})) + 
-	xlab("$xlab") + ylab("$ylab") + theme_bw() + labs(title="${title}") +
+p = ggplot(data_m, aes($xvariable, value)) + 
+	stat_density_2d(aes(alpha=..level..)) 
+	#geom_density_2d(aes(color="grey")) 
+
+p = p + xlab("$xlab") + ylab("$ylab") + theme_bw() + labs(title="${title}") +
 	theme(legend.title=element_blank(),
    	panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
 
-p <- p + expand_limits(y = 0)
+#p <- p + expand_limits(y = 0)
 #p <- p + scale_y_continuous(expand=c(0, 0))
 
 p <- p + theme(legend.key=element_blank()) 
@@ -471,17 +449,21 @@ p <- p + theme(legend.key=element_blank())
 
 if (${smooth}){
 	if ("${line_size}" != ""){
-		p <- p + stat_smooth(method="${smooth_method}", se=FALSE,
-		size=${line_size})
+		#p <- p + stat_smooth(method="${smooth_method}", se=FALSE,
+		p = p + geom_smooth(data=data_mean, mapping=aes(x=${xvariable}, 
+			y=data_mean, colour="blue"), method="${smooth_method}", se=F, 
+			size=${line_size})
 	}else{
-		p <- p + stat_smooth(method="${smooth_method}", se=FALSE,
-		size=${line_size})
+		p = p + geom_smooth(data=data_mean, mapping=aes(x=${xvariable}, 
+			y=data_mean, colour="blue"), method="${smooth_method}", se=F) 
 	}	
 }else{
 	if ("${line_size}" != ""){
-		p <- p + geom_line(size=${line_size}, alpha=0.6) 
+		p <- p + geom_line(data=data_mean, mapping=aes(x=${xvariable}, y=data_mean), 
+			colour="blue", size=${line_size}, alpha=0.6) 
 	}else{
-	p <- p + geom_line(alpha=0.6) 
+		p <- p + geom_line(data=data_mean, mapping=aes(x=${xvariable}, y=data_mean), 
+			colour="blue", alpha=0.6) 
 	}
 }
 
@@ -588,7 +570,12 @@ if(is.vector(custom_hline_coord)){
 
 p <- p ${facet}
 
+if ("${Ylim}" != "NULL") {
+	p <- p + coord_cartesian(ylim=c(${Ylim}))
+}
+
 p <- p${par}
+
 
 #png(filename="${file}${mid}.png", width=$uwid, height=$vhig,
 #res=$res)

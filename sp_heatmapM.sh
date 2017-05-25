@@ -320,10 +320,10 @@ if ($kclu > 1){
 }
 print("Read in data set.")
 data <- read.table(file="$file", sep="\t", header=T, row.names=1,
-check.names=F)
+check.names=F, quote="")
 print("Read in label.")
 #label is for group level
-label <- as.vector(read.table(file="$label", sep="\t", header=F)\$V1)
+label <- as.vector(read.table(file="$label", quote="", sep="\t", header=F)\$V1)
 dimD <- dim(data)
 size <- dimD[1] * $width
 print("Prepare group")

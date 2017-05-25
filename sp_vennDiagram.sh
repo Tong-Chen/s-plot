@@ -44,7 +44,7 @@ ${txtbld}OPTIONS${txtrst}:
 		overlaps between or among each set,  pleass give TRUE here.
 		${bldred}[When this is TRUE, the value given to -f would be
 		the prefix for the output figure.]${txtrst}
-		
+	-t	Title for the picture.	
 	-a	The name for label1.
 		${bldred}[Necessary when -f is not FALSE, 
 		one string in your second column,ordered. ]${txtrst}
@@ -116,12 +116,14 @@ ${txtbld}OPTIONS${txtrst}:
 Example:
 	s-plot vennDiagram -f prefix -F TRUE -n "120, 110, 50"  -l "'a','b'"
 	s-plot vennDiagram -f file -a h3k27ac -b ctcf
+	s-plot vennDiagram -f file -a h3k27ac -b ctcf -p k27_ctcf
 	
 EOF
 }
 
 file=
 numGiven="FALSE"
+title=""
 label1="CHENTONG"
 label2="CHENTONG"
 label3="CHENTONG"
@@ -140,7 +142,7 @@ line_size=1
 color_v='"dodgerblue", "goldenrod1", "darkorange1", "seagreen3", "orchid3"'
 prefix=''
 
-while getopts "hf:F:a:b:c:d:g:n:l:C:p:w:u:r:e:E:i:" OPTION
+while getopts "hf:F:t:a:b:c:d:g:n:l:C:p:w:u:r:e:E:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -152,6 +154,9 @@ do
 			;;
 		F)
 			numGiven=$OPTARG
+			;;
+		t)
+			title=$OPTARG
 			;;
 		a)
 			label1=$OPTARG
@@ -284,10 +289,10 @@ if (! ${numGiven}) {
 			$label3=$label3),
 			filename = NULL, col = "black", lwd = 1, 
 			fill = color_v,
-			alpha = 0.50,
+			alpha = 0.50, main="${title}", 
 			label.col = c("black"),
 			cex = 1, fontfamily = "Helvetica",
-			cat.col = c("black"),cat.cex = 1.1, margin=0.1, 
+			cat.col = color_v,cat.cex = 0.6, margin=0.3, 
 			cat.fontfamily = "Helvetica"
 		)
 	}else if(num == 4){
@@ -296,10 +301,10 @@ if (! ${numGiven}) {
 			$label3=$label3),
 			filename = NULL, col = "black", lwd = 1, 
 			fill = color_v,
-			alpha = 0.50,
+			alpha = 0.50, main="${title}", 
 			label.col = c("black"),
 			cex = 1, fontfamily = "Helvetica",
-			cat.col = c("black"),cat.cex = 1.1, margin=0.05, 
+			cat.col = color_v, cat.cex = 0.8, margin=0.2, 
 			cat.fontfamily = "Helvetica", 
 		)
 	} else if (num==3) {
@@ -307,23 +312,23 @@ if (! ${numGiven}) {
 			x = list($label1=$label1, $label2=$label2, $label3=$label3),
 			filename = NULL, col = "transparent", 
 			fill = color_v,
-			alpha = 0.50,
+			alpha = 0.50, main="${title}", 
 			label.col = c("black", "black", "black", "black", "black", "black", "black"),
 			cex = 1, fontfamily = "Helvetica", cat.default.pos="text",
 			cat.pos=0,  magrin=0.1, 
-			cat.col = c("black", "black", "black"),cat.cex = 1,cat.fontfamily = "Helvetica"
+			cat.col = color_v,cat.cex = 1,cat.fontfamily = "Helvetica"
 		)
 	} else if (num==2) {
 		p <- venn.diagram( 
 			x = list($label1=$label1, $label2=$label2),
 			filename = NULL, col = "transparent", 
 			fill = color_v,
-			alpha = 0.50,
+			alpha = 0.50, main="${title}", 
 			label.col = c("black"),
 			cex = 1, fontfamily = "Helvetica",
 			cat.default.pos="outer",
 			cat.pos=0, margin=0.1,  
-			cat.col = color_v,cat.cex = 2,cat.fontfamily = "Helvetica"
+			cat.col = color_v,cat.cex = 1,cat.fontfamily = "Helvetica"
 		)
 	}
 	grid.draw(p)

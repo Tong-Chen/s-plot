@@ -57,7 +57,8 @@ ${txtbld}OPTIONS${txtrst}:
 		top, bottom, left, none,  or c(0.08, 0.8).${txtrst}]
 	-o	The variable for horizontal axis.${bldred}[NECESSARY, such hmC]${txtrst}
 	-v	The variable for vertical axis.${bldred}[NECESSARY, such as Kme]${txtrst}
-	-c	The variable for color value.${bldred}[NECESSARY, such as Expr]${txtrst}
+	-c	The variable for color value.${bldred}[Optional, such as Expr]${txtrst}
+	-S	The variable for shape.${bldred}[Optional, such as Size]${txtrst}
 	-g	Log transfer[${bldred}Default none, accept log, log2${txtrst}].
 	-w	The width of output picture.[${txtred}Default 20${txtrst}]
 	-a	The height of output picture.[${txtred}Default 20${txtrst}] 
@@ -207,7 +208,7 @@ if ($ist){
 library(ggplot2)
 library(grid)
 
-data <- read.table(file="$file", sep="\t", header=T, row.names=1)
+data <- read.table(file="$file", sep="\t", header=T, row.names=1, quote="")
 
 #if ("$width" != "" && "$height" != ""  && "$res" != ""){
 #	png(filename="${file}${mid}.png", width=$width, height=$height,

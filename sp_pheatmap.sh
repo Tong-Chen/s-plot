@@ -82,6 +82,8 @@ ${txtbld}OPTIONS${txtrst}:
 		${bldred}Default pheatmap_default. Aceept a vector containing
 		multiple colors such as <c("white", "blue")> or 
 		a R function generating a list of colors.${txtrst}
+	-B	A positive number. Default 1. Values larger than 1 will give more color
+   		for high end. Values between 0-1 will give more color for low end.	
 	-D	Clustering distance method for rows.
 		${bldred}Default 'correlation', accept 'euclidean', 
 		"manhattan", "maximum", "canberra", "binary", "minkowski". ${txtrst}
@@ -94,6 +96,11 @@ ${txtbld}OPTIONS${txtrst}:
 	-d	Scale the data or not for clustering and visualization.
 		[Default 'none' means no scale, accept 'row', 'column' to 
 		scale by row or column.]
+	-m	The maximum value you want to keep, any number larger willl
+		be taken as the given maximum value.
+		[${bldred}Default Inf, Optional${txtrst}] 
+	-s	The smallest value you want to keep, any number smaller will
+		be taken as 0.[${bldred}Default -Inf, Optional${txtrst}]  
 	-k	Aggregate the rows using kmeans clustering. 
 		This is advisable if number of rows is so big that R cannot 
 		handle their hierarchical clustering anymore, roughly more than 1000.
@@ -129,11 +136,6 @@ ${txtbld}OPTIONS${txtrst}:
 		used as a separator point. The program will separate data into
 		two parts, [minimum, midpoint] and [midpoint, minimum]. Each
 		of these parts will be binned to same number of regions.]${txtrst}]
-	-s	The smallest value you want to keep, any number smaller will
-		be taken as 0.[${bldred}Default -Inf, Optional${txtrst}]  
-	-m	The maximum value you want to keep, any number larger willl
-		be taken as the given maximum value.
-		[${bldred}Default Inf, Optional${txtrst}] 
 	-N	Generate NA value.[${bldred}Assign NA to values in data table equal
 		to given value to get different color representation.${txtrst}]
 	-Y	Color for NA value.
@@ -175,6 +177,7 @@ legend=' '
 na_color='grey'
 uwid=20
 vhig=20
+bias=1
 res=300
 fontsize=14
 ext='pdf'
@@ -183,6 +186,7 @@ ycol='red'
 mcol='yellow'
 mid_value_use='FALSE'
 mid_value='Inf'
+maximum='Inf'
 xtics='TRUE'
 xtics_angle=270
 ytics='TRUE'
@@ -194,8 +198,9 @@ digits='FALSE'
 annotation_row='NA'
 annotation_col='NA'
 preprocess='TRUE'
+minimum='-Inf'
 
-while getopts "hf:t:a:A:b:H:R:c:D:p:I:L:d:k:u:v:E:r:F:P:Q:x:y:M:Z:X:s:m:N:Y:G:C:O:e:i:" OPTION
+while getopts "hf:t:a:A:b:B:H:R:c:D:p:I:L:d:k:u:v:E:r:F:P:Q:x:y:M:Z:X:s:m:N:Y:G:C:O:e:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -217,6 +222,9 @@ do
 			;;
 		b)
 			ytics=$OPTARG
+			;;
+		B)
+			bias=$OPTARG
 			;;
 		H)
 			cluster_cols=$OPTARG
@@ -285,7 +293,7 @@ do
 			mid_value=$OPTARG
 			;;
 		s)
-			small=$OPTARG
+			minimum=$OPTARG
 			;;
 		m)
 			maximum=$OPTARG
@@ -405,6 +413,15 @@ if(${xtics_angle}==270){
 draw_colnames_custom <- function (coln, gaps, ...){
 	coord = find_coordinates(length(coln),  gaps)
 	x = coord\$coord - 0.5 * coord\$size
+	if (${xtics_angle}  == 90){
+		hjust = 1
+		vjust = 0.5
+	}
+	if (${xtics_angle}  == 45){
+		hjust = 1
+		vjust = 0.5
+	}
+
 	res = textGrob(coln, x=x, y=unit(1, "npc")-unit(3, "bigpts"),
 		vjust = vjust, hjust=hjust, rot=${xtics_angle}, gp=gpar(...))
 	return(res)
@@ -466,7 +483,15 @@ if ("${annotation_col}" != "NA") {
 	annotation_col <- NA
 }
 
-pheatmap(data, kmean_k=$kclu, color=${color_vector}, 
+data[data>${maximum}] <- ${maximum}
+if ("${minimum}" != "-Inf"){
+	data[data<${minimum}] <- ${minimum}
+}
+
+colfunc <- colorRampPalette(${color_vector}, bias=${bias})
+color_vector <- colfunc(30)
+
+pheatmap(data, kmean_k=$kclu, color=color_vector, 
 scale="${scale}", border_color=NA,
 cluster_rows=${cluster_rows}, cluster_cols=${cluster_cols}, 
 breaks=legend_breaks, clustering_method="${clustering_method}",

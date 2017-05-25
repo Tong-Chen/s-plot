@@ -107,7 +107,7 @@ fi
 
 
 cat <<END >${file}.hist.r
-data1 <- read.table("${file}", header=FALSE, sep="\t")
+data1 <- read.table("${file}", header=FALSE, sep="\t", quote="")
 data2 <- as.vector(data1\$V${col})
 break_p <- "${break_p}"
 if (${col_width} != 0){

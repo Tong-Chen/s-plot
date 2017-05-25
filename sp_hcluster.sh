@@ -129,7 +129,7 @@ fi
 cat <<EOF >$file${mid}.r
 library(graphics)
 library(amap)
-data1 = read.table("$file", header=$header,
+data1 = read.table("$file", header=$header, quote="", 
 sep="\t",row.names=1, comment.char="", check.names=${checkNames})
 x <- as.matrix(data1)
 if ($transpose){

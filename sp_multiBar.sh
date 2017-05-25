@@ -214,7 +214,7 @@ library(reshape2)
 
 if(! $melted){
 
-	data <- read.table(file="${file}", sep="\t", header=$header)
+	data <- read.table(file="${file}", sep="\t", header=$header, quote="")
 	if ("${facet}" != "haha"){
 		id_vars = c("${xvariable}", "${facet}" ${col_exclu})
 		#data_m <- melt(data, id.vars=c("${xvariable}", "${facet}"))
@@ -225,7 +225,7 @@ if(! $melted){
 	data_m <- melt(data, id.vars=id_vars)
 } else {
 	data_m <- read.table(file="$file", sep="\t",
-	header=$header)
+	header=$header, quote="")
 }
 
 if ("${legend_order}" != ""){

@@ -153,7 +153,7 @@ if ($ist){
 	install.packages("reshape2", repo="http://cran.us.r-project.org")
 }
 
-data <- read.table(file="$file", header=T, sep="\t")
+data <- read.table(file="$file", header=T, sep="\t", quote="")
 
 if ($summary) {
 	data.m <- melt(data, id.vars=c("$x_var"))

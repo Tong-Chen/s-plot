@@ -157,7 +157,7 @@ if ("${method}" == "lillieTest"){
 if(! $melted){
 
 	data <- read.table(file="${file}", sep="\t", header=$header,
-	row.names=1)
+	row.names=1, quote="")
 	if ("$xvariable" != "variable"){
 		data_m <- melt(data, id.vars=c("${xvariable}"))
 	} else {

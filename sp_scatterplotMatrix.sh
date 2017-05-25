@@ -91,7 +91,7 @@ if ($ist){
 }
 library(gclus)
 data <- read.table(file="$file", sep="\t", header=T, row.names=1,
-check.names=${checkN})
+check.names=${checkN}, quote="")
 data <- data[c($comp)] #get appointed data
 data.r <- abs(cor(data)) #get correlation, default pearson
 #get colors, the deepest, the large correlation coefficient

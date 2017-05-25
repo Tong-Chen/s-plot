@@ -208,7 +208,7 @@ if ($ist){
 
 library(ggplot2)
 
-data <- read.table(file="$file", sep="\t", header=T)
+data <- read.table(file="$file", sep="\t", header=T, quote="")
 
 data\$${xval} <- data\$${xval} + ${x_add}
 data\$${yval} <- data\$${yval} + ${y_add}

@@ -108,7 +108,7 @@ if ($ist){
 	install.packages("ggplot2", repo="http://cran.us.r-project.org")
 }
 library(ggplot2)
-data <- read.table(file="$file", sep="\t", header=T, row.names=1)
+data <- read.table(file="$file", sep="\t", header=T, row.names=1, quote="")
 png(filename="${file}${mid}.png", width=1000, height=1000, res=${dpi})
 
 p <- ggplot(data, aes(row.names(data),${count}))

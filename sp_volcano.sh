@@ -24,9 +24,17 @@ id	log2fc	-log10(pvalue)	significant
 1	0	0	1
 1	0	0	1
 3	0	0	1
-1	0	0	1
-2	0	0	1
-1	0	0	1
+1	0	0	0
+2	0	0	0
+1	0	0	0
+
+id	log2fc	-log10(pvalue)	significant
+1	0	0	TRUE
+1	0	0	TRUE
+3	0	0	TRUE
+1	0	0	FALSE
+2	0	0	FALSE
+1	0	0	FALSE
 
 The parameters for logical variable are either TRUE or FALSE.
 
@@ -34,19 +42,20 @@ ${txtbld}OPTIONS${txtrst}:
 	-f	Data file (with header line, the first column is not the
  		rowname, tab seperated)${bldred}[NECESSARY]${txtrst}
 	-x	Variable name for x-axis value.
-		${bldred}[NECESSARY, in sample data 'log2fdr']${txtrst}
+		${bldred}[NECESSARY, in sample data 'log2fc']${txtrst}
 	-m	Make x-axis symmetry. [Default TRUE, accept FALSE]
 	-y	Variable name for y-axis value.
 		${bldred}[NECESSARY, in sample data 'pvalue']${txtrst}
 	-s	Column for labeling status.
-		${bldred}[NECESSARY, in sample data 'significant']${txtrst}
-	-S	Levels for status column, like "'TRUE','FALSE'".
-   		[${bldred}Only needed when you trying to reorder status
-		column.${txtrst}]	
+		${bldred}[NECESSARY, in sample data 'significant'. Points will 
+		be colored differently ]${txtrst}
+	-S	Levels for labeling column, like "'TRUE','FALSE'".
+   		[${bldred}Only needed when you trying to reorder the
+		column to get different colors.${txtrst}]	
 	-l	Label the names of significant points in graph.
 		${bldred}[Default FALSE, accept a string represents the
 		colname of labels. When TRUE, give the
-		value in column given to -s indicates which rows 
+		value to -V in column given to -s indicates which rows 
 		you want to label]${txtrst}
 	-V	Genes with this given value will be labeled.
 		${bldred}[NECESSARY when -l is TRUE]${txtrst}
@@ -60,8 +69,10 @@ ${txtbld}OPTIONS${txtrst}:
 	-p	Point size.[${txtred}Default 1${txtrst}]
 	-L	Legend position[${txtred}Default right. Accept
 		top,bottom,left,none, or c(0.08,0.8).${txtrst}]
-	-u	The width of output picture.[${txtred}Default 2000${txtrst}]
-	-v	The height of output picture.[${txtred}Default 2000${txtrst}] 
+	-u	The width of output picture.[${txtred}Default 12${txtrst}]
+	-v	The height of output picture.[${txtred}Default 12${txtrst}] 
+	-E	The type of output figures.[${txtred}Default pdf, accept
+		eps/ps, tex (pictex), png, jpeg, tiff, bmp, svg and wmf)${txtrst}]
 	-r	The resolution of output picture.[${txtred}Default NA${txtrst}]
 	-e	Execute or not[${bldred}Default TRUE${txtrst}]
 	-i	Install the required packages[${bldred}Default FALSE${txtrst}]
@@ -82,14 +93,17 @@ alpha=0.4
 point_size=1
 execute='TRUE'
 ist='FALSE'
-uwid=2000
-vhig=2000
-res='NA'
+uwid=12
+vhig=12
+#res='NA'
+res=300
 symmetry='TRUE'
 legend_pos='right'
 status_col_level=''
+ext='pdf'
+colormodel='srgb'
 
-while getopts "hf:x:m:y:s:-S:l:L:V:t:X:Y:a:p:u:v:r:e:i:" OPTION
+while getopts "hf:x:m:y:s:-S:l:L:V:t:X:Y:a:p:u:v:E:r:e:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -148,6 +162,9 @@ do
 		r)
 			res=$OPTARG
 			;;
+		E)
+			ext=$OPTARG
+			;;
 		e)
 			execute=$OPTARG
 			;;
@@ -185,7 +202,7 @@ if (length(sig_level)>1){
 }
 
 p <- ggplot(data=data, aes(x=${x_var},y=${y_var},colour=${status_col}))
-p <- p + geom_point(alpga=${alpha}, size=${point_size})
+p <- p + geom_point(alpha=${alpha}, size=${point_size})
 p <- p + theme(legend.position="none") + theme_bw() + 
 	theme(legend.title=element_blank(),
 	panel.grid.major = element_blank(), panel.grid.minor = element_blank())
@@ -213,10 +230,19 @@ legend_pos_par <- ${legend_pos}
 p <- p + theme(legend.position=legend_pos_par)
 #}
 
-png(filename="${file}${mid}.png", width=$uwid, height=$vhig,
-res=$res)
-p
-dev.off()
+
+if ("${ext}" == "pdf") {
+	ggsave(p, filename="${file}${mid}.${ext}", dpi=$res, width=$uwid,
+	height=$vhig, units=c("cm"),colormodel="${colormodel}")
+} else {
+	ggsave(p, filename="${file}${mid}.${ext}", dpi=$res, width=$uwid,
+	height=$vhig, units=c("cm"))
+}
+
+#png(filename="${file}${mid}.png", width=$uwid, height=$vhig,
+#res=$res)
+#p
+#dev.off()
 END
 
 if [ "$execute" == "TRUE" ]; then

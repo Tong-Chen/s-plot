@@ -15,7 +15,7 @@ $0 options${txtrst}
 
 ${bldblu}Function${txtrst}:
 
-This script is used to do full functional scatter plot using ggplot2. 
+This script is used to do 3D scatter plot using scatterplot3d. 
 
 
 The parameters for logical variable are either TRUE or FALSE.
@@ -38,39 +38,32 @@ Samp3	S	a	Control
 Samp4	R	b	Control
 
 
-**********************A potential bug******************************
-If -c column have only 1 value, program will be aborted by no reasons.
-
 
 ${txtbld}OPTIONS${txtrst}:
 	-f	Data file 
 		With header line, the first column is the rowname, tab seperated.
 		Each row represents variable (normally genes), each column represents samples.
 		${bldred}[NECESSARY]${txtrst}
+	-X	Variable to specify x-axis. Normally one of the row names.
+	-Y	Variable to specify y-axis. Normally one of the row names.
+	-Z	Variable to specify z-axis. Normally one of the row names.
 	-g	Sample group file with first column as sample names, other columns as sample 
 		attributes. Below, color, size, shape variable should be existed in this file.
 		${bldred}[Optional. 
 		If not supplied, each sample will be treated as one group.
 		And a variable named 'group' can be used to set as color or shape variable.]${txtrst}
-	-l	Log-transform data before principle component analysis. [Lowercase l]
+	-l	Log-transform data before plotting. [Lowercase l]
 		[${txtred}Default False. 
 		Accept a string like log2, log10 to get logarithms values.
 		Actually other R functions can be used also.${txtrst}]	
 	-a	Add a value before log-transform to avoid log(0).
 		${bldred}[Default 1]${txtrst}
-	-F	Scale data for PCA analysis.
-		In defaut, prcomp will centralized data by minus mean value and
-		normalize data by column standard deviation dividing.
+	-F	Scale data for plot analysis.
 		Often, we would normalize data.
 		Only when we care about the real number changes other than the trends, 
 		we do not need scale. When this happens, we expect the changin ranges 
 		of data is small for example log-transformed data.	
-		${bldred}[Default TRUE.]${txtrst}
-	-T	Use top n most changed variables for PCA computation.
-		${bldred}[Default 5000. Giving 0 to use all variables.]${txtrst}
-	-D	Dimensions to plot.
-		${bldred}[Default 2. 
-		Accept 3 (both color and shape variable needed and should be same variable).]${txtrst}
+		${bldred}[Default FALSE.]${txtrst}
 	-t	Title of picture[${txtred}Default empty title${txtrst}]
 		[Scatter plot of horizontal and vertical variable]
 	-p	Legend position [Lowercase p]
@@ -84,9 +77,6 @@ ${txtbld}OPTIONS${txtrst}:
 		${bldred}[Default alphabetical order, accept a string like
 		"'K562','hESC','GM12878','HUVEC','NHEK','IMR90','HMEC'"]
 		${txtrst}
-	-s	The variable for point size.
-		${bldred}[Optional, such as a number or 
-		a variable like count, normally should be number column]${txtrst}
 	-S	The variable for point shape.
 		${bldred}[Optional, such as shape]${txtrst}
 	-K	The order for shape variable.
@@ -143,11 +133,12 @@ grp_file=''
 title=''
 xlab=''
 ylab=''
-xval=''
+x=''
 xval_order=''
 yval_order=''
-yval=''
-scale="TRUE"
+y=''
+z=''
+scale="FALSE"
 execute='TRUE'
 ist='FALSE'
 color='c_t_c_t0304'
@@ -164,7 +155,7 @@ shape='c_t_c_t0304'
 par=''
 variable_order=''
 color_order=''
-top_n=5000
+#top_n=5000
 shape_order=''
 dimensions=2
 legend_pos='right'
@@ -181,7 +172,7 @@ label_font_size=""
 scale_y='FALSE'
 scale_y_way='scale_y_continuous(trans="log2")'
 
-while getopts "hf:g:t:a:x:y:p:X:O:Q:T:R:Y:B:H:V:I:K:v:c:C:A:l:D:F:N:L:M:J:w:u:r:E:s:S:b:d:z:e:i:" OPTION
+while getopts "hf:g:t:a:x:y:p:X:O:Q:T:R:Y:Z:B:H:V:I:K:v:c:C:A:l:D:F:N:L:M:J:w:u:r:E:s:S:b:d:z:e:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -210,16 +201,19 @@ do
 			xtics_angle=$OPTARG
 			;;
 		X)
-			xval=$OPTARG
+			x=$OPTARG
 			;;
 		O)
 			xval_order=$OPTARG
 			;;
 		Y)
-			yval=$OPTARG
+			y=$OPTARG
 			;;
 		B)
 			yval_order=$OPTARG
+			;;
+		Z)
+			z=$OPTARG
 			;;
 		c)
 			color=$OPTARG
@@ -250,9 +244,6 @@ do
 			;;
 		I)
 			color_order=$OPTARG
-			;;
-		T)
-			top_n=$OPTARG
 			;;
 		K)
 			shape_order=$OPTARG
@@ -306,7 +297,7 @@ do
 	esac
 done
 
-mid=".pca"
+mid=".scatterplot3d"
 
 if [ -z $file ] ; then
 	echo 1>&2 "Please give filename."
@@ -326,34 +317,34 @@ fi
 
 cat <<END >${file}${mid}.r
 
-if ($ist){
-	install.packages("ggplot2", repo="http://cran.us.r-project.org")
-	install.packages("ggfortify", repo="http://cran.us.r-project.org")
-	install.packages("data.table", repo="http://cran.us.r-project.org")
-	install.packages("ggrepel", repo="http://cran.us.r-project.org")
-}
+#if ($ist){
+#	install.packages("ggplot2", repo="http://cran.us.r-project.org")
+#	install.packages("ggfortify", repo="http://cran.us.r-project.org")
+#	install.packages("data.table", repo="http://cran.us.r-project.org")
+#	install.packages("ggrepel", repo="http://cran.us.r-project.org")
+#}
 library(plyr)
-library(ggplot2)
-library(grid)
+#library(ggplot2)
+#library(grid)
 library(data.table, quietly=T)
-library(ggfortify)
+#library(ggfortify)
 
 if (${label}) {
 	library("ggrepel")
 }
 data <- read.table(file="$file", sep="\t", quote="", comment="", header=T, row.names=1)
 
-data <- data[rowSums(abs(data))!=0, ]
+#data <- data[rowSums(abs(data))!=0, ]
 
-data\$mad <- apply(data, 1, mad) 
+#data\$mad <- apply(data, 1, mad) 
 
-data <- data[data\$mad>0, ]
+#data <- data[data\$mad>0, ]
 
-data <- data[order(data\$mad, decreasing=T), 1:(dim(data)[2]-1)]
-
-if (${top_n} != 0) {
-	data <- data[1:${top_n}, ]
-}
+#data <- data[order(data\$mad, decreasing=T), 1:(dim(data)[2]-1)]
+#
+#if (${top_n} != 0) {
+#	data <- data[1:${top_n}, ]
+#}
 
 data <- as.data.frame(t(data))
 
@@ -397,92 +388,103 @@ if ("${shape}" != "c_t_c_t0304") {
 	shapes = (1:shape_level)%%30
 }
 
-pca <- prcomp(data, scale=${scale})
+#pca <- prcomp(data, scale=${scale})
 
 # sdev: standard deviation of the principle components.
 # Square to get variance
-percentVar <- pca\$sdev^2 / sum( pca\$sdev^2)
+#percentVar <- pca\$sdev^2 / sum( pca\$sdev^2)
 
-if (${dimensions} == 2) {
+#if (${dimensions} == 2) {
 
-	if (("${size}" != "") && ("${color}" != "c_t_c_t0304") && ("${shape}" != "c_t_c_t0304")) {
-		p <- autoplot(pca, data=data_t_label, colour="${color}", shape="${shape}", size="${size}", alpha=${alpha})  
-	} else if (("${color}" != "c_t_c_t0304") && ("${shape}" != "c_t_c_t0304")) {
-		p <- autoplot(pca, data=data_t_label, colour="${color}", shape="${shape}",alpha=${alpha})  
-	} else if (("${size}" != "") && ("${shape}" != "c_t_c_t0304")) {
-		p <- autoplot(pca, data=data_t_label, shape="${shape}", size="${size}", alpha=${alpha})  
-	} else if (("${size}" != "") && ("${color}" != "c_t_c_t0304")) {
-		p <- autoplot(pca, data=data_t_label, colour="${color}", size="${size}", alpha=${alpha})  
-	} else if ("${size}" != "") {
-		p <- autoplot(pca, data=data_t_label, size="${size}", alpha=${alpha})  
-	} else if ("${color}" != "c_t_c_t0304") {
-		p <- autoplot(pca, data=data_t_label, colour="${color}", alpha=${alpha})  
-	} else if ("${shape}" != "c_t_c_t0304") {
-		p <- autoplot(pca, data=data_t_label, shape="${shape}", alpha=${alpha})  
-	} else {
-		p <- autoplot(pca, data=data_t_label)  
-	}
+#	if (("${size}" != "") && ("${color}" != "c_t_c_t0304") && ("${shape}" != "c_t_c_t0304")) {
+#		p <- autoplot(pca, data=data_t_label, colour="${color}", shape="${shape}", size="${size}", alpha=${alpha})  
+#	} else if (("${color}" != "c_t_c_t0304") && ("${shape}" != "c_t_c_t0304")) {
+#		p <- autoplot(pca, data=data_t_label, colour="${color}", shape="${shape}",alpha=${alpha})  
+#	} else if (("${size}" != "") && ("${shape}" != "c_t_c_t0304")) {
+#		p <- autoplot(pca, data=data_t_label, shape="${shape}", size="${size}", alpha=${alpha})  
+#	} else if (("${size}" != "") && ("${color}" != "c_t_c_t0304")) {
+#		p <- autoplot(pca, data=data_t_label, colour="${color}", size="${size}", alpha=${alpha})  
+#	} else if ("${size}" != "") {
+#		p <- autoplot(pca, data=data_t_label, size="${size}", alpha=${alpha})  
+#	} else if ("${color}" != "c_t_c_t0304") {
+#		p <- autoplot(pca, data=data_t_label, colour="${color}", alpha=${alpha})  
+#	} else if ("${shape}" != "c_t_c_t0304") {
+#		p <- autoplot(pca, data=data_t_label, shape="${shape}", alpha=${alpha})  
+#	} else {
+#		p <- autoplot(pca, data=data_t_label)  
+#	}
 
-	if (("${color}" != "c_t_c_t0304") && length(color_v) == 2) {
-		p <- p + scale_colour_gradient(low=color_v[1], high=color_v[2], name="${color}")
-	}
+#	if (("${color}" != "c_t_c_t0304") && length(color_v) == 2) {
+#		p <- p + scale_colour_gradient(low=color_v[1], high=color_v[2], name="${color}")
+#	}
 
-	if (("${shape}" != "c_t_c_t0304") && shape_level > 6) {
-		p <- p + scale_shape_manual(values=shapes)
-	}
-
-
-	if (${label}) {
-		#p <- p + geom_text(aes(label=Row.names), position="identity",
-		#hjust=${point_hjust}, size=${label_font_size}, check_overlap=${check_overlap})
-		if ("${label_font_size}" != "") {
-			p <- p + geom_text_repel(aes(label=Row.names), size=${label_font_size})
-		} else {
-			p <- p + geom_text_repel(aes(label=Row.names))
-		}
-	}
-
-	p <- p + xlab(paste0("PC1 (", round(percentVar[1]*100), "% variance)")) + 
-		ylab(paste0("PC2 (", round(percentVar[2]*100), "% variance)"))
-
-	p <- p ${facet}
+#	if (("${shape}" != "c_t_c_t0304") && shape_level > 6) {
+#		p <- p + scale_shape_manual(values=shapes)
+#	}
 
 
-} else {
-	library(scatterplot)	
-	if ("${color}" != "c_t_c_t0304") { 
-		# 根据分组数目确定颜色变量
-		group = data_t_label\$${color}
-		colorA <- rainbow(length(unique(group)))
-		
-		# 根据每个样品的分组信息获取对应的颜色变量
-		colors <- colorA[as.factor(group)]
-		
-		# 根据样品分组信息获得legend的颜色
-		colorl <- colorA[as.factor(unique(group))]
-	}
+#	if (${label}) {
+#		#p <- p + geom_text(aes(label=Row.names), position="identity",
+#		#hjust=${point_hjust}, size=${label_font_size}, check_overlap=${check_overlap})
+#		if ("${label_font_size}" != "") {
+#			p <- p + geom_text_repel(aes(label=Row.names), size=${label_font_size})
+#		} else {
+#			p <- p + geom_text_repel(aes(label=Row.names))
+#		}
+#	}
 
-	if ("${shape}" != "c_t_c_t0304") { 
-		# 获得PCH symbol列表
-		group <- data_t_label\$${shape}
-		pch_l <- as.numeric(as.factor(unique(group)))
-		# 产生每个样品的pch symbol
-		pch <- pch_l[as.factor(group)]
-	}
+#	p <- p + xlab(paste0("PC1 (", round(percentVar[1]*100), "% variance)")) + 
+#		ylab(paste0("PC2 (", round(percentVar[2]*100), "% variance)"))
 
-	pc <- as.data.frame(pca\$x)
-	pdf("${file}${mid}.pdf")
-	scatterplot3d(x=pc\$PC1, y=pc\$PC2, z=pc\$PC3, pch=pch, color=colors, xlab=paste0("PC1 (", round(percentVar[1]*100), "% variance)"), ylab=paste0("PC2 (", round(percentVar[2]*100), "% variance)"), zlab=paste0("PC3 (", round(percentVar[3]*100), "% variance)"))
+#	p <- p ${facet}
 
-	legend(-3,8, legend=levels(as.factor(${color})), col=colorl, pch=pch_l, xpd=T, horiz=F, ncol=6)
-	dev.off()
+
+#} else {
+
+library(scatterplot3d)	
+if ("${color}" != "c_t_c_t0304") { 
+	# 根据分组数目确定颜色变量
+	group = data_t_label\$${color}
+	colorA <- rainbow(length(unique(group)))
+	
+	# 根据每个样品的分组信息获取对应的颜色变量
+	colors <- colorA[as.factor(group)]
+	
+	# 根据样品分组信息获得legend的颜色
+	colorl <- colorA[as.factor(unique(group))]
 }
+
+if ("${shape}" != "c_t_c_t0304") { 
+	# 获得PCH symbol列表
+	group <- data_t_label\$${shape}
+	pch_l <- as.numeric(as.factor(unique(group)))
+	# 产生每个样品的pch symbol
+	pch <- pch_l[as.factor(group)]
+}
+
+#pc <- as.data.frame(pca\$x)
+pdf("${file}${mid}.pdf")
+if ("${color}" != "c_t_c_t0304" && "${shape}" != "c_t_c_t0304") { 
+	scatterplot3d(x=data\$$x, y=data\$$y, z=data\$$z, pch=pch, color=colors, xlab="$x", ylab="$y", zlab="$z")
+	legend(-3,8, legend=levels(as.factor(${color})), col=colorl, pch=pch_l, xpd=T, horiz=F, ncol=6)
+} else if ("${color}" != "c_t_c_t0304" ) { 
+	scatterplot3d(x=data\$$x, y=data\$$y, z=data\$$z, color=colors, xlab="$x", ylab="$y", zlab="$z")
+	legend(-3,8, legend=levels(as.factor(${color})), col=colorl, xpd=T, horiz=F, ncol=6)
+} else if ("${shape}" != "c_t_c_t0304") { 
+	scatterplot3d(x=data\$$x, y=data\$$y, z=data\$$z, pch=pch, xlab="$x", ylab="$y", zlab="$z")
+	legend(-3,8, legend=levels(as.factor(${shape})), pch=pch_l, xpd=T, horiz=F, ncol=6)
+} else {
+	scatterplot3d(x=data\$$x, y=data\$$y, z=data\$$z, xlab="$x", ylab="$y", zlab="$z")
+}
+#legend(-3,8, legend=levels(as.factor(${color})), col=colorl, pch=pch_l, xpd=T, horiz=F, ncol=6)
+dev.off()
+#}
 
 END
 
-if [ "${dimensions}" == "2" ]; then
-	`ggplot2_configure`
-fi
+#if [ "${dimensions}" == "2" ]; then
+#	`ggplot2_configure`
+#fi
 
 if [ "$execute" == "TRUE" ]; then
 	Rscript ${file}${mid}.r

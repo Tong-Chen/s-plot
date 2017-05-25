@@ -245,14 +245,14 @@ library(grid)
 if(! $melted){
 
 	data <- read.table(file="${file}", sep="\t", header=$header,
-	row.names=1)
+	row.names=1, quote="")
 	data_rownames <- rownames(data)
 	data_colnames <- colnames(data)
 	data\$${xvariable} <- data_rownames
 	data_m <- melt(data, id.vars=c("${xvariable}"))
 } else {
 	data_m <- read.table(file="$file", sep="\t",
-	header=$header)
+	header=$header, quote="")
 }
 
 if (${y_add} != 0){

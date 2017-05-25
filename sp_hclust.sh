@@ -128,7 +128,7 @@ fi
 
 cat <<EOF >$file${mid}.r
 library(graphics)
-data1 = read.table("$file", header=$header,
+data1 = read.table("$file", header=$header, quotes="", 
 sep="\t",row.names=1, comment.char="", check.names=${checkNames})
 x <- as.matrix(data1)
 if ($transpose){

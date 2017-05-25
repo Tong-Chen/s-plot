@@ -40,6 +40,10 @@ If -c column have only 1 value, program will be aborted by no reasons.
 ${txtbld}OPTIONS${txtrst}:
 	-f	Data file (with header line, the first column is not the
  		rowname, tab seperated)${bldred}[NECESSARY]${txtrst}
+	-T	A tag to define the plot. Normally used when one file is used
+		to do multiple plots with different parameters to discriminate
+		different output file.
+		[${txtred}Default empty; Optional${txtrst}]
 	-t	Title of picture[${txtred}Default empty title${txtrst}]
 		[Scatter plot of horizontal and vertical variable]
 	-x	xlab of picture[${txtred}Default empty xlab${txtrst}]
@@ -99,7 +103,7 @@ ${txtbld}OPTIONS${txtrst}:
 		<geom_text> to label text.
 		${bldred}[Default TRUE.]${txtrst}
 	-N	Label font size.
-		${bldred}[Default 5.]${txtrst}
+		${bldred}[Default system default. Accept a number.]${txtrst}
 	-M	Points check_overlap.
 		${bldred}[Optional, such as shape]${txtrst}
 	-Q	Point hjust.
@@ -162,6 +166,7 @@ vhig=20
 res=300
 ext='pdf'
 facet=''
+tag=''
 size=''
 geom_text_repel='TRUE'
 shape='c_t_c_t0304'
@@ -179,11 +184,11 @@ jitter='FALSE'
 label=''
 check_overlap="FALSE"
 colormodel='srgb'
-label_font_size=5
+label_font_size=0
 scale_y='FALSE'
 scale_y_way='scale_y_continuous(trans="log2")'
 
-while getopts "hf:t:x:y:p:X:O:R:Y:Z:B:H:V:L:I:K:v:c:C:A:l:D:F:N:L:M:J:w:u:r:E:s:S:b:d:z:e:i:" OPTION
+while getopts "hf:t:x:y:p:X:O:R:Y:Z:B:H:V:L:T:I:K:v:c:C:A:l:D:F:N:L:M:J:w:u:r:E:s:S:b:d:z:e:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -195,6 +200,9 @@ do
 			;;
 		t)
 			title=$OPTARG
+			;;
+		T)
+			tag=$OPTARG
 			;;
 		x)
 			xlab=$OPTARG
@@ -302,7 +310,7 @@ do
 	esac
 done
 
-mid=".scatterplot2"
+mid=".scatterplot2"${tag}
 if [ -z $file ] || [ -z $xval ] || [ -z $yval ] ; then
 	echo 1>&2 "Please give filename, xval and yval."
 	usage
@@ -434,15 +442,36 @@ if (("${shape}" != "c_t_c_t0304") && shape_level > 6) {
 
 if ("${label}" != "") {
 	if (${geom_text_repel}) {
-		p <- p + geom_text_repel(aes(label=${label}))
+		if (${label_font_size} != 0) {
+			p <- p + geom_text_repel(aes(label=${label}), size=${label_font_size})
+		} else {
+			p <- p + geom_text_repel(aes(label=${label}))
+		}
 	} else {
-	if (${jitter}) {
-		p <- p + geom_text(aes(label=${label}), position=position_quasirandom(), 
-		hjust=${point_hjust}, size=${label_font_size}, check_overlap=${check_overlap})
-	} else {
-		p <- p + geom_text(aes(label=${label}), position="identity",
-		hjust=${point_hjust}, size=${label_font_size}, check_overlap=${check_overlap})
-	}
+		if (${jitter}) {
+			if (${label_font_size} != 0) {
+				p <- p + geom_text(aes(label=${label}), 
+				position=position_quasirandom(), 
+				hjust=${point_hjust}, size=${label_font_size}, 
+				check_overlap=${check_overlap})
+			} else {
+				p <- p + geom_text(aes(label=${label}), 
+				position=position_quasirandom(), 
+				hjust=${point_hjust}, check_overlap=${check_overlap})
+			}
+		} else {
+			if (${label_font_size} != 0) {
+				p <- p + geom_text(aes(label=${label}), 
+				position="identity",
+				hjust=${point_hjust}, size=${label_font_size}, 
+				check_overlap=${check_overlap})
+			} else {
+				p <- p + geom_text(aes(label=${label}), 
+				position="identity",
+				hjust=${point_hjust}, size=${label_font_size}, 
+				check_overlap=${check_overlap})
+			}
+		}
 	}
 }
 

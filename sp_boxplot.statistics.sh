@@ -153,7 +153,7 @@ if ($ist){
 if(! $melted){
 
 	data <- read.table(file="${file}", sep="\t", header=$header,
-	row.names=1)
+	row.names=1, quote="")
 	if ("$xvariable" != "variable"){
 		data_m <- melt(data, id.vars=c("${xvariable}"))
 	} else {
@@ -161,7 +161,7 @@ if(! $melted){
 	}
 } else {
 	data_m <- read.table(file="$file", sep="\t",
-	header=$header)
+	header=$header, quote="")
 }
 
 if ("${legend_cut}" != ""){
