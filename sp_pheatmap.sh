@@ -80,8 +80,14 @@ ${txtbld}OPTIONS${txtrst}:
 		"mcquitty" (=WPGMA), "median" (=WPGMC) or "centroid" (=UPGMC)
 	-C	Color vector. 
 		${bldred}Default pheatmap_default. Aceept a vector containing
-		multiple colors such as <c("white", "blue")> or 
-		a R function generating a list of colors.${txtrst}
+		multiple colors such as <c("white", "blue") will be transferred 
+		to <colorRampPalette(c("white", "blue"), bias=${bias})(30)>
+		or an R function 
+		  <colorRampPalette(rev(brewer.pal(n=7, name="RdYlBu")))(100)>
+		generating a list of colors.
+		${txtrst}
+	-T	Color type, a vetcor[vector] or 
+		a function[function (default)].
 	-B	A positive number. Default 1. Values larger than 1 will give more color
    		for high end. Values between 0-1 will give more color for low end.	
 	-D	Clustering distance method for rows.
@@ -166,6 +172,7 @@ clustering_distance_cols='correlation'
 clustering_method='complete'
 legend_breaks='NA'
 color_vector='colorRampPalette(rev(brewer.pal(n=7, name="RdYlBu")))(100)'
+color_type='function'
 width=''
 label=''
 logv='FALSE'
@@ -200,7 +207,7 @@ annotation_col='NA'
 preprocess='TRUE'
 minimum='-Inf'
 
-while getopts "hf:t:a:A:b:B:H:R:c:D:p:I:L:d:k:u:v:E:r:F:P:Q:x:y:M:Z:X:s:m:N:Y:G:C:O:e:i:" OPTION
+while getopts "hf:t:a:A:b:B:H:R:c:D:T:p:I:L:d:k:u:v:E:r:F:P:Q:x:y:M:Z:X:s:m:N:Y:G:C:O:e:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -309,6 +316,9 @@ do
 			;;
 		C)
 			color_vector=$OPTARG
+			;;
+		T)
+			color_type=$OPTARG
 			;;
 		O)
 			givenSepartor=$OPTARG
@@ -476,9 +486,10 @@ if ("${annotation_row}" != "NA") {
 if ("${annotation_col}" != "NA") {
 	annotation_col <- read.table(file="${annotation_col}", header=T,
 		row.names=1, sep="\t", quote="", check.names=F, comment="")
-	levs <- unique(unlist(lapply(annotation_col, unique)))
-	annotation_col <- data.frame(lapply(annotation_col, factor,
-		levels=levs), row.names=rownames(annotation_col))
+	# Do not remember what this is for?
+	#levs <- unique(unlist(lapply(annotation_col, unique)))
+	#annotation_col <- data.frame(lapply(annotation_col, factor,
+	#	levels=levs), row.names=rownames(annotation_col))
 } else {
 	annotation_col <- NA
 }
@@ -488,8 +499,12 @@ if ("${minimum}" != "-Inf"){
 	data[data<${minimum}] <- ${minimum}
 }
 
-colfunc <- colorRampPalette(${color_vector}, bias=${bias})
-color_vector <- colfunc(30)
+if ("${color_type}" == "function"){
+	color_vector <- ${color_vector}
+} else {
+	colfunc <- colorRampPalette(${color_vector}, bias=${bias})
+	color_vector <- colfunc(30)
+}
 
 pheatmap(data, kmean_k=$kclu, color=color_vector, 
 scale="${scale}", border_color=NA,
