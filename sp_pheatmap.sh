@@ -25,7 +25,7 @@ TR26914|c0_g1|CYP710A1	1.899	1.54	0.998	0.255	0.427
 ----Row annorarion file --------------
 ------1. At least two columns--------------
 ------2. The first column should be the same as the first column in
----------matrix (order does not matter)--------------
+         matrix (order does not matter)--------------
 Name	Clan	Family
 TR19267|c0_g1|CYP703A2	CYP71	CYP703
 TR19612|c1_g3|CYP707A1	CYP85	CYP707
@@ -66,7 +66,7 @@ ${txtbld}OPTIONS${txtrst}:
  		rowname, tab seperated. Colnames must be unique unless you
 		know what you are doing.)${bldred}[NECESSARY]${txtrst}
 	-t	Title of picture[${txtred}Default empty title${txtrst}]
-		[Scatter plot of horizontal and vertical variable]
+		["Heatmap of gene expression profile"]
 	-a	Display xtics. ${bldred}[Default TRUE]${txtrst}
 	-A	Rotation angle for x-axis value (anti clockwise)
 		${bldred}[Default 90]${txtrst}
@@ -79,15 +79,16 @@ ${txtbld}OPTIONS${txtrst}:
 		Accept "ward.D", "ward.D2","single", "average" (=UPGMA), 
 		"mcquitty" (=WPGMA), "median" (=WPGMC) or "centroid" (=UPGMC)
 	-C	Color vector. 
-		${bldred}Default pheatmap_default. Aceept a vector containing
-		multiple colors such as <c("white", "blue") will be transferred 
+		${bldred}Default pheatmap_default. 
+		Aceept a vector containing multiple colors such as 
+		<'c("white", "blue")'> will be transferred 
 		to <colorRampPalette(c("white", "blue"), bias=${bias})(30)>
 		or an R function 
-		  <colorRampPalette(rev(brewer.pal(n=7, name="RdYlBu")))(100)>
+		<colorRampPalette(rev(brewer.pal(n=7, name="RdYlBu")))(100)>
 		generating a list of colors.
 		${txtrst}
-	-T	Color type, a vetcor[vector] or 
-		a function[function (default)].
+	-T	Color type, a vetcor which will be transferred as described in <-C> [vector] or
+   		a raw vector [direct vector] or	a function [function (default)].
 	-B	A positive number. Default 1. Values larger than 1 will give more color
    		for high end. Values between 0-1 will give more color for low end.	
 	-D	Clustering distance method for rows.
@@ -103,10 +104,11 @@ ${txtbld}OPTIONS${txtrst}:
 		[Default 'none' means no scale, accept 'row', 'column' to 
 		scale by row or column.]
 	-m	The maximum value you want to keep, any number larger willl
-		be taken as the given maximum value.
+		be taken as this given maximum value.
 		[${bldred}Default Inf, Optional${txtrst}] 
 	-s	The smallest value you want to keep, any number smaller will
-		be taken as 0.[${bldred}Default -Inf, Optional${txtrst}]  
+		be taken as this given minimum value.
+		[${bldred}Default -Inf, Optional${txtrst}]  
 	-k	Aggregate the rows using kmeans clustering. 
 		This is advisable if number of rows is so big that R cannot 
 		handle their hierarchical clustering anymore, roughly more than 1000.
@@ -117,49 +119,29 @@ ${txtbld}OPTIONS${txtrst}:
 		cluster, other positive interger is accepted for executing
 		kmeans cluster, also the parameter represents the number of
 		expected clusters.${txtrst}]
-	-P	A file to specify row-annotation.[${txtred}Default NA${txtrst}]
-	-Q	A file to specify col-annotation.[${txtred}Default NA${txtrst}]
+	-P	A file to specify row-annotation with format described above.
+		[${txtred}Default NA${txtrst}]
+	-Q	A file to specify col-annotation with format described above.
+		[${txtred}Default NA${txtrst}]
+	-Z	Annotation color. One can only specify color for each column of row-annotation 
+		or col-annotation. For example, 'class' (two values: C1, C2) and 
+		'group' (two values:G1, G2) are two row-annotations, 
+		'type' (three values, T1, T2, T3) and 'size' (four values, 1, 2, 3, 4) 
+		are two col-annoations. 
+		Colors can be specified as <'class=c(C1="blue", C2="yellow"), size=c("white", "green"), type=c(T1="pink", T2="black", T3="cyan")'>. 
 	-u	The width of output picture.[${txtred}Default 20${txtrst}]
 	-v	The height of output picture.[${txtred}Default 20${txtrst}] 
 	-E	The type of output figures.[${txtred}Default pdf, accept
 		eps/ps, tex (pictex), png, jpeg, tiff, bmp, svg and wmf)${txtrst}]
 	-r	The resolution of output picture.[${txtred}Default 300 ppi${txtrst}]
 	-F	Font size [${txtred}Default 14${txtrst}]
-	-p	Preprocess data matrix to avoid STDERR 0 In cor(t(mat)).
+	-p	Preprocess data matrix to avoid 'STDERR 0 in cor(t(mat))'.
 		Lowercase <p>.
 		[${txtred}Default TRUE${txtrst}]
-	-------Below unused--------------------------------
-	-x	The color for representing low value.[${txtred}Default 
-		green${txtrst}]
-	-y	The color for representing high value.[${txtred}Default
-		red${txtrst}]
-	-M	The color representing mid-value.
-		[${txtred}Default yellow${txtrst}]
-	-Z	Use mid-value or not. [${txtred}Default FALSE, which means
-		do not use mid-value. ${txtrst}]
-	-X	The mid value you want to use.[${txtred}Default median value. A
-		number is ok. When -Z is FALSE and -G is TRUE, this value will be 
-		used as a separator point. The program will separate data into
-		two parts, [minimum, midpoint] and [midpoint, minimum]. Each
-		of these parts will be binned to same number of regions.]${txtrst}]
-	-N	Generate NA value.[${bldred}Assign NA to values in data table equal
-		to given value to get different color representation.${txtrst}]
-	-Y	Color for NA value.
-		[${txtred}Default grey${txtrst}]
-	-G	Set data breaks.
-		<1> represents automatically break data for color view.
-		<2> represents quantile data for color view. 
-			Default 5 color scale for each quantile.
-			Specially when -X is given, it will be used as midpoint to
-			get same number of breaks flanking midpoint.
-		<3> represents using given data breaks for color view.
-	-O	When -G is <3>, using given data points as separtor to
-		assign colors. [${bldred}Normally you can
-		select a mid-point and give same bins between the minimum and
-		midpoint, the midpoint and maximum.
-		Here is the format "0,0.2,0.4,0.6,0.8,1,2,4,6,8,10"${txtrst}]
-	-e	Execute or not[${bldred}Default TRUE${txtrst}]
-	-i	Install the required packages[${bldred}Default FALSE${txtrst}]
+	-e	Execute script (Default) or just output the script.
+		[${bldred}Default TRUE${txtrst}]
+	-i	Install the required packages. Normmaly should be TRUE if this is 
+		your first time run s-plot.[${bldred}Default FALSE${txtrst}]
 EOF
 }
 
@@ -190,6 +172,7 @@ fontsize=14
 ext='pdf'
 xcol='green'
 ycol='red'
+annotation_colors='NA'
 mcol='yellow'
 mid_value_use='FALSE'
 mid_value='Inf'
@@ -207,7 +190,7 @@ annotation_col='NA'
 preprocess='TRUE'
 minimum='-Inf'
 
-while getopts "hf:t:a:A:b:B:H:R:c:D:T:p:I:L:d:k:u:v:E:r:F:P:Q:x:y:M:Z:X:s:m:N:Y:G:C:O:e:i:" OPTION
+while getopts "hf:t:a:A:b:B:H:R:c:D:T:p:I:L:d:k:u:v:E:r:F:P:Q:x:y:M:Z:X:s:m:N:Y:Z:G:C:O:e:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -247,6 +230,9 @@ do
 			;;
 		I)
 			clustering_distance_cols=$OPTARG
+			;;
+		Z)
+			annotation_colors=$OPTARG
 			;;
 		p)
 			preprocess=$OPTARG
@@ -501,10 +487,18 @@ if ("${minimum}" != "-Inf"){
 
 if ("${color_type}" == "function"){
 	color_vector <- ${color_vector}
-} else {
+} else if ("${color_type}" == "vector"){
 	colfunc <- colorRampPalette(${color_vector}, bias=${bias})
 	color_vector <- colfunc(30)
+} else {
+	color_vector <- ${color_vector}
 }
+
+ann_colors = list(${annotation_colors})
+
+if (ann_colors[1][1] == "NA") {
+	ann_colors = 'NA'
+} 
 
 pheatmap(data, kmean_k=$kclu, color=color_vector, 
 scale="${scale}", border_color=NA,
