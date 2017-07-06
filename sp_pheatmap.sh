@@ -509,6 +509,7 @@ clustering_distance_cols="${clustering_distance_cols}",
 legend_breaks=legend_breaks, show_rownames=${ytics}, show_colnames=${xtics}, 
 main="$title", annotation_col=annotation_col,
 annotation_row=annotation_row, 
+annotation_colors = ann_colors, 
 fontsize=${fontsize}, filename="${file}${mid}.${ext}", width=${uwid},
 height=${vhig})
 	
@@ -518,7 +519,7 @@ END
 if [ "$execute" == "TRUE" ]; then
 	Rscript ${file}${mid}.r
 	if [ "$?" == "0" ]; then 
-		/bin/rm -f ${file}${mid}.r
+		#/bin/rm -f ${file}${mid}.r
 		/bin/rm -f Rplots.pdf	
 	fi
 fi
