@@ -120,9 +120,25 @@ ${txtbld}OPTIONS${txtrst}:
 
 Examples:
  
+# -f: 指定输入文件，格式如上面描述
+# -o: 指定横轴的变量，单个样品一般选择GeneRatio或样品名字
+# -T: 指定横轴变量的类似，是字符串还是数值
+# -v: 指定Y轴显示的内容，一般为富集条目的描述
+# -c: 指定用哪一列设置颜色展示，一般为qvalue或p.adjust
+# -s: 指定用哪一列设置点的大小，一般为Count
+# -l: 指定某一列进行对数操作，一般选qvalue列；如果已做过对数操作，则忽略
+# -a: 设置图片输出高度
+# -x, -y: 设置横轴和纵轴标题，注意多个单词需要引号括起来
 * sp_enrichmentPlot.sh -f GOenrichement.ehbio.xls -o GeneRatio -T numeric -v Description -c qvalue -s Count -l qvalue -a 12 -x "GeneRatio" -y "GO description"
+
+# -o: 指定横轴的变量，单个样品一般选择GeneRatio或样品名字
+# -T: 如果是样品名字，指定为字符串
 * sp_enrichmentPlot.sh -f GOenrichement.ehbio.xls -o Type -T string -v Description -c qvalue -s Count -l qvalue -a 12 -x "Sample" -y "GO description"
+
+# 多出来的参数是-S用来指定样品分组，不同类型的基因的富集分析用不同的形状表示
 * sp_enrichmentPlot.sh -f GOenrichement.xls -o GeneRatio -T numeric -v Description -c qvalue -s Count -l qvalue -a 12 -x "GeneRatio" -y "GO description" -S Type
+
+# 跟单个样品不显示GeneRatio的命令一样，不同的样品分列展示。
 * sp_enrichmentPlot.sh -f GOenrichement.xls -o GeneRatio -T numeric -v Description -c qvalue -s Count -l qvalue -a 12 -x "GeneRatio" -y "GO description" -S Type
 
 EOF
