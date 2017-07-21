@@ -66,6 +66,7 @@ ${txtbld}OPTIONS${txtrst}:
 		we do not need scale. When this happens, we expect the changin ranges 
 		of data is small for example log-transformed data.	
 		${bldred}[Default TRUE.]${txtrst}
+	-m	Minimum mad to keep. Larger mad, larger variance. Default 0.5.
 	-T	Use top n most changed variables for PCA computation.
 		${bldred}[Default 5000. Giving 0 to use all variables.]${txtrst}
 	-D	Dimensions to plot.
@@ -180,8 +181,9 @@ colormodel='srgb'
 label_font_size=""
 scale_y='FALSE'
 scale_y_way='scale_y_continuous(trans="log2")'
+minimum_mad=0.5
 
-while getopts "hf:g:t:a:x:y:p:X:O:Q:T:R:Y:B:H:V:I:K:v:c:C:A:l:D:F:N:L:M:J:w:u:r:E:s:S:b:d:z:e:i:" OPTION
+while getopts "hf:g:t:a:x:y:p:X:O:Q:T:R:Y:m:B:H:V:I:K:v:c:C:A:l:D:F:N:L:M:J:w:u:r:E:s:S:b:d:z:e:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -205,6 +207,9 @@ do
 			;;
 		p)
 			legend_pos=$OPTARG
+			;;
+		m)
+			minimum_mad=$OPTARG
 			;;
 		R)
 			xtics_angle=$OPTARG
@@ -347,11 +352,15 @@ data <- data[rowSums(abs(data))!=0, ]
 
 data\$mad <- apply(data, 1, mad) 
 
-data <- data[data\$mad>0, ]
+data <- data[data\$mad>${minimum_mad}, ]
 
 data <- data[order(data\$mad, decreasing=T), 1:(dim(data)[2]-1)]
 
-if (${top_n} != 0) {
+dim_data <- dim(data)
+
+data_row_num <- dim_data[1]
+
+if (${top_n} != 0 & ${top_n} < data_row_num) {
 	data <- data[1:${top_n}, ]
 }
 
@@ -399,9 +408,27 @@ if ("${shape}" != "c_t_c_t0304") {
 
 pca <- prcomp(data, scale=${scale})
 
+rotation = pca\$rotation
+
+write.table(rotation, file="${file}${mid}.weights.xls", sep="\t", quote=F, row.names=T, col.names=T)
+
+system("sed -i 's/^/ID\t/' ${file}${mid}.weights.xls")
+
+x = pca\$x
+
+write.table(x, file="${file}${mid}.pcs.xls", sep="\t", quote=F, row.names=T,  col.names=T)
+
+system("sed -i 's/^/ID\t/' ${file}${mid}.pcs.xls")
+
 # sdev: standard deviation of the principle components.
 # Square to get variance
 percentVar <- pca\$sdev^2 / sum( pca\$sdev^2)
+
+percentVar2 <- as.data.frame(percentVar)
+rownames(percentVar2) <- colnames(x)
+
+write.table(percentVar2, file="${file}${mid}.pc_variance.xls", sep="\t", quote=F, row.names=T)
+
 
 if (${dimensions} == 2) {
 
@@ -486,7 +513,7 @@ fi
 
 if [ "$execute" == "TRUE" ]; then
 	Rscript ${file}${mid}.r
-if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
+#if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
 fi
 
 

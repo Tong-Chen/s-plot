@@ -129,6 +129,7 @@ ${txtbld}OPTIONS${txtrst}:
 		'type' (three values, T1, T2, T3) and 'size' (four values, 1, 2, 3, 4) 
 		are two col-annoations. 
 		Colors can be specified as <'class=c(C1="blue", C2="yellow"), size=c("white", "green"), type=c(T1="pink", T2="black", T3="cyan")'>. 
+		In R, one can use <colors()> function to get names of all available colors.
 	-u	The width of output picture.[${txtred}Default 20${txtrst}]
 	-v	The height of output picture.[${txtred}Default 20${txtrst}] 
 	-E	The type of output figures.[${txtred}Default pdf, accept
@@ -497,7 +498,7 @@ if ("${color_type}" == "function"){
 ann_colors = list(${annotation_colors})
 
 if (ann_colors[1][1] == "NA") {
-	ann_colors = 'NA'
+	ann_colors = NA
 } 
 
 pheatmap(data, kmean_k=$kclu, color=color_vector, 

@@ -86,6 +86,12 @@ ${txtbld}OPTIONS${txtrst}:
 		${bldred}[Default system default. 
 		Accept string in format like <'"green", "red"'> (both types of quotes needed).]
 		${txtrst}
+	-a	Type of color variable. 
+		<num> represents color variables are numbers. At this time, 
+		two colors should be specified in <-C> represents low and high
+		color.
+		<factor> represents color variables are strings. At this time, 
+		same number of colors as number of samples should be given.	
 	-A	Transparency value for points.
 		${bldred}[Optional, such as a number or 
 		a variable indicating one data column, 
@@ -160,6 +166,7 @@ execute='TRUE'
 ist='FALSE'
 color='c_t_c_t0304'
 color_v=''
+color_t=''
 log='nolog'
 uwid=20
 vhig=20
@@ -188,7 +195,7 @@ label_font_size=0
 scale_y='FALSE'
 scale_y_way='scale_y_continuous(trans="log2")'
 
-while getopts "hf:t:x:y:p:X:O:R:Y:Z:B:H:V:L:T:I:K:v:c:C:A:l:D:F:N:L:M:J:w:u:r:E:s:S:b:d:z:e:i:" OPTION
+while getopts "hf:t:a:x:y:p:X:O:R:Y:Z:B:H:V:L:T:I:K:v:c:C:A:l:D:F:N:L:M:J:w:u:r:E:s:S:b:d:z:e:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -233,6 +240,9 @@ do
 			;;
 		C)
 			color_v=$OPTARG
+			;;
+		a)
+			color_t=$OPTARG
 			;;
 		A)
 			alpha=$OPTARG
@@ -431,9 +441,16 @@ if (${jitter}) {
 	}
 }
 
-if (("${color}" != "c_t_c_t0304") && length(color_v) == 2) {
+
+if (("${color}" != "c_t_c_t0304") && "${color_t}" == "factor" && length(color_v) > 1) {
+	p <- p + scale_color_manual(values=color_v)
+} 
+
+if (("${color}" != "c_t_c_t0304") && "${color_t}" == "num" && length(color_v) > 1) {
 	p <- p + scale_colour_gradient(low=color_v[1], high=color_v[2], name="${color}")
 }
+
+
 
 if (("${shape}" != "c_t_c_t0304") && shape_level > 6) {
 	p <- p + scale_shape_manual(values=shapes)
@@ -487,7 +504,7 @@ END
 
 if [ "$execute" == "TRUE" ]; then
 	Rscript ${file}${mid}.r
-if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
+#if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
 fi
 
 if [ ! -z "$log" ]; then

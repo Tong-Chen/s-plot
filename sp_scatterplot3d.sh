@@ -346,7 +346,7 @@ data <- read.table(file="$file", sep="\t", quote="", comment="", header=T, row.n
 #	data <- data[1:${top_n}, ]
 #}
 
-data <- as.data.frame(t(data))
+#data <- as.data.frame(t(data))
 
 sampleL = rownames(data)
 
@@ -466,7 +466,7 @@ if ("${shape}" != "c_t_c_t0304") {
 pdf("${file}${mid}.pdf")
 if ("${color}" != "c_t_c_t0304" && "${shape}" != "c_t_c_t0304") { 
 	scatterplot3d(x=data\$$x, y=data\$$y, z=data\$$z, pch=pch, color=colors, xlab="$x", ylab="$y", zlab="$z")
-	legend(-3,8, legend=levels(as.factor(${color})), col=colorl, pch=pch_l, xpd=T, horiz=F, ncol=6)
+	legend(-3,8, legend=levels(as.factor(data\$${color})), col=colorl, pch=pch_l, xpd=T, horiz=F, ncol=6)
 } else if ("${color}" != "c_t_c_t0304" ) { 
 	scatterplot3d(x=data\$$x, y=data\$$y, z=data\$$z, color=colors, xlab="$x", ylab="$y", zlab="$z")
 	legend(-3,8, legend=levels(as.factor(${color})), col=colorl, xpd=T, horiz=F, ncol=6)

@@ -18,10 +18,14 @@ ${bldblu}Function${txtrst}:
 This script is used to draw a line or multiple lines using ggplot2.
 You can specify whether or not smooth your line or lines.
 
-fileformat for -f (suitable for data extracted from one sample, the
-number of columns is unlimited. Column 'Set' is not necessary)
+Two types of input files are supported, normal matrix or melted matrix format. Column separator for both types of input files is **tab**. 
+
+Here is an example of normal matrix format. The first column will be treated as X-axis variables and other columns represents each type of lines. The number of columns is unlimited and names of columns is unlimited.
+
+**Set** column is not needed. If given, <facet_plot> (multiple plots in one page) could be displayed. 
+
 ------------------------------------------------------------
-Pos	h3k27ac	ctcf	enhancer	h3k4me3	polII
+Pos	H3K27ac	CTCF	Enhancer	H3K4me3	polII
 -5000	8.71298	10.69130	11.7359	10.02510	8.26866
 -4000	8.43246	10.76680	11.8442	9.76927	7.78358
 -3000	8.25497	10.54410	12.2470	9.40346	6.96859
@@ -32,82 +36,153 @@ Pos	h3k27ac	ctcf	enhancer	h3k4me3	polII
 2000	8.24328	10.70220	12.3888	9.47255	7.67968
 3000	8.43869	10.41010	11.9760	9.80665	7.94148
 4000	8.48877	10.57570	11.6562	9.71986	8.17849
+------------------------------------------------------
+
+------------With SET------------------------------------------
+Pos	H3K27ac	CTCF	Enhancer	H3K4me3	polII	Set
+-5000	8.71298	10.69130	11.7359	10.02510	8.26866	1
+-4000	8.43246	10.76680	11.8442	9.76927	7.78358	1
+-3000	8.25497	10.54410	12.2470	9.40346	6.96859	1
+-2000	7.16265	10.86350	12.6889	8.35070	4.84365	1
+-1000	3.55341	8.45751	12.8372	4.84680	1.26110	1
+0	3.55030	8.50316	13.4152	5.17401	1.50022	1
+1000	7.07502	10.91430	12.3588	8.13909	4.88096	1
+2000	8.24328	10.70220	12.3888	9.47255	7.67968	1
+3000	8.43869	10.41010	11.9760	9.80665	7.94148	1
+4000	8.48877	10.57570	11.6562	9.71986	8.17849	1
+-5000	8.71298	10.69130	11.7359	10.02510	8.26866	2
+-4000	8.43246	10.76680	11.8442	9.76927	7.78358	2
+-3000	8.25497	10.54410	12.2470	9.40346	6.96859	2
+-2000	7.16265	10.86350	12.6889	8.35070	4.84365	2
+-1000	3.55341	8.45751	12.8372	4.84680	1.26110	2
+0	3.55030	8.50316	13.4152	5.17401	1.50022	2
+1000	7.07502	10.91430	12.3588	8.13909	4.88096	2
+2000	8.24328	10.70220	12.3888	9.47255	7.67968	2
+3000	8.43869	10.41010	11.9760	9.80665	7.94148	2
+4000	8.48877	10.57570	11.6562	9.71986	8.17849	2
 -------------------------------------------------------------
-fileformat when -m is true
-#The name "value" shoud not be altered.
+
+For matrix format, example command lines include:
+
+* Attribute of X-axis value (first column of matrix) is <number>
+
+	s-plot lines -f matrix.file -A FALSE
+
+* Attribute of X-axis value (first column of matrix) is <text>
+	s-plot lines -f matrix.file 
+
+* Attribute of X-axis value (first column of matrix) is numbers, change legned order (default alphabet order)
+
+	s-plot lines -f matrix.file -l "'polII', 'CTCF', 'Enhancer', 'H3K27ac', 'H3K4me3'"
+
+* Attribute of X-axis value (first column of matrix) is numbers, change legned order (default alphabet order), smooth lines to look better (Pay attention to whether this will change the data trend)
+
+	s-plot lines -f matrix.file -l "'polII', 'CTCF', 'Enhancer', 'H3K27ac', 'H3K4me3'" -o TRUE
+
+* Attribute of X-axis value (first column of matrix) is numbers, with <Set> (Set is column name) column
+	
+	s-plot lines -f matrix.file -F "+facet_grid(Set ~ ., scale='free_y')"
+
+
+FILEFORMAT when -m is true
+#The name "value" shoud **not** be altered.
 #variable can be altered using -H
 #Actually this format is the melted result of last format.
 --------------------------------------------------------------
 Pos variable    value
--5000	h3k27ac	8.71298
--4000	h3k27ac	8.43246
--3000	h3k27ac	8.25497
--2000	h3k27ac	7.16265
--1000	h3k27ac	3.55341
-0	h3k27ac	3.55030
-1000	h3k27ac	7.07502
-2000	h3k27ac	8.24328
-3000	h3k27ac	8.43869
-4000	h3k27ac	8.48877
--5000	ctcf	10.69130
--4000	ctcf	10.76680
--3000	ctcf	10.54410
--2000	ctcf	10.86350
--1000	ctcf	8.45751
-0	ctcf	8.50316
-1000	ctcf	10.91430
-2000	ctcf	10.70220
-3000	ctcf	10.41010
-4000	ctcf	10.57570
+-5000	H3K27ac	8.71298
+-4000	H3K27ac	8.43246
+-3000	H3K27ac	8.25497
+-2000	H3K27ac	7.16265
+-1000	H3K27ac	3.55341
+0	H3K27ac	3.55030
+1000	H3K27ac	7.07502
+2000	H3K27ac	8.24328
+3000	H3K27ac	8.43869
+4000	H3K27ac	8.48877
+-5000	CTCF	10.69130
+-4000	CTCF	10.76680
+-3000	CTCF	10.54410
+-2000	CTCF	10.86350
+-1000	CTCF	8.45751
+0	CTCF	8.50316
+1000	CTCF	10.91430
+2000	CTCF	10.70220
+3000	CTCF	10.41010
+4000	CTCF	10.57570
 -------------------------------------------------------------
 
+* Attribute of X-axis value (melt format) is <number>
+
+	s-plot lines -f matrix.file -m TRUE -a Pos -A FALSE
+
+* Attribute of X-axis value (first column of matrix) is <text>
+
+	s-plot lines -f matrix.file -m TRUE -a Pos
+
+* If the name of the second column is <type> not <variable>, one should specify with <-H>. 
+	
+	s-plot lines -f matrix.file -A FALSE -m TRUE -a Pos -H type
+
+* Attribute of X-axis value (first column of matrix) is numbers, change legned order (default alphabet order)
+
+	s-plot lines -f matrix.file -m TRUE -a Pos -l "'polII', 'CTCF', 'Enhancer', 'H3K27ac', 'H3K4me3'"
+
+* Attribute of X-axis value (first column of matrix) is numbers, change legned order (default alphabet order), smooth lines to look better (Pay attention to whether this will change the data trend)
+
+	s-plot lines -f matrix.file -m TRUE -a Pos -l "'polII', 'CTCF', 'Enhancer', 'H3K27ac', 'H3K4me3'" -o TRUE
+
+* Attribute of X-axis value (first column of matrix) is numbers, with <Set> (Set is column name) column
+	
+	s-plot lines -f matrix.file -F "+facet_grid(Set ~ ., scale='free_y')"
+
+
 ${txtbld}OPTIONS${txtrst}:
-	-f	Data file (with header line, the first column is the
- 		will not be treated as rownames, tab seperated)${bldred}[NECESSARY]${txtrst}
+	-f	Data file (with header line, the first column would be be treated as rownames for
+		normal matrix. No rownames for melted format. Columns are tab seperated)
+		${bldred}[NECESSARY]${txtrst}
 	-m	When true, it will skip melt preprocesses. But the format must be
 		the same as listed before.
 		${bldred}[Default FALSE, accept TRUE]${txtrst}
 	-a	Name for x-axis variable
-		[${txtred}Necessary, no default value when -m is used.  
-		For the second examples, 'Pos' should be given here. 
-		For the first example,  default the first column will be used,
+		[${txtred}Only needed when <-m> is <TRUE>.  
+		For the melted data, 'Pos' should be given here. 
+		For normal matrix,  default the first column will be used,
 		program will assign an value 'xvariable' to represent it.
 	   	]${txtrst}]
-	-A	The attribute of x-axis variable.
-		[${txtred}Default TRUE, means X-axis label is number.
-		FALSE means X-axis label is text.${txtrst}]
+	-A	Are x-axis variables numbers.
+		[${txtred}Default <TRUE>, meaning X-axis label is <text>.
+		<FALSE> means X-axis label is <numerical>.${txtrst}]
 	-H	Name for legend variable.
 		${bldred}[Default variable, this should only be set when -m is TRUE]${txtrst}
 	-J	Name for color variable.
 		${bldred}[Default same as -H, this should only be set when -m is TRUE]${txtrst}
-	-l	Levels for legend variable
-		[${txtred}Default column order, accept a string like
-		"'ctcf','h3k27ac','enhancer'"  
-		***When -m is used, this default will be ignored too.********* 
+	-l	Set orders of legend variable.
+		[${txtred}Default column order for normal matrix, accept a string like
+		"'CTCF','H3K27ac','Enhancer'" to set your own order. 
+		Pay attention to the usage of two types of quotes. 
+		***When -m is TRUE, default order would be alphabet order.********* 
 	   	${txtrst}]
 	-P	Legend position[${txtred}Default right. Accept
-		top,bottom,left,none, or c(0.08,0.8).${txtrst}]
-	-L	Levels for x-axis variable, suitable when x-axis is not used
-		as a number. 
-		[${txtred}Default the order of first column, accept a string like
-		"'g','a','j','x','s','c','o','u'"  
+		top, bottom, left, none, or 'c(0.08,0.8)'.${txtrst}]
+	-L	Levels for x-axis variable, suitable when x-axis is not treated as numerical. 
+		[${txtred}Default the order of first column for normal matrix. 
+		Accept a string like "'g','a','j','x','s','c','o','u'" to set your own oder.
 	   	This will only be considered when -A is TRUE.
-		***When -m is used, this default will be ignored too.********* 
+		***When -m is used, this default order would be alphabet order.********* 
 		${txtrst}]
-	-o	Smooth your data or not.
-		[${txtred}Default FALSE means no smooth. Accept TRUE to smooth
-		lines.${txtrst}]
+	-o	Smooth lines or not.
+		[${txtred}Default FALSE means no smooth. Accept TRUE to smooth lines.${txtrst}]
 	-O	The smooth method you want to use.
-		[${txtred}smoothing method (function) to use,  eg. lm, glm,
-		gam, loess,rlm. 
+		[${txtred}smoothing method (function) to use,  eg. lm, glm, gam, loess,rlm.
 		For datasets with n < 1000 default is 'loess'. 
 		For datasets with 1000 or more observations defaults to 'gam'.
 		${txtrst}]
 	-V	Add vertical lines.${bldred}[Default FALSE, accept a series of
 		numbers in following format "c(1,2,3,4,5)" or other
-		R code that can generate a vector]${txtrst}
-	-D	Add labels to vline.
-		${bldred}[Default same as -V
+		R code that can generate a vector.]${txtrst}
+	-D	Add labels to vlines.
+		${bldred}[Default same as -V.
 		Accept a series of numbers in following format "c(1,2,3,4,5)" or other R code
 		that can generate a vector as labels.
 		Or one can give '1' to disallow labels]${txtrst}
@@ -125,70 +200,66 @@ ${txtbld}OPTIONS${txtrst}:
 		that can generate a vector to set the position of xtics]${txtrst}
 	-b	Manually set the value of xtics when -I is specified.
 		${bldred}[Default the content of -I when -I is specified, 
-		accept a series of
-		numbers in following format "c(1,2,3,4,5)" or other R code
+		accept a series of numbers in following format "c(1,2,3,4,5)" or other R code
 		that can generate a vector to set the position of xtics]${txtrst}
 	-X	Display xtics. ${bldred}[Default TRUE]${txtrst}
 	-Y	Display ytics. ${bldred}[Default TRUE]${txtrst}
-	-R	Rotation angle for x-axis value(anti clockwise)
+	-R	Rotation angle for x-axis labels (anti clockwise)
 		${bldred}[Default 0]${txtrst}
-	-B	line size.[${txtred}Default 1. Accept a number.${txtrst}]
+	-B	line size. [${txtred}Default 1. Accept a number.${txtrst}]
 	-t	Title of picture[${txtred}Default empty title${txtrst}]
 	-x	xlab of picture[${txtred}Default empty xlab${txtrst}]
 	-y	ylab of picture[${txtred}Default empty ylab${txtrst}]
-	-c	Manually set colors for each line.[${txtred}Default FALSE,
-		meaning using ggplot2 default.${txtrst}]
-	-C	Color for each line.[${txtred}
-		When -c is TRUE, one have two options
+	-c	Manually set colors for each line.[${txtred}Default FALSE, meaning using ggplot2 default.${txtrst}]
+	-C	Color for each line.${txtred}
+		When -c is TRUE, one has two options:
+
 		1. Supplying a function to generate colors, 
 		like "rainbow(11)" or "rainbow(11, alpha=0.6)", 
 		    rainbow is an R color palletes, 
 		    11 is the number of colors you want to get, 
 			0.6 is the alpha value.
-		The R palletes include heat.colors, terrain.colors,
-		topo.colors, cm.colors.
+		The R palletes include <heat.colors>, <terrain.colors>,
+			<topo.colors>, <cm.colors>.
+
 		2. Supplying a list of colors in given format, 
-		ususlly the number of colors should be equal to the number of
+		the number of colors should be equal to the number of
 		bars like "'red','pink','blue','cyan','green','yellow'" or
 		"rgb(255/255,0/255,0/255),rgb(255/255,0/255,255/255),
 		 rgb(0/255,0/255,255/255),rgb(0/255,255/255,255/255),
 		 rgb(0/255,255/255,0/255),rgb(255/255,255/255,0/255)"
-		${txtrst}]
+		${txtrst}
+
+		One can use R fucntion <colors()> to list all available colors.
 	-s	Scale y axis
-		[${txtred}Default null. Accept TRUE. This function is
-		depleted. If the supplied number after -S is not 0, this
-		parameter is TRUE${txtrst}]
+		[${txtred}Default null. Accept TRUE. This function is depleted. 
+		But if the supplied number after -S is not 0, this parameter will be set to TRUE${txtrst}]
 	-F	The formula for facets.[${bldred}Default no facets, 
-		+facet_grid(level ~ .) means divide by levels of 'level' vertcally.
-		+facet_grid(. ~ level) means divide by levels of 'level' horizontally.
-		+facet_grid(lev1 ~ lev2) means divide by lev1 vertically and lev2
-		horizontally.
-		+facet_wrap(~level, ncol=2) means wrap horizontally with 2
-		columns.
+		"+facet_grid(level ~ .)" means divide by levels of 'level' vertically.
+		"+facet_grid(. ~ level)" means divide by levels of 'level' horizontally.
+		"+facet_grid(lev1 ~ lev2)" means divide by lev1 vertically and lev2 horizontally.
+		"+facet_wrap(~level, ncol=2)" means wrap horizontally with 2 columns.
+
 		#Pay attention to the single quote for parameters in function for scale.
-		Example: +facet_wrap(~Size,ncol=6,scale='free')
-		Example: +facet_grid(Size ~ .,scale='free_y')
+		Example: "+facet_wrap(~Size,ncol=6,scale='free')"
+		Example: "+facet_grid(Size ~ .,scale='free_y')"
 		${txtrst}]
 	-G	If facet is given, you may want to specifize the order of
-		variable in your facet, default alphabetically.
-		[${txtred}Accept sth like 
-		(one level one sentence, separate by';') 
-		data\$size <- factor(data\$size, levels=c("l1",
-		"l2",...,"l10"), ordered=T) ${txtrst}]
-	-v	If scale is TRUE, give the following
-		scale_y_log10()[default], coord_trans(y="log10"), or other legal
-		command for ggplot2 or simply log2.)${txtrst}]
+		variable in your facet, default alphabetical order.
+		[${txtred}Accept sth like (one level one sentence, separate by';') 
+		'data\$size <- factor(data\$size, levels=c("l1", "l2",...,"l10"), ordered=T)' ${txtrst}]
+	-v	If scale is TRUE, give the following 'scale_y_log10()'[default], 'coord_trans(y="log10")', 
+		or other legal command for ggplot2 or simply 'log2'.${txtrst}]
 	-S	A number to add if scale is used.
-		[${txtred}Default 0. If a non-zero number is given, -s is
-		TRUE.${txtrst}]	
-	-p	Other legal R codes for gggplot2 will be given here.
+		[${txtred}Default 0. If a non-zero number is given, -s would be set to TRUE.${txtrst}]	
+	-p	Other legal R codes for gggplot2 could be given here.
 		[${txtres}Begin with '+' ${txtrst}]
-	-w	The width of output picture.[${txtred}Default 20${txtrst}]
-	-u	The height of output picture.[${txtred}Default 12${txtrst}] 
+	-w	The width of output picture (cm).[${txtred}Default 20${txtrst}]
+	-u	The height of output picture (cm).[${txtred}Default 12${txtrst}] 
 	-E	The type of output figures.[${txtred}Default pdf, accept
 		eps/ps, tex (pictex), png, jpeg, tiff, bmp, svg and wmf)${txtrst}]
 	-r	The resolution of output picture.[${txtred}Default 300 ppi${txtrst}]
-	-z	Is there a header[${bldred}Default TRUE${txtrst}]
+	-z	Is there a header. Must be TRUE. [${bldred}Default TRUE${txtrst}]
 	-e	Execute or not[${bldred}Default TRUE${txtrst}]
 	-i	Install depended packages[${bldred}Default FALSE${txtrst}]
 EOF
@@ -197,8 +268,8 @@ EOF
 file=
 title=''
 melted='FALSE'
-xlab='NULL'
-ylab='NULL'
+xlab=''
+ylab=''
 xvariable='xvariable'
 variable='variable'
 color_variable='variable'
@@ -440,7 +511,7 @@ if ("${x_level}" != ""){
 	data_m\$${xvariable} <- factor(data_m\$${xvariable},levels=data_rownames,ordered=TRUE)
 }
 
-if (! ${x_type}){
+if ((! ${x_type}) & (! ${melted})){
 	data_m\$${xvariable} <- 
 		as.numeric(levels(data_m\$${xvariable}))[data_m\$${xvariable}]
 }
@@ -554,8 +625,9 @@ if(is.vector(custom_vline_coord)){
 	p <- p + geom_vline(xintercept=custom_vline_coord,
 	linetype="dotted", size=0.5)
 	if(is.vector(custom_vline_anno)){
-		ymax_range <- ggplot_build(p)\$panel\$ranges[[1]]\$y.range
-		ymax_v <- ymax_range[2]
+		#ymax_range <- ggplot_build(p)\$panel\$ranges[[1]]\$y.range
+		#ymax_v <- ymax_range[2]
+		ymax_v <- max(data_m\$value)
 		if ("${facet}" != ""){
 			ymax_v = 0
 		}

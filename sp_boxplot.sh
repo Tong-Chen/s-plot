@@ -21,6 +21,21 @@ fileformat for -f (suitable for data extracted from one sample, the
 number of columns is unlimited. Column 'Set' is not necessary unless
 you have multiple groups)
 
+Matrix1
+
+Name	2cell_1	2cell_2	2cell_3	2cell_4	2cell_5	2cell_6	4cell_1	4cell_2	4cell_3	4cell_4	4cell_5	4cell_6	zygote_1	zygote_2	zygote_3	zygote_4	zygote_5	zygote_6
+A	8	13	14	9	19	12	3.2	5.2	5.6	3.6	7.6	4.8	0.8	1.3	1.4	0.9	1.9	1.2
+B	8	13	14	9	19	12	3.2	5.2	5.6	3.6	7.6	4.8	0.8	1.3	1.4	0.9	1.9	1.2
+C	8	13	14	9	19	12	3.2	5.2	5.6	3.6	7.6	4.8	0.8	1.3	1.4	0.9	1.9	1.2
+D	8	13	14	9	19	12	3.2	5.2	5.6	3.6	7.6	4.8	0.8	1.3	1.4	0.9	1.9	1.2
+E	8	13	14	9	19	12	3.2	5.2	5.6	3.6	7.6	4.8	0.8	1.3	1.4	0.9	1.9	1.2
+F	8	13	14	9	19	12	3.2	5.2	5.6	3.6	7.6	4.8	0.8	1.3	1.4	0.9	1.9	1.2
+G	8	13	14	9	19	12	3.2	5.2	5.6	3.6	7.6	4.8	0.8	1.3	1.4	0.9	1.9	1.2
+H	8	13	14	9	19	12	3.2	5.2	5.6	3.6	7.6	4.8	0.8	1.3	1.4	0.9	1.9	1.2
+I	8	13	14	9	19	12	3.2	5.2	5.6	3.6	7.6	4.8	0.8	1.3	1.4	0.9	1.9	1.2
+
+Matrix2
+
 Gene	hmC	expr	Set
 NM_001003918_26622	0	83.1269257376101	TP16
 NM_001011535_3260	0	0	TP16
@@ -30,6 +45,29 @@ NM_001003918_2662217393_30486	0	0	TP16
 NM_001017393_30504	0	0	TP16
 NM_001025241_30464	0	0	TP16
 NM_001017393_30504001025241_30513	0	0	TP16
+
+sampleGroupFile 
+# (TAB separated, first column corresponds to first row of matrix)
+# Group should be gave to <-F>
+Sample	Group
+zygote_1	zygote
+zygote_2	zygote
+zygote_3	zygote
+zygote_4	zygote
+zygote_5	zygote
+zygote_6	zygote
+2cell_1	2cell
+2cell_2	2cell
+2cell_3	2cell
+2cell_4	2cell
+2cell_5	2cell
+2cell_6	2cell
+4cell_1	4cell
+4cell_2	4cell
+4cell_3	4cell
+4cell_4	4cell
+4cell_5	4cell
+4cell_6	4cell
 
 For file using "Set" column, you can use 
 boxplot.onefile.sh -f file -a Set 
@@ -43,44 +81,70 @@ fileformat when -m is true
 #with "Set" or other string as labels. The label should be given
 #to parameter -a.
 #Actually this format is the melted result of last format.
-value	variable	Set
-0	hmC	g
-1	expr	g
-2	hmC	a
-3	expr	a
+
+Matrix_melted
+
+Gene	Sample	Group	Expr
+A	zygote_1	zygote	0.8
+A	zygote_2	zygote	1.3
+A	zygote_3	zygote	1.4
+A	zygote_4	zygote	0.9
+A	zygote_5	zygote	1.9
+A	zygote_6	zygote	1.2
+A	2cell_1	2cell	8
+A	2cell_2	2cell	13
+A	2cell_3	2cell	14
+A	2cell_4	2cell	9
+A	2cell_5	2cell	19
+A	2cell_6	2cell	12
+A	4cell_1	4cell	3.2
+A	4cell_2	4cell	5.2
+A	4cell_3	4cell	5.6
+A	4cell_4	4cell	3.6
+A	4cell_5	4cell	7.6
+A	4cell_6	4cell	4.8
 
 ${txtbld}OPTIONS${txtrst}:
-	-f	Data file (with header line, the first column is the
- 		colname, tab seperated)${bldred}[NECESSARY]${txtrst}
+	-f	Data file (with header line, the first row is the
+ 		colname, tab seperated. Multiple formats are allowed and described above)
+		${bldred}[NECESSARY]${txtrst}
 	-m	When true, it will skip preprocess. But the format must be
-		the same as listed before.
+		the same as listed before (Matrix_melted).
 		${bldred}[Default FALSE, accept TRUE]${txtrst}
-	-d	The column represents the digital values.
+	-d	The column represents the digital values, such as Expr.
 		${bldred}[Default "value" represents the column named "value".
-		This parameter can only set when -m is TRUE.]${txtrst}
-	-F	The column represents the variable information, means
-		sub-class.
-		${bldred}[Default "variable" represents the column named
-		"variable". If no-subclass, this will be treated as X-axus varuable.
-		This parameter can only set when -m is TRUE.]${txtrst}
+		This parameter can only be set when -m is TRUE.]${txtrst}
+	-F	The column represents the variable information, meaning legend_variable.
+		If no-subclass of X-variavle, this will be treated as X-axis variable.
+		${bldred}[Default "variable" represents the column named "variable". 
+		This parameter can only be set when -m is TRUE.]${txtrst}
 	-I	Other columns you want to treat as ID variable columns except
-		the one given to -a.
+		the one given to -a. Not used when <-m TRUE>.
 		${bldred}[Default empty string, accept comma separated strings
 		like "'Id1','Id2','Id3'" or single string "id1"]${txtrst}
 	-a	Name for x-axis variable
 		[${txtred}Default variable, which is an inner name, suitable 
 		for data without 'Set' column. For the given example, 
-		'Set' which represents groups of each gene, and should be 
+		'Group' which represents groups of each gene should be 
 		supplied to this parameter.
+		This parameter can only be set when -m is TRUE.
 		${txtrst}]
 	-b	Rotation angle for x-axis value(anti clockwise)
 		${bldred}[Default 0]${txtrst}
-	-R	Rotate the plot. Usefull for plots with many values or very long labels at X-axis.
+	-R	Rotate the plot from vertical to horizontal. 
+		Usefull for plots with many values or very long labels at X-axis.
 		${bldred}[Default FALSE]${txtrst}
 	-l	Levels for legend variable
 		[${txtred}Default data order,accept a string like
 		"'TP16','TP22','TP23'" ***for <variable> column***.
 	   	${txtrst}]
+	-q	Giving one gene ID to do boxplot specifically for this gene.
+		${bldred}[Default FALSE, accept a string]${txtrst}
+	-Q	Giving a sampleGroup file with format specified above to
+   		tell the group information for each sample.	
+		When <-Q> is given, <-F> and <-a> should be one of the column 
+		names of sampleGrp file.
+		${bldred}[Default FALSE, accept a file name]${txtrst}
 	-D	Self-define intervals for legend variable when legend is
 		continuous numbers. Accept either a
 		numeric vector of two or more cut points or a single number
@@ -88,8 +152,8 @@ ${txtbld}OPTIONS${txtrst}:
 		into what 'x' is to be cut. This has higher priority than -l.
 		[10 will generate 10 intervals or 
 		"c(-1, 0, 1, 2, 5, 10)" will generate (-1,0],(0,1]...(5,10]]	
-	-P	Legend position[${txtred}Default right. Accept
-		top,bottom,left,none, or c(0.08,0.8).${txtrst}]
+	-P	[Uppercase P] Legend position[${txtred}Default right. Accept
+		top,bottom,left,none, or c(0.08,0.8) (relative to left-bottom).${txtrst}]
 	-L	Levels for x-axis variable
 		[${txtred}Default data order,accept a string like
 		"'g','a','j','x','s','c','o','u'" ***for <Set> column***.
@@ -100,7 +164,7 @@ ${txtbld}OPTIONS${txtrst}:
 		into what 'x' is to be cut. This has higher priority than -L.
 		[10 will generate 10 intervals or 
 		"c(-1, 0, 1, 2, 5, 10)" will generate (-1,0],(0,1]...(5,10]]	
-	-n	Using notch or not.${txtred}[Default TRUE]${txtrst}
+	-n	Using notch (sand clock shape) or not.${txtred}[Default FALSE]${txtrst}
 	-V	Do violin plot instead of boxplot.${txtred}[Default FALSE]${txtrst}
 	-W	Do violin plot without inner boxplot.${txtred}[Default FALSE]${txtrst}
 	-j	Do jitter plot instead of boxplot.${txtred}[Default FALSE]${txtrst}
@@ -117,27 +181,27 @@ ${txtbld}OPTIONS${txtrst}:
 	-g	The levels of wrapping to set the order of each group.
 		${txtred}Normally the unique value of the column given to B in
 		a format like <"'a','b','c','d'">.${txtrst}
-	-M	The number of rows one want when -G is used.Default NULL.
+	-M	The number of rows one wants when -G is used.Default NULL.
 		${txtred}[one of -M and -N is enough]${txtrst}
-	-N	The number of columns one want when -G is used.Default NULL.
+	-N	The number of columns one wants when -G is used.Default NULL.
 		${txtred}[one of -M and -N is enough]${txtrst}
 	-k	Paramter for scales for facet.
 		[${txtred}Optional, only used when -B is given. Default each 
-		inner graph use same scale [x,y range]. 'free','free_x','free_y' 
+		inner graph use same scale [x,y range]. 
+		'free' (variable x, y ranges for each sub-plot),
+		'free_x' (variable x ranges for each sub-plot),'free_y' 
 		is accepted. ${txtrst}]
-
 	-t	Title of picture[${txtred}Default empty title${txtrst}]
 	-x	xlab of picture[${txtred}Default empty xlab${txtrst}]
 	-y	ylab of picture[${txtred}Default empty ylab${txtrst}]
 	-s	Scale y axis
 		[${txtred}Default null. Accept TRUE.
 		Also if the supplied number after -S is not 0, this
-		parameter is TRUE${txtrst}]
+		parameter will be set to TRUE${txtrst}]
 	-v	If scale is TRUE, give the following
 		scale_y_log10()[default], coord_trans(y="log10"), 
 		scale_y_continuous(trans=log2_trans()), coord_trans(y="log2"), 
-	   	or other legal
-		command for ggplot2)${txtrst}]
+	   	or other legal command for ggplot2)${txtrst}]
 	-o	Exclude outliers.
 		[${txtred}Exclude outliers or not, default FALSE means not.${txtrst}]
 	-O	The scales for you want to zoom in to exclude outliers.
@@ -146,16 +210,16 @@ ${txtbld}OPTIONS${txtrst}:
 	-S	A number to add if scale is used.
 		[${txtred}Default 0. If a non-zero number is given, -s is
 		TRUE.${txtrst}]	
-	-c	Manually set colors for each line.[${txtred}Default FALSE,
+	-c	Manually set colors for each box.[${txtred}Default FALSE,
 		meaning using ggplot2 default.${txtrst}]
-	-C	Color for each line.[${txtred}When -c is TRUE, str in given
+	-C	Color for each box.[${txtred}When -c is TRUE, str in given
 		format must be supplied, ususlly the number of colors should
 		be equal to the number of lines.
 		"'red','pink','blue','cyan','green','yellow'" or
 		"rgb(255/255,0/255,0/255),rgb(255/255,0/255,255/255),rgb(0/255,0/255,255/255),
 		rgb(0/255,255/255,255/255),rgb(0/255,255/255,0/255),rgb(255/255,255/255,0/255)"
 		${txtrst}]
-	-p	Other legal R codes for gggplot2 will be given here.
+	-p	[Lowercase p] Other legal R codes for gggplot2 will be given here.
 		[${txtres}Begin with '+' ${txtrst}]
 	-w	The width of output picture.[${txtred}Default 20${txtrst}]
 	-u	The height of output picture.[${txtred}Default 12${txtrst}] 
@@ -191,7 +255,7 @@ ist='FALSE'
 uwid=20
 vhig=12
 res=300
-notch='TRUE'
+notch='FALSE'
 par=''
 outlier='FALSE'
 out_scale=1.05
@@ -211,8 +275,10 @@ nrow='NULL'
 ncol='NULL'
 scales='fixed'
 facet_level='NA'
+gene='FALSE'
+sampleGroup='FALSE'
 
-while getopts "ha:A:b:B:c:C:d:D:e:E:f:F:g:G:M:N:k:i:I:R:j:J:l:L:m:n:o:O:p:P:r:s:S:t:u:v:V:w:W:x:y:z:" OPTION
+while getopts "ha:A:b:B:c:C:d:D:e:E:f:F:g:G:M:N:k:i:I:R:j:J:l:L:m:n:o:O:p:P:q:Q:r:s:S:t:u:v:V:w:W:x:y:z:" OPTION
 do
 	case $OPTION in
 		h)
@@ -251,6 +317,12 @@ do
 			;;
 		g)
 			facet_level=$OPTARG
+			;;
+		q)
+			gene=$OPTARG
+			;;
+		Q)
+			sampleGroup=$OPTARG
 			;;
 		M)
 			nrow=$OPTARG
@@ -359,7 +431,7 @@ fi
 
 mid='.boxplot'
 
-if test "${melted}" == "FALSE"; then
+if test "${melted}" == "FALSE" && test "${sampleGroup}" == "FALSE"; then
 	if test "${value}" != "value" || test "${variable}" != "variable"; then
 		value="value"
 		variable="variable"
@@ -370,6 +442,10 @@ fi
 
 if test "${xvariable}" == ""; then
 	xvariable=${variable}
+fi
+
+if test "${gene}" != "FALSE"; then
+	value="${gene}"
 fi
 
 if test "${value}" != "value" || test "${variable}" != "variable"; then
@@ -388,6 +464,10 @@ fi
 if test ${y_add} -ne 0; then
 	scaleY="TRUE"
 fi
+
+#if test "${gene}" != "FALSE"; then
+#	mid=${mid}".${gene}"
+#fi
 
 if test "${scaleY}" == "TRUE"; then
 	mid=${mid}'.scaleY'
@@ -435,19 +515,28 @@ if(! $melted){
 	ID_var <- c("${ID_var}")
 	ID_var <- ID_var[ID_var!=""]
 	data <- read.table(file="${file}", sep="\t", header=$header,
-	row.names=1, quote="")
-	if ("$xvariable" != "${variable}"){
-		if (length(ID_var) > 0){
-			ID_var <- c(ID_var, "${xvariable}")
-		} else {
-			ID_var <- c("${xvariable}")
+	row.names=1, quote="", check.names=F)
+	if ("${gene}" != "FALSE") {
+		data_m <- as.data.frame(t(data["${gene}", ]))
+		data_m\$sample = rownames(data_m)
+		if ("${sampleGroup}" != "FALSE"){
+			sampleGroup <- read.table("${sampleGroup}",sep="\t",header=1,check.names=F,row.names=1)
+			data_m <- merge(data_m, sampleGroup, by="row.names")
 		}
-		data_m <- melt(data, id.vars=ID_var)
 	} else {
-		if (length(ID_var) > 0){
+		if ("$xvariable" != "${variable}"){
+			if (length(ID_var) > 0){
+				ID_var <- c(ID_var, "${xvariable}")
+			} else {
+				ID_var <- c("${xvariable}")
+			}
 			data_m <- melt(data, id.vars=ID_var)
 		} else {
-			data_m <- melt(data)
+			if (length(ID_var) > 0){
+				data_m <- melt(data, id.vars=ID_var)
+			} else {
+				data_m <- melt(data)
+			}
 		}
 	}
 } else {
@@ -596,6 +685,6 @@ END
 
 if [ "$execute" == "TRUE" ]; then
 	Rscript ${file}${mid}.r
-if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
+#if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
 fi
 

@@ -77,6 +77,8 @@ ${txtbld}OPTIONS${txtrst}:
 		When -d is <both>,  <frequency> will be given here.${txtrst}]
 	-N	Scale value. All values will be divided by supplied one.
 		Default 1.
+	-L	The largest value allowed. Values other than this will be set as this value.
+		${bldred}[Default Inf]${txtrst}
 	-s	Variable name for facet.[${txtred}Optional, the name of one
 		column representing a group should be given if group
 		information is needed. Here 'set' can be given if you want to
@@ -205,8 +207,9 @@ facet_order=''
 facet_scale='fixed'
 j_facet='haha'
 j_facet_order=''
+largest='Inf'
 
-while getopts "hf:m:M:N:t:a:x:b:l:D:d:V:A:g:G:j:J:H:I:W:k:P:y:c:C:B:X:Y:R:s:S:w:u:r:E:p:z:v:e:i:" OPTION
+while getopts "hf:m:M:N:t:a:x:b:l:D:d:V:A:g:G:j:J:H:I:W:L:k:P:y:c:C:B:X:Y:R:s:S:w:u:r:E:p:z:v:e:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -248,6 +251,9 @@ do
 			;;
 		J)
 			j_facet=$OPTARG
+			;;
+		L)
+			largest=$OPTARG
 			;;
 		H)
 			j_facet_order=$OPTARG
@@ -380,9 +386,8 @@ if(! $melted){
 if(${scale} != 1) {
 	data_m\$value <- data_m\$value/${scale}
 }
-
-if ("${level}" != ""){
-	level_i <- c(${level})
+level_i <- c(${level})
+if (length(level_i) > 1){
 	data_m\$variable <- factor(data_m\$variable, levels=level_i)
 } 
 #else if (! ${melted}){
@@ -390,17 +395,20 @@ if ("${level}" != ""){
 #	ordered=T)
 #}
 
-if ("${facet_order}" != ""){
+facet_order_i <- c(${facet_order})
+if (length(facet_order_i) > 1){
 	data_m\$${facet} <- factor(data_m\$${facet},
-	levels=c(${facet_order}))
+	levels=facet_order_i)
 }
 
+j_facet_order_i <- c(${j_facet_order})
 
-if ("${j_facet_order}" != ""){
+if (length(j_facet_order_i) > 1){
 	data_m\$${j_facet} <- factor(data_m\$${j_facet},
-	levels=c(${j_facet_order}))
+	levels=j_facet_order_i)
 }
 
+data_m\$value[data_m\$value>$largest] <- $largest
 
 p <- ggplot(data_m, aes(x=value))
 

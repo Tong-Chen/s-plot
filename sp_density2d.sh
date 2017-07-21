@@ -429,7 +429,7 @@ if ("${x_type}" == "numeric"){
 ${facet_o}
 
 p = ggplot(data_m, aes($xvariable, value)) + 
-	stat_density_2d(aes(alpha=..level..)) 
+	stat_density_2d(aes(alpha=..level.., group=1)) 
 	#geom_density_2d(aes(color="grey")) 
 
 p = p + xlab("$xlab") + ylab("$ylab") + theme_bw() + labs(title="${title}") +
@@ -450,12 +450,13 @@ p <- p + theme(legend.key=element_blank())
 if (${smooth}){
 	if ("${line_size}" != ""){
 		#p <- p + stat_smooth(method="${smooth_method}", se=FALSE,
-		p = p + geom_smooth(data=data_mean, mapping=aes(x=${xvariable}, 
-			y=data_mean, colour="blue"), method="${smooth_method}", se=F, 
+		p = p + stat_smooth(data=data_mean, mapping=aes(x=${xvariable}, 
+			y=data_mean, colour="blue", group=1), method="${smooth_method}", se=F, 
 			size=${line_size})
 	}else{
-		p = p + geom_smooth(data=data_mean, mapping=aes(x=${xvariable}, 
-			y=data_mean, colour="blue"), method="${smooth_method}", se=F) 
+		#p = p + geom_smooth(data=data_mean, mapping=aes(x=${xvariable}, 
+		p = p + stat_smooth(data=data_mean, mapping=aes(x=${xvariable}, 
+			y=data_mean, colour="blue", group=1), method="${smooth_method}", se=F) 
 	}	
 }else{
 	if ("${line_size}" != ""){
