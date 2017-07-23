@@ -1,0 +1,19 @@
+Term	Sample	count	p_value
+hsa04740:Olfactory	transduction	b	379	6.48E-13
+hsa04080:Neuroactive	ligand-receptor	interaction	b	256	5.21E-06
+hsa04060:Cytokine-cytokine	receptor	interaction	b	262	8.62E-04
+hsa00830:Retinol	metabolism	b	54	0.124538325
+hsa04062:Chemokine	signaling	pathway	b	187	0.913682422
+hsa00120:Primary	bile	acid	biosynthesis	b	16	0.995946178
+hsa04614:Renin-angiotensin	system	b	17	0.998465518
+hsa04640:Hematopoietic	cell	lineage	b	86	0.99955116
+hsa04650:Natural	killer	cell	mediated	cytotoxicity	b	133	0.999599558
+hsa04740:Olfactory	transduction	a	379	6.48E-13
+hsa04080:Neuroactive	ligand-receptor	interaction	a	256	5.21E-06
+hsa04060:Cytokine-cytokine	receptor	interaction	a	262	8.62E-04
+hsa00830:Retinol	metabolism	a	54	0.124538325
+hsa04062:Chemokine	signaling	pathway	a	187	0.913682422
+hsa00120:Primary	bile	acid	biosynthesis	a	16	0.995946178
+hsa04614:Renin-angiotensin	system	a	17	0.998465518
+hsa04640:Hematopoietic	cell	lineage	a	86	0.99955116
+hsa04650:Natural	killer	cell	mediated	cytotoxicity	a	133	0.999599558

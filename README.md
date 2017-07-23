@@ -18,11 +18,13 @@ ${filename} colorBar
 
 #### Lines
 ${filename} lines
+${filename} lines_lm
 
 #### Dots
 ${filename} pca
 ${filename} scatterplot
 ${filename} scatterplot2
+${filename} scatterplot3d
 ${filename} scatterplotColor
 ${filename} scatterplotContour
 ${filename} scatterplotLotsData
@@ -33,6 +35,7 @@ ${filename} contourPlot
 #### Distribution
 ${filename} areaplot
 ${filename} boxplot
+${filename} density2d
 ${filename} densityPlot
 ${filename} densityHistPlot
 ${filename} histogram
@@ -48,11 +51,20 @@ ${filename} heatmapM
 ${filename} heatmap.2
 ${filename} pheatmap
 ${filename} pretteyHeatmap
+${filename} areaplot.new
+
+### ecrichplot
+${filename} enrichmentPlot
 
 #### Others
 ${filename} volcano
 ${filename} vennDiagram
 ${filename} upsetView
+
+and other tools:
+${filename} png2eps
+${filename} boxplot.statistics
+${filename} colorLegend
 ```
 
 #### Basic test data set

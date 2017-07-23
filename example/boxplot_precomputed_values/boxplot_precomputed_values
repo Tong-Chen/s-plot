@@ -1,0 +1,5 @@
+Samp	minimum	maximum	lower_quantile	median	upper_quantile	Set
+A	1	10	2	5	7	cl1
+B	1	10	2	5	7	cl2
+C	1	10	2	5	7	cl1
+D	1	10	2	5	7	cl2

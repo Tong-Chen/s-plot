@@ -1,0 +1,5 @@
+ID	type	batch	condition
+Samp1	R	a	Treat
+Samp2	S	b	Treat
+Samp3	S	a	Control
+Samp4	R	b	Control
