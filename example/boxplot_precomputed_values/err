@@ -1,0 +1,4 @@
+sh ../../bin/sp_boxplot_precomputed_values.sh -f boxplot_precomputed_values -a Samp
+Error in factor(variable) : 找不到对象'variable'
+Calls: ggsave ... f -> <Anonymous> -> f -> lapply -> FUN -> FUN -> factor
+停止执行

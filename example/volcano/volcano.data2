@@ -1,0 +1,7 @@
+id	log2fc	-log10(pvalue)	significant
+1	0	0	TRUE
+1	0	0	TRUE
+3	0	0	TRUE
+1	0	0	FALSE
+2	0	0	FALSE
+1	0	0	FALSE

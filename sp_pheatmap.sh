@@ -8,48 +8,10 @@ cat <<EOF
 ${txtcyn}
 
 ***CREATED BY Chen Tong (chentong_biology@163.com)***
+***FURTHER MODIFY BY Lin Dechun (lindechun@genomics.cn)***
+## add -o and auto decide width and height.
 
-----Matrix file--------------
-Name	T0_1	T0_2	T0_3	T4_1	T4_2
-TR19267|c0_g1|CYP703A2	1.431	0.77	1.309	1.247	0.485
-TR19612|c1_g3|CYP707A1	0.72	0.161	0.301	2.457	2.794
-TR60337|c4_g9|CYP707A1	0.056	0.09	0.038	7.643	15.379
-TR19612|c0_g1|CYP707A3	2.011	0.689	1.29	0	0
-TR35761|c0_g1|CYP707A4	1.946	1.575	1.892	1.019	0.999
-TR58054|c0_g2|CYP707A4	12.338	10.016	9.387	0.782	0.563
-TR14082|c7_g4|CYP707A4	10.505	8.709	7.212	4.395	6.103
-TR60509|c0_g1|CYP707A7	3.527	3.348	2.128	3.257	2.338
-TR26914|c0_g1|CYP710A1	1.899	1.54	0.998	0.255	0.427
-----Matrix file--------------
-
-----Row annorarion file --------------
-------1. At least two columns--------------
-------2. The first column should be the same as the first column in
-         matrix (order does not matter)--------------
-Name	Clan	Family
-TR19267|c0_g1|CYP703A2	CYP71	CYP703
-TR19612|c1_g3|CYP707A1	CYP85	CYP707
-TR60337|c4_g9|CYP707A1	CYP85	CYP707
-TR19612|c0_g1|CYP707A3	CYP85	CYP707
-TR35761|c0_g1|CYP707A4	CYP85	CYP707
-TR58054|c0_g2|CYP707A4	CYP85	CYP707
-TR14082|c7_g4|CYP707A4	CYP85	CYP707
-TR60509|c0_g1|CYP707A7	CYP85	CYP707
-TR26914|c0_g1|CYP710A1	CYP710	CYP710
-----Row annorarion file --------------
-
-----Column annorarion file --------------
-------1. At least two columns--------------
-------2. The first column should be the same as the first row in
----------matrix (order does not matter)--------------
-Name	Sample
-T0_1	T0
-T0_2	T0
-T0_3	T0
-T4_1	T4
-T4_2	T4
-----Column annorarion file --------------
-
+## add -o
 
 Usage:
 
@@ -78,7 +40,7 @@ ${txtbld}OPTIONS${txtrst}:
 	-c	Clustering method, Default "complete". 
 		Accept "ward.D", "ward.D2","single", "average" (=UPGMA), 
 		"mcquitty" (=WPGMA), "median" (=WPGMC) or "centroid" (=UPGMC)
-	-C	Color vector. 
+	-C	Color vector.
 		${bldred}Default pheatmap_default. 
 		Aceept a vector containing multiple colors such as 
 		<'c("white", "blue")'> will be transferred 
@@ -123,24 +85,18 @@ ${txtbld}OPTIONS${txtrst}:
 		[${txtred}Default NA${txtrst}]
 	-Q	A file to specify col-annotation with format described above.
 		[${txtred}Default NA${txtrst}]
-	-Z	Annotation color. One can only specify color for each column of row-annotation 
-		or col-annotation. For example, 'class' (two values: C1, C2) and 
-		'group' (two values:G1, G2) are two row-annotations, 
-		'type' (three values, T1, T2, T3) and 'size' (four values, 1, 2, 3, 4) 
-		are two col-annoations. 
-		Colors can be specified as <'class=c(C1="blue", C2="yellow"), size=c("white", "green"), type=c(T1="pink", T2="black", T3="cyan")'>. 
-		In R, one can use <colors()> function to get names of all available colors.
-	-u	The width of output picture.[${txtred}Default 20${txtrst}]
-	-v	The height of output picture.[${txtred}Default 20${txtrst}] 
+	-u	The width of output picture.[${txtred}Default auto calculate${txtrst}]
+	-v	The height of output picture.[${txtred}Default auto calculate${txtrst}] 
 	-E	The type of output figures.[${txtred}Default pdf, accept
 		eps/ps, tex (pictex), png, jpeg, tiff, bmp, svg and wmf)${txtrst}]
 	-r	The resolution of output picture.[${txtred}Default 300 ppi${txtrst}]
 	-F	Font size [${txtred}Default 14${txtrst}]
 	-p	Preprocess data matrix to avoid 'STDERR 0 in cor(t(mat))'.
 		Lowercase <p>.
-		[${txtred}Default TRUE${txtrst}]
+		[${txtred}Default FALSE${txtrst}]
 	-e	Execute script (Default) or just output the script.
 		[${bldred}Default TRUE${txtrst}]
+	-o	path of Output.[Default Current path, Optinal]
 	-i	Install the required packages. Normmaly should be TRUE if this is 
 		your first time run s-plot.[${bldred}Default FALSE${txtrst}]
 EOF
@@ -165,15 +121,14 @@ execute='TRUE'
 ist='FALSE'
 legend=' '
 na_color='grey'
-uwid=20
-vhig=20
+uwid='FALSE'  ## modify by lindechun, old: 20
+vhig='FALSE'  ## modify by lindechun, old: 20
 bias=1
 res=300
 fontsize=14
 ext='pdf'
 xcol='green'
 ycol='red'
-annotation_colors='NA'
 mcol='yellow'
 mid_value_use='FALSE'
 mid_value='Inf'
@@ -188,10 +143,11 @@ generateNA='FALSE'
 digits='FALSE'
 annotation_row='NA'
 annotation_col='NA'
-preprocess='TRUE'
+preprocess='FALSE'
 minimum='-Inf'
+output=$(pwd)
 
-while getopts "hf:t:a:A:b:B:H:R:c:D:T:p:I:L:d:k:u:v:E:r:F:P:Q:x:y:M:Z:X:s:m:N:Y:Z:G:C:O:e:i:" OPTION
+while getopts "hf:t:a:A:b:B:H:R:c:D:T:p:I:L:d:k:u:v:E:r:F:P:Q:x:y:M:Z:X:s:m:N:Y:G:C:O:e:o:i:" OPTION
 do
 	case $OPTION in
 		h)
@@ -231,9 +187,6 @@ do
 			;;
 		I)
 			clustering_distance_cols=$OPTARG
-			;;
-		Z)
-			annotation_colors=$OPTARG
 			;;
 		p)
 			preprocess=$OPTARG
@@ -313,6 +266,9 @@ do
 		e)
 			execute=$OPTARG
 			;;
+		o)
+			output=$OPTARG
+			;;
 		i)
 			ist=$OPTARG
 			;;
@@ -346,10 +302,12 @@ if test "${preprocess}" == "TRUE"; then
 	dealWithSTD0.py -i ${file}".nostd0" >${file}
 fi
 
-cat <<END >${file}${mid}.r
+cat <<END >$output/$(basename $file)${mid}.r
+source('$(cd `dirname $0`; pwd)/rFunction.R')
 
 if ($ist){
-	install.packages("pheatmap", repo="http://cran.us.r-project.org")
+	installp("pheatmap",force = F)
+	# install.packages("pheatmap", repo="http://cran.us.r-project.org")
 }
 
 library(grid)
@@ -495,33 +453,60 @@ if ("${color_type}" == "function"){
 	color_vector <- ${color_vector}
 }
 
-ann_colors = list(${annotation_colors})
+### control width and height add by lin dechun
 
-if (ann_colors[1][1] == "NA") {
-	ann_colors = NA
-} 
+if (!is.numeric(${uwid})) {
+	if ("${annotation_row}" != "NA" || "${annotation_col}" != "NA") {
+		temp1=ncol(data)+max(sapply(rownames(data),nchar))/10+4
+	} else {
+		temp1=ncol(data)+max(sapply(rownames(data),nchar))/10+2
+	}
 
-pheatmap(data, kmean_k=$kclu, color=color_vector, 
-scale="${scale}", border_color=NA,
-cluster_rows=${cluster_rows}, cluster_cols=${cluster_cols}, 
-breaks=legend_breaks, clustering_method="${clustering_method}",
-clustering_distance_rows="${clustering_distance_rows}", 
-clustering_distance_cols="${clustering_distance_cols}", 
-legend_breaks=legend_breaks, show_rownames=${ytics}, show_colnames=${xtics}, 
-main="$title", annotation_col=annotation_col,
-annotation_row=annotation_row, 
-annotation_colors = ann_colors, 
-fontsize=${fontsize}, filename="${file}${mid}.${ext}", width=${uwid},
-height=${vhig})
-	
+	temp2=nrow(data)+max(sapply(colnames(data),nchar))/10
+
+	if (temp1 > temp2){
+		temp2=temp2*(8/temp1)
+		temp1=8
+	} else{
+		temp1=temp1*(8/temp2)
+		temp2=8
+	}
+
+	pheatmap(data, kmean_k=$kclu, color=color_vector, 
+	scale="${scale}", border_color=NA,
+	cluster_rows=${cluster_rows}, cluster_cols=${cluster_cols}, 
+	breaks=legend_breaks, clustering_method="${clustering_method}",
+	clustering_distance_rows="${clustering_distance_rows}", 
+	clustering_distance_cols="${clustering_distance_cols}", 
+	legend_breaks=legend_breaks, show_rownames=${ytics}, show_colnames=${xtics}, 
+	main="$title", annotation_col=annotation_col,
+	annotation_row=annotation_row, 
+	fontsize=${fontsize}, filename="$output/$(basename $file)${mid}.${ext}", width=temp1,
+	height=temp2)
+}else{
+	pheatmap(data, kmean_k=$kclu, color=color_vector, 
+	scale="${scale}", border_color=NA,
+	cluster_rows=${cluster_rows}, cluster_cols=${cluster_cols}, 
+	breaks=legend_breaks, clustering_method="${clustering_method}",
+	clustering_distance_rows="${clustering_distance_rows}", 
+	clustering_distance_cols="${clustering_distance_cols}", 
+	legend_breaks=legend_breaks, show_rownames=${ytics}, show_colnames=${xtics}, 
+	main="$title", annotation_col=annotation_col,
+	annotation_row=annotation_row, 
+	fontsize=${fontsize}, filename="$output/$(basename $file)${mid}.${ext}", width=${uwid},
+	height=${vhig})
+}
+
+cat(system("/bin/rm -f Rplots.pdf",intern=TRUE))
 
 END
 
+
 if [ "$execute" == "TRUE" ]; then
-	Rscript ${file}${mid}.r
-	if [ "$?" == "0" ]; then 
-		#/bin/rm -f ${file}${mid}.r
-		/bin/rm -f Rplots.pdf	
+	Rscript $output/$(basename $file)${mid}.r
+	if [ "$?" == "0" ]; then
+		/bin/rm -f $output/$(basename $file)${mid}.r
+		/bin/rm -f Rplots.pdf
 	fi
 fi
 

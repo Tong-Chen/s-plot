@@ -8,6 +8,8 @@ cat <<EOF
 ${txtcyn}
 
 ***CREATED BY Chen Tong (chentong_biology@163.com)***
+***FURTHER MODIFY BY Lin Dechun (lindechun@genomics.cn)***
+## new: boxplot median line; beautiful plot; auto adapt canvas(width and height); modify code logic; new functions
 
 Usage:
 
@@ -16,93 +18,6 @@ $0 options${txtrst}
 ${bldblu}Function${txtrst}:
 
 This script is used to do boxplot using ggplot2.
-
-fileformat for -f (suitable for data extracted from one sample, the
-number of columns is unlimited. Column 'Set' is not necessary unless
-you have multiple groups)
-
-Matrix1
-
-Name	2cell_1	2cell_2	2cell_3	2cell_4	2cell_5	2cell_6	4cell_1	4cell_2	4cell_3	4cell_4	4cell_5	4cell_6	zygote_1	zygote_2	zygote_3	zygote_4	zygote_5	zygote_6
-A	8	13	14	9	19	12	3.2	5.2	5.6	3.6	7.6	4.8	0.8	1.3	1.4	0.9	1.9	1.2
-B	8	13	14	9	19	12	3.2	5.2	5.6	3.6	7.6	4.8	0.8	1.3	1.4	0.9	1.9	1.2
-C	8	13	14	9	19	12	3.2	5.2	5.6	3.6	7.6	4.8	0.8	1.3	1.4	0.9	1.9	1.2
-D	8	13	14	9	19	12	3.2	5.2	5.6	3.6	7.6	4.8	0.8	1.3	1.4	0.9	1.9	1.2
-E	8	13	14	9	19	12	3.2	5.2	5.6	3.6	7.6	4.8	0.8	1.3	1.4	0.9	1.9	1.2
-F	8	13	14	9	19	12	3.2	5.2	5.6	3.6	7.6	4.8	0.8	1.3	1.4	0.9	1.9	1.2
-G	8	13	14	9	19	12	3.2	5.2	5.6	3.6	7.6	4.8	0.8	1.3	1.4	0.9	1.9	1.2
-H	8	13	14	9	19	12	3.2	5.2	5.6	3.6	7.6	4.8	0.8	1.3	1.4	0.9	1.9	1.2
-I	8	13	14	9	19	12	3.2	5.2	5.6	3.6	7.6	4.8	0.8	1.3	1.4	0.9	1.9	1.2
-
-Matrix2
-
-Gene	hmC	expr	Set
-NM_001003918_26622	0	83.1269257376101	TP16
-NM_001011535_3260	0	0	TP16
-NM_001012640_14264	0	0	TP16
-NM_001012640_30427	0	0	TP16
-NM_001003918_2662217393_30486	0	0	TP16
-NM_001017393_30504	0	0	TP16
-NM_001025241_30464	0	0	TP16
-NM_001017393_30504001025241_30513	0	0	TP16
-
-sampleGroupFile 
-# (TAB separated, first column corresponds to first row of matrix)
-# Group should be gave to <-F>
-Sample	Group
-zygote_1	zygote
-zygote_2	zygote
-zygote_3	zygote
-zygote_4	zygote
-zygote_5	zygote
-zygote_6	zygote
-2cell_1	2cell
-2cell_2	2cell
-2cell_3	2cell
-2cell_4	2cell
-2cell_5	2cell
-2cell_6	2cell
-4cell_1	4cell
-4cell_2	4cell
-4cell_3	4cell
-4cell_4	4cell
-4cell_5	4cell
-4cell_6	4cell
-
-For file using "Set" column, you can use 
-boxplot.onefile.sh -f file -a Set 
-
-fileformat when -m is true
-#Default we use string "value" and "variable" to represent the data
-#column and sub-class column. If you have other strings as column
-#names, please give them to -d and -F.
-#The "Set" column is optional.
-#If you do have several groups, they can put at the "Set" column 
-#with "Set" or other string as labels. The label should be given
-#to parameter -a.
-#Actually this format is the melted result of last format.
-
-Matrix_melted
-
-Gene	Sample	Group	Expr
-A	zygote_1	zygote	0.8
-A	zygote_2	zygote	1.3
-A	zygote_3	zygote	1.4
-A	zygote_4	zygote	0.9
-A	zygote_5	zygote	1.9
-A	zygote_6	zygote	1.2
-A	2cell_1	2cell	8
-A	2cell_2	2cell	13
-A	2cell_3	2cell	14
-A	2cell_4	2cell	9
-A	2cell_5	2cell	19
-A	2cell_6	2cell	12
-A	4cell_1	4cell	3.2
-A	4cell_2	4cell	5.2
-A	4cell_3	4cell	5.6
-A	4cell_4	4cell	3.6
-A	4cell_5	4cell	7.6
-A	4cell_6	4cell	4.8
 
 ${txtbld}OPTIONS${txtrst}:
 	-f	Data file (with header line, the first row is the
@@ -115,11 +30,11 @@ ${txtbld}OPTIONS${txtrst}:
 		${bldred}[Default "value" represents the column named "value".
 		This parameter can only be set when -m is TRUE.]${txtrst}
 	-F	The column represents the variable information, meaning legend_variable.
-		If no-subclass of X-variavle, this will be treated as X-axis variable.
+		If no-subclass of X-variavle, this will be used X-axis variable(-a).
 		${bldred}[Default "variable" represents the column named "variable". 
 		This parameter can only be set when -m is TRUE.]${txtrst}
 	-I	Other columns you want to treat as ID variable columns except
-		the one given to -a. Not used when <-m TRUE>.
+		the one given to -a. Not used when <-m TRUE> or -q be seted.
 		${bldred}[Default empty string, accept comma separated strings
 		like "'Id1','Id2','Id3'" or single string "id1"]${txtrst}
 	-a	Name for x-axis variable
@@ -127,8 +42,7 @@ ${txtbld}OPTIONS${txtrst}:
 		for data without 'Set' column. For the given example, 
 		'Group' which represents groups of each gene should be 
 		supplied to this parameter.
-		This parameter can only be set when -m is TRUE.
-		${txtrst}]
+		This parameter must set when -q is not FALSE or -m is TRUE.${txtrst}]
 	-b	Rotation angle for x-axis value(anti clockwise)
 		${bldred}[Default 0]${txtrst}
 	-R	Rotate the plot from vertical to horizontal. 
@@ -166,9 +80,9 @@ ${txtbld}OPTIONS${txtrst}:
 		"c(-1, 0, 1, 2, 5, 10)" will generate (-1,0],(0,1]...(5,10]]	
 	-n	Using notch (sand clock shape) or not.${txtred}[Default FALSE]${txtrst}
 	-V	Do violin plot instead of boxplot.${txtred}[Default FALSE]${txtrst}
-	-W	Do violin plot without inner boxplot.${txtred}[Default FALSE]${txtrst}
+	-W	Do violin plot overlay with jitter.${txtred}[Default FALSE]${txtrst}
 	-j	Do jitter plot instead of boxplot.${txtred}[Default FALSE]${txtrst}
-	-J	Do jitter plot overlay with violinplot or boxplot or both.${txtred}[Default FALSE]${txtrst}
+	-J	Do boxplot plot overlay with jitter.${txtred}[Default FALSE]${txtrst}
 	-A	The value given to scale for violin plot.
 		if "area", all violins have the same area (before trimming the tails). 
 		If "count", areas are scaled proportionally to the number of observations. 
@@ -181,9 +95,9 @@ ${txtbld}OPTIONS${txtrst}:
 	-g	The levels of wrapping to set the order of each group.
 		${txtred}Normally the unique value of the column given to B in
 		a format like <"'a','b','c','d'">.${txtrst}
-	-M	The number of rows one wants when -G is used.Default NULL.
+	-M	The number of rows one wants when -G is used. Default NULL.
 		${txtred}[one of -M and -N is enough]${txtrst}
-	-N	The number of columns one wants when -G is used.Default NULL.
+	-N	The number of columns one wants when -G is used. Default NULL.
 		${txtred}[one of -M and -N is enough]${txtrst}
 	-k	Paramter for scales for facet.
 		[${txtred}Optional, only used when -B is given. Default each 
@@ -192,8 +106,8 @@ ${txtbld}OPTIONS${txtrst}:
 		'free_x' (variable x ranges for each sub-plot),'free_y' 
 		is accepted. ${txtrst}]
 	-t	Title of picture[${txtred}Default empty title${txtrst}]
-	-x	xlab of picture[${txtred}Default empty xlab${txtrst}]
-	-y	ylab of picture[${txtred}Default empty ylab${txtrst}]
+	-x	xlab of picture[${txtred}Default name for -a${txtrst}]
+	-y	ylab of picture[${txtred}Default name for -d${txtrst}]
 	-s	Scale y axis
 		[${txtred}Default null. Accept TRUE.
 		Also if the supplied number after -S is not 0, this
@@ -201,7 +115,7 @@ ${txtbld}OPTIONS${txtrst}:
 	-v	If scale is TRUE, give the following
 		scale_y_log10()[default], coord_trans(y="log10"), 
 		scale_y_continuous(trans=log2_trans()), coord_trans(y="log2"), 
-	   	or other legal command for ggplot2)${txtrst}]
+	   	or other legal command for ggplot2). should use '***'${txtrst}]
 	-o	Exclude outliers.
 		[${txtred}Exclude outliers or not, default FALSE means not.${txtrst}]
 	-O	The scales for you want to zoom in to exclude outliers.
@@ -221,11 +135,13 @@ ${txtbld}OPTIONS${txtrst}:
 		${txtrst}]
 	-p	[Lowercase p] Other legal R codes for gggplot2 will be given here.
 		[${txtres}Begin with '+' ${txtrst}]
-	-w	The width of output picture.[${txtred}Default 20${txtrst}]
-	-u	The height of output picture.[${txtred}Default 12${txtrst}] 
+	-w	The width of output picture.[${txtred}Default auto calculate${txtrst}]
+	-u	The height of output picture.[${txtred}Default auto calculate${txtrst}]
+	-K	The width of sub-box or sub-violin.[${txtred}Default 0.75${txtrst}]
 	-r	The resolution of output picture.[${txtred}Default 300 ppi${txtrst}]
 	-E	The type of output figures.[${txtred}Default pdf, accept
 		eps/ps, tex (pictex), pdf, jpeg, tiff, bmp, svg and wmf)${txtrst}]
+	-T	The self-definited theme for ggplot2, give the followding theme_classic2 [Default], theme_classic3, theme_cin.${txtrst}
 	-z	Is there a header[${bldred}Default TRUE${txtrst}]
 	-e	Execute or not[${bldred}Default TRUE${txtrst}]
 	-i	Install depeneded packages[${bldred}Default FALSE${txtrst}]
@@ -249,11 +165,13 @@ x_cut=""
 scaleY='FALSE'
 y_add=0
 scaleY_x='scale_y_log10()'
+self_theme='theme_classic2'
 header='TRUE'
 execute='TRUE'
 ist='FALSE'
-uwid=20
-vhig=12
+uwid=''
+vhig=''
+sub_box=0.75
 res=300
 notch='FALSE'
 par=''
@@ -263,11 +181,11 @@ legend_pos='right'
 color='FALSE'
 ext='pdf'
 violin='FALSE'
-violin_nb='FALSE'
+violin_jitter='FALSE'
+jitter='FALSE'
+boxplot_jitter='FALSE'
 scale_violin='width'
 ID_var=""
-jitter='FALSE'
-jitter_bp='FALSE'
 colormodel='srgb'
 rotate_plot='FALSE'
 facet='NoMeAnInGTh_I_n_G_s'
@@ -278,7 +196,7 @@ facet_level='NA'
 gene='FALSE'
 sampleGroup='FALSE'
 
-while getopts "ha:A:b:B:c:C:d:D:e:E:f:F:g:G:M:N:k:i:I:R:j:J:l:L:m:n:o:O:p:P:q:Q:r:s:S:t:u:v:V:w:W:x:y:z:" OPTION
+while getopts "ha:A:b:B:c:C:d:D:e:E:f:F:g:G:M:N:k:K:i:I:R:j:J:l:L:m:n:o:O:p:P:q:Q:r:s:S:t:T:u:v:V:w:W:x:y:z:" OPTION
 do
 	case $OPTION in
 		h)
@@ -292,13 +210,13 @@ do
 			melted=$OPTARG
 			;;
 		a)
-			xvariable=$OPTARG
+			variable=$OPTARG
 			;;
 		d)
 			value=$OPTARG
 			;;
 		F)
-			variable=$OPTARG
+			xvariable=$OPTARG
 			;;
 		I)
 			ID_var=$OPTARG
@@ -307,7 +225,7 @@ do
 			jitter=$OPTARG
 			;;
 		J)
-			jitter_bp=$OPTARG
+			boxplot_jitter=$OPTARG
 			;;
 		b)
 			xtics_angle=$OPTARG
@@ -336,6 +254,9 @@ do
 		t)
 			title=$OPTARG
 			;;
+		T)
+			self_theme=$OPTARG
+			;;
 		x)
 			xlab=$OPTARG
 			;;
@@ -361,7 +282,7 @@ do
 			violin=$OPTARG
 			;;
 		W)
-			violin_nb=$OPTARG
+			violin_jitter=$OPTARG
 			;;
 		A)
 			scale_violin=$OPTARG
@@ -411,6 +332,9 @@ do
 		z)
 			header=$OPTARG
 			;;
+		K)
+			sub_box=$OPTARG
+			;;
 		e)
 			execute=$OPTARG
 			;;
@@ -429,7 +353,7 @@ if [ -z $file ]; then
 	exit 1
 fi
 
-mid='.boxplot'
+# mid='.boxplot'
 
 if test "${melted}" == "FALSE" && test "${sampleGroup}" == "FALSE"; then
 	if test "${value}" != "value" || test "${variable}" != "variable"; then
@@ -440,9 +364,50 @@ files. We will ignore this setting and not affect the result."
 	fi
 fi
 
-if test "${xvariable}" == ""; then
+if test "${melted}" == "FALSE" && test "${gene}" != "FALSE";then
+	if test "${variable}" == "variable";then
+		variable="Sample"
+	fi
+fi
+
+if test "${melted}" == "TRUE" && test "${variable}" == "variable"; then
+	echo "If '-m TRUE' be set, then -a should be set"
+	exit 1
+fi
+
+if test -z "${xvariable}"; then
 	xvariable=${variable}
 fi
+
+## add by lindechun
+if test "${xlab}" == " ";then
+	xlab=${variable}
+fi
+
+if test "${ylab}" == " ";then
+	ylab=${value}
+fi
+
+b=0
+plot_judge=($violin $violin_jitter $jitter $boxplot_jitter)
+
+for i in ${plot_judge[@]}
+do
+    if [ $i != 'FALSE' ];then
+        ((b++))
+    fi
+done
+
+if [ $b -gt 1 ];then
+	echo "You can only choose one of these (-V -W -j -J)"
+	exit 1
+fi
+
+if [ $b -eq 0 ];then
+	mid=${mid}'.boxplot'
+fi
+
+## add by lindechun
 
 if test "${gene}" != "FALSE"; then
 	value="${gene}"
@@ -451,11 +416,10 @@ fi
 if test "${value}" != "value" || test "${variable}" != "variable"; then
 	mid=${mid}'.'${value}_${variable}
 fi
-	
-#if test "${ID_var}" != ""; then
-#	ID_var=${ID_var}
-#fi
 
+if test "${variable}" != "${xvariable}"; then
+	mid=${mid}'_'${xvariable}
+fi
 
 if test "${outlier}" == "TRUE"; then
 	mid=${mid}'.noOutlier'
@@ -476,215 +440,390 @@ fi
 if test "${violin}" == "TRUE"; then
 	mid=${mid}'.violin'
 fi
-if test "${violin_nb}" == "TRUE"; then
-	mid=${mid}'.violin_nb'
+
+if test "${violin_jitter}" == "TRUE"; then
+	mid=${mid}'.violin_jitter'
 fi
 
 if test "${jitter}" == "TRUE"; then
 	mid=${mid}'.jitter'
 fi
 
-if test "${jitter_bp}" == "TRUE"; then
-	mid=${mid}'.jitter_bp'
+if test "${boxplot_jitter}" == "TRUE"; then
+	mid=${mid}'.boxplot_jitter'
 fi
 
-. `dirname $0`/sp_configure.sh
+if test "${facet}" != "NoMeAnInGTh_I_n_G_s"; then
+	mid=${mid}'.facet_wrap'
+fi
 
-cat <<END >${file}${mid}.r
+function ggplot2_configure {
 
-if ($ist){
-	install.packages("ggplot2", repo="http://cran.us.r-project.org")
-	install.packages("reshape2", repo="http://cran.us.r-project.org")
-	install.packages("scales", repo="http://cran.us.r-project.org")
-	if(${jitter_bp}){
-		install.packages("ggbeeswarm", repo="http://cran.us.r-project.org")
+cat <<END >>${file}${mid}.r
+
+#Configure the canvas
+
+p <- p + ${self_theme}()
+
+#Correcting location of x-aixs label
+p <- Xlable_angle_correct(p, ${xtics_angle})
+
+#Set the position of legend
+top='top'
+botttom='bottom'
+left='left'
+right='right'
+none='none'
+legend_pos_par <- ${legend_pos}
+
+p <- p + theme(legend.position=legend_pos_par)
+
+#add additional ggplot2 supported commands
+
+p <- p${par}
+
+# output pictures
+w_auto_temp=length(levels(data_m\$${variable}))
+
+ w_h_auto <- Canvas_size(w_auto_temp, "${variable}", "${xvariable}", ${rotate_plot}, "${legend_pos}")
+ w_auto <- w_h_auto[1]
+ h_auto <- w_h_auto[2]
+
+if ("${facet}" != "NoMeAnInGTh_I_n_G_s"){
+	if ("${nrow}" != 'NULL') {
+		h_auto=h_auto*${nrow}
+	}
+	if ("${ncol}" != 'NULL') {
+		w_auto=w_auto*${ncol}
+	}
+	if ("${nrow}" == 'NULL' && "${ncol}" == 'NULL'){
+		w_auto=w_auto*3
+		h_auto=h_auto*0.7*length(levels(data_m\$${facet}))/3
 	}
 }
 
-if(${jitter_bp}){
-	library(ggbeeswarm)
-}else if(${jitter}){
+
+# Control margin of plot by exist status of title, xlab, ylab
+if ("$title" == "") {
+	p <- p+ theme(plot.title=element_blank())
+}
+if ("$xlab" == "") {
+	p <- p+ theme(axis.title.x=element_blank())
+}
+if ("$ylab" == "") {
+	p <- p+ theme(axis.title.y=element_blank())
+}
+
+## savefig
+if ("$uwid" != ''){
+	if (!${rotate_plot}){
+		Savefig("${file}${mid}.${ext}", p, $uwid, $vhig, "$res", "${ext}")
+	}else{
+		Savefig("${file}${mid}.${ext}", p, $vhig, $uwid, "$res", "${ext}")
+	}
+}else{
+	if (!${rotate_plot}){
+		Savefig("${file}${mid}.${ext}", p, w_auto, h_auto, "$res", "${ext}")
+	}else{
+		Savefig("${file}${mid}.${ext}", p, h_auto, w_auto, "$res", "${ext}")
+	}
+}
+END
+}
+
+cat <<END >${file}${mid}.r
+source('$(cd `dirname $0`; pwd)/rFunction.R')
+
+if ($ist){
+	installp(c("ggplot2", "reshape2", "scales","ggbeeswarm","dplyr"))
+}
+
+if(${boxplot_jitter} || ${violin_jitter} || ${jitter}){
 	library(ggbeeswarm)
 }
+# else if(${jitter}){
+# 	library(ggbeeswarm)
+# }
 
 library(ggplot2)
 library(reshape2)
 library(scales)
+library(dplyr)
 
-if(! $melted){
-	ID_var <- c("${ID_var}")
-	ID_var <- ID_var[ID_var!=""]
-	data <- read.table(file="${file}", sep="\t", header=$header,
-	row.names=1, quote="", check.names=F)
-	if ("${gene}" != "FALSE") {
-		data_m <- as.data.frame(t(data["${gene}", ]))
-		data_m\$sample = rownames(data_m)
-		if ("${sampleGroup}" != "FALSE"){
-			sampleGroup <- read.table("${sampleGroup}",sep="\t",header=1,check.names=F,row.names=1)
-			data_m <- merge(data_m, sampleGroup, by="row.names")
-		}
-	} else {
-		if ("$xvariable" != "${variable}"){
-			if (length(ID_var) > 0){
-				ID_var <- c(ID_var, "${xvariable}")
-			} else {
-				ID_var <- c("${xvariable}")
-			}
-			data_m <- melt(data, id.vars=ID_var)
-		} else {
-			if (length(ID_var) > 0){
-				data_m <- melt(data, id.vars=ID_var)
-			} else {
-				data_m <- melt(data)
-			}
-		}
+##### add by lindechun
+
+s_boxplot_median <- function(dat, more_v=TRUE){
+
+  ## errorbar(replace median line of boxplot or violin) adapt to sub-xvariable
+
+  errorbarWidth <- function(x){
+    y<-mean(unique(x))
+    dfd <- function(i,y){
+      (i-y)*($sub_box/length(unique(x)))
+    }
+    cc<-sapply(x,dfd,y)
+    return(cc)
+  }
+  if (more_v){
+    temp1 <- mutate(dat,a1=as.integer(${variable}))
+    temp1 <- mutate(temp1,a2=as.integer(${xvariable}))
+    temp1\$a3 <- temp1\$a1+errorbarWidth(temp1\$a2)
+    temp2 <- temp1 %>% group_by(a3) %>% summarise(median=median(${value}))
+    
+    ## force boxplots from geom_boxplot to constant width
+    ## Ref: https://stackoverflow.com/questions/16705129/force-boxplots-from-geom-boxplot-to-constant-width
+
+    if ("${facet}" != "NoMeAnInGTh_I_n_G_s") {
+    	tab <- xtabs(~${xvariable}+${variable}+${facet},temp1)
+	    tmp <- temp1[c("${variable}","${xvariable}","${value}","${facet}")]
+    }else{
+	    tab <- xtabs(~${xvariable}+${variable},temp1)
+	    tmp <- temp1[c("${variable}","${xvariable}","${value}")]
 	}
-} else {
-	data_m <- read.table(file="$file", sep="\t",
-	header=$header, quote="")
+
+    idx <- which(tab==0,arr.ind=TRUE)
+    
+    if(dim(idx)[1] != 0){
+      fakeLines <- apply(idx, 1, function(x){
+        
+        if (is.integer(dimnames(tab)[[2]])){
+          fake_1 <- as.integer(dimnames(tab)[[2]][x[2]])
+        }else{
+          fake_1 <- dimnames(tab)[[2]][x[2]]
+        }
+        
+        if (is.integer(dimnames(tab)[[1]])){
+          fake_2 <- as.integer(dimnames(tab)[[1]][x[1]])
+        }else{
+          fake_2 <- dimnames(tab)[[1]][x[1]]
+        }
+        if ("${facet}" != "NoMeAnInGTh_I_n_G_s") {
+		    if (is.integer(dimnames(tab)[[1]])){
+		      fake_3 <- as.integer(dimnames(tab)[[3]][x[3]])
+		    }else{
+		      fake_3 <- dimnames(tab)[[3]][x[3]]
+		    }
+		    setNames(data.frame(fake_1,fake_2,min(temp1\$${value})-0.06*(max(temp1\$${value})-min(temp1\$${value})),fake_3),names(tmp))
+		}else{
+	        setNames(data.frame(fake_1,fake_2,min(temp1\$${value})-0.06*(max(temp1\$${value})-min(temp1\$${value}))),names(tmp))
+	    }
+      }
+      )
+     tmp2 <- rbind(tmp, do.call(rbind, fakeLines))
+    }else{
+      tmp2 <- tmp
+    }
+
+    return(list(data_m=tmp2,data_bp_median=temp2,data_m_temp=temp1))
+
+  }else{
+
+    temp2 <- dat %>% group_by(${variable}) %>% summarise(median=median(${value}))
+    return(list(data_m=dat,data_bp_median=temp2))
+  }
 }
 
+
+###### add by lindechun
+
+if(! $melted){
+    ID_var <- c("${ID_var}")
+    ID_var <- ID_var[ID_var!=""]
+    data <- read.table(file="${file}", sep="\t", header=$header,
+    row.names=1, quote="", check.names=F)
+    if ("${gene}" != "FALSE") {
+        data_m <- as.data.frame(t(data["${gene}", ]))
+        data_m\$Sample = rownames(data_m)
+
+        if ("${sampleGroup}" != "FALSE") {
+            sampleGroup <- read.table("${sampleGroup}",sep="\t",header=1,check.names=F,row.names=1)
+            data_m <- merge(data_m, sampleGroup, by="row.names")
+        }else{
+        	print("Wainning: Because per x-axis tag contains only one data, so recommend you to use the scatterplot or lines script")
+        }
+    }else {
+        if ("$variable" != "variable") {
+            if (length(ID_var) > 0){
+                ID_var <- c(ID_var, "${variable}")
+            } else {
+                ID_var <- c("${variable}")
+            }
+            data_m <- melt(data, id.vars=ID_var)
+        } else {
+            if (length(ID_var) > 0) {
+              data_m <- melt(data, id.vars=ID_var)
+            } else {
+                data_m <- melt(data)
+            }
+        }
+    }
+} else {
+    data_m <- read.table(file="$file", sep="\t",
+    header=$header, quote="")
+}
+
+
 if (${y_add} != 0){
-	data_m\$${value} <- data_m\$${value} + ${y_add}
+    data_m\$${value} <- data_m\$${value} + ${y_add}
 }
 
 level <- c(${level})
 
-if ("${legend_cut}" != ""){
-	data_m\$${variable} <- cut(data_m\$${variable}, ${legend_cut})
+
+if ("${legend_cut}" != "") {    
+    data_m\$${variable} <- cut(data_m\$${xvariable}, ${legend_cut})
 } else if (length(level)>1){
-	level_i <- level
-	data_m\$${variable} <- factor(data_m\$${variable}, levels=level_i)
+    level_i <- level
+    data_m\$${variable} <- factor(data_m\$${xvariable}, levels=level_i)
 }
 
 x_level <- c(${x_level})
 
-if ("${x_cut}" != ""){
-	data_m\$${xvariable} <- cut(data_m\$${xvariable},${x_cut})
+if ("${x_cut}" != "") {
+    data_m\$${variable} <- cut(data_m\$${variable},${x_cut})
 }else if (length(x_level)){
-	data_m\$${xvariable} <- factor(data_m\$${xvariable},levels=x_level)
+    data_m\$${variable} <- factor(data_m\$${variable},levels=x_level)
 }
+
 
 facet_level <- c(${facet_level})
 if (length(facet_level)>1) {
-	data_m\$${facet} <- factor(data_m\$${facet},
+    data_m\$${facet} <- factor(data_m\$${facet},
         levels=facet_level, ordered=T)
 }
 
+### add by lindechun
+if ("${variable}" == "${xvariable}") {
+    dat <- s_boxplot_median(data_m, more_v=FALSE)
+}else{
+    dat <- s_boxplot_median(data_m, more_v=TRUE)
+}
 
-p <- ggplot(data_m, aes(factor($xvariable), ${value})) + xlab("$xlab") +
-ylab("$ylab") + labs(title="$title")
+data_m <- dat\$data_m
+
+## calculate point size of jitter
+data_nrow=nrow(dat\$data_m)
+if (data_nrow < 50) {
+	jitter_size=1
+}else{
+	jitter_size=0.5
+}
+
+dat\$data_m\$${xvariable} <- factor(data_m\$${xvariable})
+dat\$data_m\$${variable} <- factor(data_m\$${variable})
+
+data_m\$${xvariable} <- factor(data_m\$${xvariable})
+data_m\$${variable} <- factor(data_m\$${variable})
+
+if ("${facet}" != "NoMeAnInGTh_I_n_G_s") {
+	dat\$data_m\$${facet} <- factor(data_m\$${facet})
+	data_m\$${facet} <- factor(data_m\$${facet})
+}
 
 
-if (${violin}){
-	p <- p + geom_violin(aes(fill=factor(${variable})), 
-	stat = "ydensity", position = "dodge", trim = TRUE,  
-	scale = "${scale_violin}") + 
-	geom_boxplot(aes(fill=factor(${variable})), alpha=.25, width=0.15, 
-	position = position_dodge(width = .9), outlier.colour='NA') + 
-	stat_summary(aes(group=${variable}), fun.y=mean,  
-	geom="point", fill="black", shape=19, size=1,
-	position = position_dodge(width = .9))
-   	
-	#+ geom_jitter(height = 0)
-} else if (${violin_nb}){
-	p <- p + geom_violin(aes(fill=factor(${variable})), 
-	stat = "ydensity", position = "dodge", trim = TRUE,  
-	scale = "${scale_violin}") 
-} else if (${jitter}){
-	p <- p + geom_quasirandom(aes(colour=factor(${variable})))
-	p <- p + stat_summary(fun.y = "mean", geom = "text", label="----", size= 10, color= "black")
-	#p <- p + geom_jitter(aes(colour=factor(${variable})))
+### add by lindechun
+
+p <- ggplot(dat\$data_m, aes($variable, ${value})) + xlab("$xlab") +
+    ylab("$ylab") + labs(title="$title")
+
+if (${violin}) {
+    p <- p + geom_violin(aes(color=${xvariable},fill=${xvariable}), 
+    stat = "ydensity", position = "dodge", trim = TRUE, 
+    scale = "${scale_violin}")
+
+	if ("${variable}" != "${xvariable}") {
+        p <- p + geom_point(data=dat\$data_bp_median,aes(x=a3,y=median), size=1)+
+            coord_cartesian(ylim=c(min(dat\$data_m_temp\$${value}),max(dat\$data_m_temp\$${value})))
+     }else{
+     	p <- p+geom_point(data=dat\$data_bp_median,aes(x=${variable}, y=median),size=1)
+     }
+
+    # stat_summary(aes(group=${variable}), fun.y=mean, 
+    # geom="point", fill="black", shape=19, size=1,
+    # position = position_dodge(width = .9))
+
+} else if (${violin_jitter}) {
+    p <- p + geom_violin(aes(color=${xvariable}),size=0.5, 
+    stat = "ydensity", position = "dodge", trim = TRUE, 
+    scale = "${scale_violin}")+geom_quasirandom(size=jitter_size)
+
+	if ("${variable}" != "${xvariable}") {
+        p <- p + geom_point(data=dat\$data_bp_median,aes(x=a3,y=median), size=1.5, shape=17)+
+            coord_cartesian(ylim=c(min(dat\$data_m_temp\$${value}),max(dat\$data_m_temp\$${value})))
+     }else{
+     	p <- p+geom_point(data=dat\$data_bp_median,aes(x=${variable},y=median), size=1.5, shape=17)
+     }
+
+} else if (${jitter}) {
+
+    p <- p + geom_quasirandom(aes(color=${xvariable}),size=jitter_size)
+    p <- p + stat_summary(fun.y = "mean", geom = "text", label="----", size= 5, color= "black")
 } else {
-	if (${notch}){
-		if (${outlier}){
-		p <- p + geom_boxplot(aes(fill=factor(${variable})), notch=TRUE,
-			notchwidth=0.3, outlier.colour='NA')
-		}else{
-		p <- p + geom_boxplot(aes(fill=factor(${variable})), notch=TRUE,
-			notchwidth=0.3)
-		}
-	}else {
-		if (${outlier}){
-			p <- p + geom_boxplot(aes(fill=factor(${variable})),
-			outlier.colour='NA')
-		}else{
-			p <- p + geom_boxplot(aes(fill=factor(${variable})))
-		}
-	}
+    if (${notch}){
+        if (${outlier}){
+            p <- p + geom_boxplot(aes(fill=${xvariable},color=${xvariable}), notch=TRUE,width=$sub_box, 
+            notchwidth=0.3, outlier.colour='NA')
+        }else{
+            p <- p + geom_boxplot(aes(fill=${xvariable},color=${xvariable}), notch=TRUE,outlier.size=0.5, width=$sub_box, 
+            notchwidth=0.3)
+        }
+    } else {
+        if (${outlier}){
+            p <- p + geom_boxplot(aes(fill=${xvariable},color=${xvariable}),
+            outlier.colour='NA', width=$sub_box)
+        }else{
+            p <- p + geom_boxplot(aes(fill=${xvariable},color=${xvariable}),outlier.size=0.5, width=$sub_box)
+        }
+    }
+    if ("${variable}" != "${xvariable}") {
+        p <- p + geom_crossbar(data=dat\$data_bp_median,aes(x=a3,y=median,ymin=median,ymax=median),width=0.8*$sub_box/length(unique(dat\$data_m_temp\$a2)),fatten=0,size=0.7,color="white")+
+            coord_cartesian(ylim=c(min(dat\$data_m_temp\$${value}),max(dat\$data_m_temp\$${value})))
+    } else {
+        p <- p + geom_crossbar(data=dat\$data_bp_median,aes(x=${variable},y=median,ymax=median,ymin=median),width=$sub_box,color="white",fatten=0,size=0.7)
+    }
 }
 
-if (${jitter_bp}){
-	#p <- p + geom_jitter(aes(colour=factor(${variable})))
-	#p <- p + geom_jitter()
-	p <- p + geom_quasirandom()
+if (${boxplot_jitter}) {
+    p <- p + geom_quasirandom(color="black",size=jitter_size)
 }
 
-if($scaleY){
-	p <- p + $scaleY_x
-	p <- p + stat_summary(fun.y = "mean", geom = "text", label="----", size= 10, color= "black")
+
+if ($scaleY) {
+    p <- p + $scaleY_x
+    # p <- p + stat_summary(fun.y = "mean", geom = "text", label="----", size= 5, color= "black")
 }
 
-if(${outlier}){
-	#ylim_zoomin <- boxplot.stats(data_m\$${value})\$stats[c(1,5)]
-	stats <- boxplot.stats(data_m\$${value})\$stats
-	ylim_zoomin <- c(stats[1]/${out_scale}, stats[5]*${out_scale})
-	p <- p + coord_cartesian(ylim = ylim_zoomin)
+if (${outlier}) {
+    #ylim_zoomin <- boxplot.stats(dat\$data_m\$${value})\$stats[c(1,5)]
+    stats <- boxplot.stats(dat\$data_m\$${value})\$stats
+    ylim_zoomin <- c(stats[1]/${out_scale}, stats[5]*${out_scale})
+    p <- p + coord_cartesian(ylim = ylim_zoomin)
 }
 
-if($color){
-	p <- p + scale_fill_manual(values=c(${color_v}))
+
+if ($color) {
+    p <- p + scale_fill_manual(values=c(${color_v}))+scale_colour_manual(values=c(${color_v}))
 }
 
-if(${rotate_plot}){
-	p <- p + coord_flip()	
+if (${rotate_plot}) {
+    p <- p + coord_flip()
 }
 
-if ("${facet}" != "NoMeAnInGTh_I_n_G_s"){
-	p <- p + facet_wrap( ~ ${facet}, nrow=${nrow}, ncol=${ncol},
-	scale="${scales}")
-}
 
+if ("${facet}" != "NoMeAnInGTh_I_n_G_s") {
+    # p <- p + facet_wrap( ~ ${facet}, nrow=${nrow}, ncol=${ncol},scale="${scales}")
+    p <- p + facet_wrap( ~ ${facet},scale="${scales}")
+}
 
 END
 
 
 `ggplot2_configure`
 
-##cat <<END >>${file}${mid}.r
-##
-##p <- p + theme_bw() + theme(legend.title=element_blank(),
-##	panel.grid.major = element_blank(), 
-##	panel.grid.minor = element_blank(),
-##	legend.key=element_blank(),
-##	axis.text.x=element_text(angle=${xtics_angle},hjust=1))
-##
-##top='top'
-##botttom='bottom'
-##left='left'
-##right='right'
-##none='none'
-##legend_pos_par <- ${legend_pos}
-##
-###if ("${legend_pos}" != "right"){
-##p <- p + theme(legend.position=legend_pos_par)
-###}
-##
-##
-##p <- p${par}
-##
-##
-##ggsave(p, filename="${file}${mid}.${ext}", dpi=$res, width=$uwid,
-##height=$vhig, units=c("cm"))
-##
-###png(filename="${file}${mid}.png", width=$uwid, height=$vhig,
-###res=$res)
-###p
-###dev.off()
-##END
 
 if [ "$execute" == "TRUE" ]; then
 	Rscript ${file}${mid}.r
-#if [ "$?" == "0" ]; then /bin/rm -f ${file}${mid}.r; fi
+    if [ "$?" == "0" ]; then 
+        /bin/rm -f ${file}${mid}.r
+    fi
 fi
-
